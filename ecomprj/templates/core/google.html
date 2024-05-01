@@ -1,0 +1,13 @@
+
+{% load socialaccount %}
+{% providers_media_js %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Social login</title>
+</head>
+<body>
+    <p>You are about to sign in using your {{ provider }} account.</p>
+    <button><a href="{% provider_login_url "google" method="oauth2" %}">Continue with Google</a></button>
+</body>
+</html>

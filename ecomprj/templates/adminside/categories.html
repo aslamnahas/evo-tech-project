@@ -1,0 +1,71 @@
+{% extends 'adminside/header.html' %}
+
+{% block content %}
+<div class="page-wrapper">
+    <div class="content">
+        <div class="row">
+            <div class="col-sm-4 col-3">
+                <h4 class="page-title">Category</h4>
+            </div>
+            <div class="col-sm-8 col-9 text-right m-b-20">
+                <a href="{% url 'adminside:add_main_category' %}" class="btn btn btn-primary btn-rounded float-right"><i class="fa fa-plus"></i> Add Category</a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped custom-table datatable mb-0">
+                        <thead>
+                            <tr>
+                                <th class="text-center">Active</th>
+                                <th class="text-center">Main Category</th>
+                                <th class="text-center">Image</th>
+                                <th class="text-center">Description</th>
+                                <th class="text-center">Offer</th>
+                                <th class="text-center">Edit</th>
+                                <th class="text-center">Delete</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for main_category in data %}
+                            <tr>
+                                <td class="text-center">
+                                    {% if main_category.deleted %}
+                                        <span class="badge badge-pill badge-danger">Inactive</span>
+                                    {% else %}
+                                        <span class="badge badge-pill badge-success">Active</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">{{ main_category.name }}</td>
+                                <td class="text-center">
+                                    {% if main_category.img %}
+                                        <img src="{{ main_category.img.url }}" alt="Image" style="width: 100px; height: auto;">
+                                    {% else %}
+                                        <p>No image available</p>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">{{ main_category.descriptions }}</td>
+                                <td class="text-center">{{ main_category.offer }}</td>
+                                <td class="text-center">
+                                    <a href="{% url 'adminside:update_main_category' main_category.id %}" class="btn btn-success">Edit</a>
+                                </td>
+                                <td class="text-center">
+                                    <a href="{% url 'adminside:soft_delete_category' main_category.id %}" class="btn btn-danger">
+                                        {% if main_category.deleted %}
+                                            Activate
+                                        {% else %}
+                                            Deactivate
+                                        {% endif %}
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

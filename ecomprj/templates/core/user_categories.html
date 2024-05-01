@@ -1,0 +1,73 @@
+<!-- user_category.html -->
+
+{% extends 'core/base.html' %}
+
+{% load static %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Category</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        /* Additional custom styles */
+        body {
+            background-color: #f8f9fa; /* Light gray background */
+            padding: 20px; /* Add some padding for better readability */
+        }
+        .category-container {
+            margin-top: 30px; /* Add some spacing at the top */
+        }
+        .category-card {
+            background-color: #fff; /* White background for cards */
+            border-radius: 10px; /* Rounded corners for cards */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Add shadow for depth */
+            margin-bottom: 20px; /* Add some spacing between cards */
+        }
+        .category-img {
+            width: 100px; /* Adjust image width */
+            height: auto; /* Maintain aspect ratio */
+            margin: 0 auto; /* Center the image */
+            display: block; /* Ensure image displays correctly */
+        }
+    </style>
+</head>
+<div class="breadcrumb-area">
+    <div class="container">
+        <div class="breadcrumb-content">
+            <ul>
+                <li><a href="{% url 'core:home' %}"> Home</a></li>
+                <li class="active">Category List</li>
+            </ul>
+        </div>
+    </div>
+</div>
+<body>
+    <div class="container category-container">
+        <h1 class="text-center mb-4">Categories</h1>
+        <div class="row">
+            {% for category in categories %}
+            <div class="col-md-4">
+                <div class="card category-card">
+                    <div class="card-body">
+                        <h2 class="card-title">{{ category.name }}</h2>
+                        {% if category.img %}
+                        <img src="{{ category.img.url }}" alt="{{ category.name }}" class="category-img">
+                        {% else %}
+                        <p>No image available</p>
+                        {% endif %}
+                        <p class="card-text">{{ category.descriptions }}</p>
+                        <p class="card-text">Offer: {{ category.offer }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>
+{% endblock content %}

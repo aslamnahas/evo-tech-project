@@ -1,0 +1,253 @@
+    
+    
+{% extends 'core/base.html' %}
+
+{% load static %}
+
+
+{% block content %}
+    
+    
+    <!-- Header Area End Here -->
+            <!-- Begin Li's Breadcrumb Area -->
+            <div class="breadcrumb-area">
+                <div class="container">
+                    <div class="breadcrumb-content">
+                        <ul>
+                            <li><a href="{% url 'core:home' %}">Home</a></li>
+                            <li class="active">Shopping Cart</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <!-- Li's Breadcrumb Area End Here -->
+            <!--Shopping Cart Area Strat-->
+            <div class="Shopping-cart-area pt-60 pb-60">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-12">
+                            <div action="#">
+                                <div class="table-content table-responsive">
+                                    <table class="table table-bordered text-center mb-0">
+                                        <thead class="bg-yellow text-dark">
+                                            <tr>
+                                                <th colspan="2">Products</th>
+                                                <th>Price</th>
+                                                <th>Quantity</th>
+                                                <th>Total</th>
+                                                <th>Remove</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="align-middle">
+                                            {% for cart_item in cart_items %}
+                                            <tr>
+                                                <td class="align-middle"><img src="{{ cart_item.product.image.url }}" alt="" style="width: 50px;"></td>
+                                                <td class="align-middle"> {{ cart_item.product.product_name }}</td>
+                                                <td class="align-middle">
+                                                    {% if cart_item.product.get_discounted_price != cart_item.product.price %}
+                                                        ₹{{ cart_item.product.get_discounted_price }} 
+                                                    {% else %}
+                                                        ₹{{ cart_item.product.price }}
+                                                    {% endif %}
+                                                </td>
+                                                <td class="quantity"> 
+                                                    <div class="input-group">
+                                                        <div class="input-group-prepend">
+                                                            <button onclick="updateQuantity('{{ cart_item.product.id }}', 'decrease')" class="btn btn-outline-primary btn-sm" type="button">-</button>
+                                                        </div>
+                                                        <input id="quantity-input-{{ cart_item.product.id }}" type="number" min="1" class="form-control form-control-sm text-center" style="width: 40px;" value="{{ cart_item.quantity }}" placeholder="" aria-label="Example text with button addon" aria-describedby="button-addon1">
+                                                        <div class="input-group-append">
+                                                            <button onclick="updateQuantity('{{ cart_item.product.id }}', 'increase')" class="btn btn-outline-primary btn-sm" type="button">+</button>
+                                                        </div>
+                                                    </div>
+                                                                                                                                                         
+                                                    
+                                                    
+                                                </td>
+                                        
+                                                <td class="align-middle">₹<span id="total-price-{{ cart_item.product.id }}">{{ cart_item.total_price }}</span></td>
+
+                                        
+                                                <td class="align-middle">
+                                                    <a href="{% url 'core:remove_from_cart' cart_item.id %}" style="font-size: 24px;"> <i class="fa fa-times"></i></a>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                        
+                    
+                                        {% if messages %}
+                                        <div class="messages">
+                                            {% for message in messages %}
+                                                <div class="{{ message.tags }}">
+                                                    {{ message }}
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                          
+                                    </table>
+                                              
+                                </div>
+                                {% comment %} <div class="row">
+                                    <div class="col-12">
+                                        <div class="coupon-all">
+                                            <form method="post" class="mb-5" action="{% url 'apply_coupon' %}">
+                                                {% csrf_token %}
+                                                <div class="input-group" style="width: 27%;">
+                                                    <input type="text" class="form-control p-4" placeholder="Coupon Code" list="couponList" name="coupon_code">
+                                                    <datalist id="couponList">
+                                                        {% for coupon in coupons %}
+                                                        <option value="{{ coupon.coupon_code }}">
+                                                        {% endfor %}
+                                                    </datalist>
+                                                    <div class="input-group-append">
+                                                        <button class="btn btn-primary" type="submit">Apply Coupon</button>
+                                                    </div>
+                                                </div>
+                                            </form> {% endcomment %}
+                                            {% comment %} <!-- <a href="{% url 'login' %}?coupon_value=your_coupon_code">Apply Coupon</a> --> {% endcomment %}
+                                            <!-- <div class="coupon2">
+                                                <input class="button" name="update_cart" value="Update cart" type="submit">
+                                            </div> -->
+                                        </div>
+                                       
+
+                                        <div id="messages-container">
+                                            {% if messages %}
+                                                <ul class="messages text-primary" style="list-style: none;">
+                                                    {% for message in messages %}
+                                                        {% if message.tags == 'success' %}
+                                                            <li class="success">{{ message }}</li>
+                                    
+                                                        {% elif message.tags == 'error' %}
+                                                            <li class="error">{{ message }}</li>
+                                    
+                                                        {% elif message.tags == 'warning' %}
+                                                            <li style="color: red;" class="warning">{{ message }}</li>
+                                    
+                                                        {% else %}
+                                                            <li>{{ message }}</li>
+                                    
+                                                        {% endif %}
+                                    
+                                                    {% endfor %}
+                                                </ul>
+                                            {% endif %}
+                                        </div>
+
+
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-5 ml-auto">
+                                        <div class="cart-page-total">
+                                            <h2>Cart totals</h2>
+                                            <ul>
+                                                <li>Subtotal <span id="subtotal-price">₹{{ subtotal}}</span></li>
+                                                {% if cart_items %}
+                                                <li>Shipping charge <span id="total-price">₹ 10</span></li>
+                                                {% else %}
+                                                <li>Shipping charge <span id="total-price">₹ 0</span></li>
+                                                {% endif %}
+                                                <li style="color: green;">Coupon Discount<span id="total-price">
+                                                {% if request.session.discount %}
+                                                ₹{{ request.session.discount }}
+                                                {% else %}
+                                                ₹0
+                                                {% endif %}
+                                             </li></span>                                               
+                                                <li>Total <span id="total-price">{{ total }}</span></li>                                     
+                                            </ul>
+                                            {% if cart_items %}
+                                            {% comment %} <a href="{% url 'checkout' %}">Proceed to checkout</a> {% endcomment %}
+                                            {% else %}
+                                            <a href="">Cart is empty</a>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                           
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Include this script in your HTML file, usually within the <head> or at the end of the <body> -->
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script>
+    function getCookie(name) {
+        var cookieArr = document.cookie.split(";");
+
+        for (var i = 0; i < cookieArr.length; i++) {
+            var cookiePair = cookieArr[i].split("=");
+
+            if (name === cookiePair[0].trim()) {
+                return decodeURIComponent(cookiePair[1]);
+            }
+        }
+
+        return null;
+    }
+
+    function updateQuantity(productId, action) {
+        var quantityInput = document.getElementById('quantity-input-' + productId);
+        var quantity = parseInt(quantityInput.value);
+
+        if (action === 'increase') {
+            quantity += 1;
+        } else if (action === 'decrease') {
+            quantity -= 1;
+        }
+
+        if (quantity < 1) {
+            alert('Quantity must be at least 1.');
+            return;
+        }
+
+        var csrfToken = getCookie('csrftoken');
+
+        fetch(`/update-cart/${productId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({
+                'quantity': quantity
+            })
+        })
+        .then(function(response) {
+            if (response.ok) {
+                return response.json();
+            } else {
+                throw new Error('Error updating cart item.');
+            }
+        })
+        .then(function(data) {
+            console.log(data.message);
+            location.reload();
+        })
+        .catch(function(error) {
+            console.error('Error:', error);
+            alert('Error updating cart item.');
+        });
+    }
+</script>
+
+
+<script>
+    $(document).ready(function() {
+        setTimeout(function() {
+            $('#messages-container').fadeOut('slow');
+        }, 1000); // 1 second delay before fading out
+    });
+
+    
+</script>
+
+                <!--Shopping Cart Area End-->
+                <!-- Begin Footer Area -->
+                {% endblock content %} 

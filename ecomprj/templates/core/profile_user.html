@@ -1,0 +1,92 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block content %}
+
+<div class="breadcrumb-area">
+    <div class="container">
+        <div class="breadcrumb-content">
+            <ul>
+                <li><a href="{% url 'core:home' %}"> Home</a></li>
+                <li class="active">Profile</li>
+            </ul>
+        </div>
+    </div>
+</div>
+<div class="container emp-profile">
+    <form method="post">
+        {% csrf_token %}
+        <div class="row">
+            <div class="col-md-4">
+                <div class="profile-img" style="margin: 30px;">
+                    <img src="{% static 'main/images/profile_photo/profile.png' %}" alt="Li's Product Image" style="width: 150px;">
+                </div>
+                <br>
+                <br>
+                <a href="#" class="btn btn-secondary btn-lg active" role="button" aria-pressed="true">Orders</a>
+                &nbsp;
+                &nbsp;
+                &nbsp;
+                <a href="#" class="btn btn-secondary btn-lg active" role="button" aria-pressed="true">Cart</a>
+            </div>
+            <br>
+            <br>
+            <div class="col-md-8">
+                <div class="profile-head">
+                    <br>
+                    <h5>{{ user.username }}</h5>
+                    <p class="proile-rating">{{ user.email }}</p>
+                    <br>
+                    <div class="tab-content profile-tab" id="myTabContent">
+                        <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+                            <ul class="nav nav-tabs" id="myTab" role="tablist">
+                                <li class="nav-item">
+                                    <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true">About</a>
+                                </li>
+                            </ul>
+                            <br>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label>User Id</label>
+                                </div>
+                                <div class="col-md-6">
+                                    <p>{{ user.id }}</p>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label>User Name</label>
+                                </div>
+                                <div class="col-md-6">
+                                    <p>{{ user.username }}</p>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label>Email</label>
+                                </div>
+                                <div class="col-md-6">
+                                    <p>{{ user.email }}</p>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label>Phone</label>
+                                </div>
+                                <div class="col-md-6">
+                                    <p>{{ user.ph_no }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="{% url 'core:manage_profile' %}" class="btn btn-secondary btn-lg active" role="button" aria-pressed="true">Manage Profile</a>
+                    <a href="{% url 'core:address' %}" class="btn btn-secondary btn-lg active" role="button" aria-pressed="true">Manage Address</a>
+
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+<br>
+<br>
+{% endblock content %}

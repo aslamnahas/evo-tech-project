@@ -1,0 +1,395 @@
+{% extends 'core/base.html' %}
+
+{% load static %}
+
+
+{% block content %}
+<style>
+    .product-image {
+        text-align: center;
+    }
+
+    .product-image a {
+        display: inline-block;
+    }
+
+    .product-image img {
+        max-width: 100%;
+        height: auto;
+        width: 150px; /* Set the desired width */
+        height: 150px; /* Set the desired height */
+    }
+</style>
+
+                <!-- Begin Mobile Menu Area -->
+                <div class="mobile-menu-area d-lg-none d-xl-none col-12">
+                    <div class="container"> 
+                        <div class="row">
+                            <div class="mobile-menu">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Mobile Menu Area End Here -->
+            </header>
+            <!-- Header Area End Here -->
+            <!-- Begin Li's Breadcrumb Area -->
+            <div class="breadcrumb-area">
+                <div class="container">
+                    <div class="breadcrumb-content">
+                        <ul>
+                            <li><a href="{% url 'core:home' %}"> Home</a></li>
+                            <li class="active">Product List</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <!-- Li's Breadcrumb Area End Here -->
+            <!-- Begin Li's Content Wraper Area -->
+            <div class="content-wraper pt-60 pb-60">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-9 order-1 order-lg-2">
+                            <!-- Begin Li's Banner Area -->
+                            <div class="single-banner shop-page-banner">
+                                <a href="#">
+                                    {% comment %} <img src="{% static 'main/images/bg-banner/2.jpg' %}" alt="Li's Static Banner"> {% endcomment %}
+                                </a>
+                            </div>
+                            <!-- Li's Banner Area End Here -->
+                            <!-- shop-top-bar start -->
+                            <div class="shop-top-bar mt-30">
+                                <div class="shop-bar-inner">
+                                    <div class="product-view-mode">
+                                        <!-- shop-item-filter-list start -->
+                                        <ul class="nav shop-item-filter-list" role="tablist">
+                                            <li class="active" role="presentation"><a data-toggle="tab"  class="active show" role="tab" aria-controls="grid-view" href="#grid-view"><i class="fa fa-th"></i></a></li>
+                                            <li role="presentation"><a aria-selected="true" data-toggle="tab" role="tab" aria-controls="list-view" href="#list-view"><i class="fa fa-th-list"></i></a></li>
+                                        </ul>
+                                        <!-- shop-item-filter-list end -->
+                                    </div>
+                                    <div class="toolbar-amount">
+                                        <span> </span>
+                                    </div>
+                                </div>
+                                {% comment %} <form method="get" action="{% url 'main_app:sort' %}"> {% endcomment %}
+                                    <div class="product-select-box">
+                                        <div class="product-short">
+                                            <p>Sort By:</p>
+                                            <select class="nice-select" name="sort_by">
+                                                <option value="">Default</option>
+                                                <option value="price+">Price (Low &gt; High)</option>
+                                                <option value="price-">Price (High &gt; Low)</option>
+                                                <option value="name+">Name (A - Z)</option>
+                                                <option value="release_date-">Release Date</option> <!-- corrected spelling -->
+                                            </select>
+                                            <button type="submit">Sort</button>
+                                        </div>
+                                    </div>
+                                </form>                              
+                              <!-- product-select-box end -->                                
+                            </div>
+                            <!-- shop-top-bar end -->
+                            <!-- shop-products-wrapper start -->
+                            <div class="shop-products-wrapper">
+                                <div class="tab-content">
+
+
+
+                                    <!-- PRODUCT LIST VIEW -->
+
+                                    <div id="list-view"  class="tab-pane fade" role="tabpanel">
+                                        {% for i in products %}
+                                        <div class="row product_data">
+                                            <div class="col">                                                
+                                                <div class="row product-layout-list">
+                                                    <div class="col-lg-3 col-md-5">
+                                                        <div class="product-image" style="text-align: center;">
+                                                            <td style="width: 150px; height: 150px; display: inline-block;">
+                                                                <img height="200" src="{{ i.image.url }}" alt="Product Image" style="display: block; margin: 0 auto;">
+                                                            </td>
+                                                            {% comment %} <span class="sticker">New</span> {% endcomment %}
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-lg-5 col-md-7">
+                                                        <div class="product_desc">
+                                                            <div class="product_desc_info">
+                                                                <div class="product-review">
+                                                                    <h5 class="manufacturer">
+                                                                        <a href="{% url 'core:product_detail' i.id %}">
+
+
+                                                                    </h5>
+                                                                    <div class="rating-box">
+                                                                        <ul class="rating">
+                                                                            <li><i class="fa fa-star-o"></i></li>
+                                                                            <li><i class="fa fa-star-o"></i></li>
+                                                                            <li><i class="fa fa-star-o"></i></li>
+                                                                            <li class="no-star"><i class="fa fa-star-o"></i></li>
+                                                                            <li class="no-star"><i class="fa fa-star-o"></i></li>
+                                                                        </ul>
+                                                                    </div>
+                                                                </div>
+                                                                <h4><a class="product_name" href="{% url 'core:product_detail' i.id %}"> {{ i.model }} &nbsp; ({{ i.color }})</a></h4>
+                                                                <div class="price-box">
+                                                                    <span class="new-price">₹{{ i.price }}</span> &nbsp;  &nbsp;
+                                                                    <span class="new-price-2">{{ i.offer }}% Off</span>
+                                                                </div>
+                                                                <p>{{ i.description }}</p>
+                                                                <p>  
+                                                                    <label for="stock"> Only {{ i.stock }} stock left:</label>
+                                                                    
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-lg-4">
+                                                        <form>
+                                                        <div class="shop-add-action mb-xs-30">
+                                                            {% csrf_token %}
+                                                            <input type="hidden" value="{{ i.product.id }}" class="prod_id">
+                                                            
+                                                            {% comment %} <input type="hidden" value="{{ i.id }}" class="variant_id">  {% endcomment %}
+                                                            <ul class="add-actions-link">
+                                                                {% if i.stock > 0 %}
+                                                                <li class="add-cart addToCartBtn pl-3"><a href="{% url 'core:add_to_cart' i.id %}">Add to Cart</a></li>
+
+                                                                <li class="wishlist"><a href="###"><i class="fa fa-heart-o"></i>Add to wishlist</a></li>
+                                                                
+                                                                {% else %}
+                                                                
+                                                                <li class="wishlist"><a href="###"><i class="fa fa-heart-o"></i>Add to wishlist</a></li>
+                                                                <li><a class="quick-view" data-toggle="modal" data-target="#exampleModalCenter" href="#"><i class="fa fa-eye"></i>Quick view</a></li>
+                                                                {% endif %}
+                                                            </ul>
+                                                        </div>
+                                                        </form>
+                                                    </div>
+                                                </div>       
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                       
+                                    </div>
+                                    <!-- PRODUCT GRID VIEW -->
+                                    <div id="grid-view"  class="tab-pane fade product-list-view active show" role="tabpanel">
+
+                
+                                        <div class="product-area shop-product-area">
+                                           
+                                            <div class="row">
+                                                {% for i in products %}
+                                                    <div class="col-lg-4 col-md-4 col-sm-6 mt-40 product_data">
+                                                        <div class="single-product-wrap">
+                        
+
+                                                            <div class="product-image" style="text-align: center;">
+                                                                <a href="{% url 'core:product_detail' i.id %}">
+                                                                    <img src="{{ i.image.url }}" alt="Image" style="display: block; margin: 0 auto;">
+                                                                </a>
+                                                                {% comment %} <span class="sticker">New</span> {% endcomment %}
+                                                            </div>
+                                                            
+                                                            <div class="product_desc">
+                                                                <div class="product_desc_info">
+                                                                    <div class="product-review">
+                                                                        <h5 class="manufacturer">
+                                                                            {% comment %} <a href="{% url 'core:product_details' i.product.id i.id %}"> </a> {% endcomment %}
+                                                                        </h5>
+                                                                        <div class="rating-box">
+                                                                            <ul class="rating">
+                                                                                <li><i class="fa fa-star-o"></i></li>
+                                                                                <li><i class="fa fa-star-o"></i></li>
+                                                                                <li><i class="fa fa-star-o"></i></li>
+                                                                                <li class="no-star"><i class="fa fa-star-o"></i></li>
+                                                                                <li class="no-star"><i class="fa fa-star-o"></i></li>
+                                                                            </ul>
+                                                                        </div>
+                                                                    </div>
+                                                                    <input type="hidden" value="{{ i.product.id }}" class="prod_id">
+                                                                    {% comment %} <input type="hidden" value="{{ i.id }}" class="variant_id">   {% endcomment %}
+                                                                    <h4><a class="product_name" href="{% url 'core:product_detail' i.id %}">{{ i.model }} &nbsp; ({{ i.color }})</a></h4>
+                                                                    {% comment %} <a href="{% url 'core:product_detail'  %}">View Details</a> {% endcomment %}
+
+                                                                    <div class="price-box">
+                                                                        <span class="new-price ">₹ {{ i.price }}</span>
+                                                                        <span class="new-price-2">{{ i.offer }}% Off</span>
+
+
+                                                                        
+                                                                        {% comment %} <span class="new-price-2">{{ i.discounted_price }}% Off</span> {% endcomment %}
+                                                                    </div>
+                                                                </div>
+                                                                <div class="add-actions">
+                                                                    <form>
+                                                                        {% csrf_token %}
+                                                                        <input type="hidden" value="{{ i.product.id }}" class="prod_id">
+                                                                        
+                                                                        {% comment %} <input type="hidden" value="{{ i.id }}" class="variant_id">  {% endcomment %}
+                                                                        <ul class="add-actions-link">
+
+                                                                    
+
+                                                                            {% if i.stock > 0 %}
+                                                                            <p>  
+                                                                                <label for="stock">Only {{ i.stock }} stock left:</label>
+                                                                            </p>
+                                                                        {% else %}
+                                                                            <p>  
+                                                                                <label for="stock">Out of stock</label>
+                                                                            </p>
+                                                                        {% endif %}
+                                                                            {% if i.stock > 0 %}
+                                                                                <li class="add-cart addToCartBtn pl-3"><a href="{% url 'core:add_to_cart' i.id %}">Add to Cart</a></li>
+                                                                                {% comment %} <li><a href="{% url 'core:product_details' i.product.id i.id %}" title="quick view" class="quick-view-btn" data-toggle="modal" data-target="#exampleModalCenter"><i class="fa fa-eye"></i></a></li> {% endcomment %}
+                                                                                <li><a class="links-details wishBtn" href="###"><i class="fa fa-heart-o"></i></a></li>
+                                                                            {% else %}
+                                                                                {% comment %} <p> Out of Stock </p> {% endcomment %}
+                                                                                {% comment %} <li><a href="{% url 'core:product_details' i.product.id i.id %}" title="quick view" class="quick-view-btn" data-toggle="modal" data-target="#exampleModalCenter"><i class="fa fa-eye"></i></a></li> {% endcomment %}
+                                                                                <li><a class="links-details wishBtn" href="###"><i class="fa fa-heart-o"></i></a></li>
+                                                                            {% endif %}
+                                                                           
+                                                                        </ul>
+                                                                    </form>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    {% endfor %}
+                                            </div>                                          
+                                        </div>
+                                    </div>
+                                    <br>
+                                    <br>
+                                    <br>
+                                    <br>
+                                </div>
+                            </div>
+                            <!-- shop-products-wrapper end -->
+                        </div>
+
+
+
+
+                        <div class="col-lg-3 order-2 order-lg-1">
+                            <!--sidebar-categores-box start  -->
+                            <div class="sidebar-categores-box mt-sm-30 mt-xs-30">
+                                <div class="sidebar-title">
+                                    <h2>Categories</h2>
+                                </div>
+                                <!-- category-sub-menu start -->
+                                <div class="category-sub-menu">
+                                    <ul>
+                                        {% for i in default_main_category %}
+                                        <li > <a href="{% url 'core:category_products' i.id %}"> {{ i.name }}</a></li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                                <!-- category-sub-menu end -->
+                            </div>
+                            <!--sidebar-categores-box end  -->
+                            <!--sidebar-categores-box start  -->
+                            <form method="GET" action="">
+                            <div class="sidebar-categores-box">
+                                <div class="sidebar-title">
+                                    <h2>Filter By</h2>
+                                </div>
+                                <!-- btn-clear-all start -->
+
+                                <button class="btn mt-20 w-100" type="submit" style="background-color: grey; color: white;">Apply</button>
+                                <!-- btn-clear-all end -->
+                                <!-- filter-sub-area start -->
+                                <div class="filter-sub-area">
+                                    <h5 class="filter-sub-titel">Categories</h5>
+                                    <div class="categori-checkbox">
+                                            <ul> 
+                                                {% for i in default_main_category|slice:":3" %}
+                                                    <li><input type="checkbox" name="category" id="category_checkbox_{{i.id}}" value="{{i.id}}"><a href="#"> {{ i.name }}</a></li>
+                                                {% endfor %}
+                                            </ul>
+                                    </div>
+                                 </div>
+                                <!-- filter-sub-area end -->
+                                {% comment %} <!-- filter-sub-area start -->
+                                <div class="filter-sub-area">
+                                    <h5 class="filter-sub-titel">Brand</h5>
+                                    <div class="categori-checkbox">
+                                            <ul> 
+                                                {% for i in brands %}
+                                                    <li><input type="checkbox" name="brand" id="brand_checkbox_{{i.id}}" value="{{i.id}}"><a href="#"> {{ i.name }}</a></li>
+                                                {% endfor %}
+                                            </ul>
+                                    </div>
+                                 </div> {% endcomment %}
+                                <!-- filter-sub-area end -->
+                                <!-- Price range -->
+                                <div class="filter-sub-area pt-sm-10 pt-xs-10">
+                                    <h5 class="filter-sub-titel">Price range</h5>
+                                    <div class="size-checkbox">
+                                        <ul>
+                                            <li><input type="checkbox" name="price_range" value="0-3000"><a href="#">Less than ₹3000</a></li>
+                                            <li><input type="checkbox" name="price_range" value="3000-10000"><a href="#">₹3000 - ₹10,000</a></li>
+                                            <li><input type="checkbox" name="price_range" value="10000-25000"><a href="#">₹10,000 - ₹25,000</a></li>
+                                            <li><input type="checkbox" name="price_range" value="25000-100000"><a href="#">₹25,000 - ₹100,000</a></li>
+                                            <li><input type="checkbox" name="price_range" value="100000-100000000"><a href="#">Above - ₹100,000</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <!-- filter-sub-area end -->
+                                <!-- filter-sub-area start -->
+                                <div class="filter-sub-area pt-sm-10 pt-xs-10">
+                                    <h5 class="filter-sub-titel">Color</h5>
+                                    <div class="size-checkbox">
+                                        <ul>
+                                            <li><input type="checkbox" name="color_range" value="Black"><a href="#">Black</a></li>
+                                            <li><input type="checkbox" name="color_range" value="White"><a href="#">White</a></li>
+                                            <li><input type="checkbox" name="color_range" value="Green"><a href="#">Green</a></li>
+                                            <li><input type="checkbox" name="color_range" value="Blue"><a href="#">Blue</a></li>
+                                            <li><input type="checkbox" name="color_range" value="Red"><a href="#">Red</a></li>
+                                        </ul>  
+                                    </div>
+                                </div>
+                                <!-- filter-sub-area end -->
+
+                            </div>
+                              <button class="btn-clear-all mb-sm-30 mb-xs-30">Clear all</button>
+                            <br>
+                            <br>
+                            <br>
+                            
+                        </form>
+      
+                        </div>
+                    </div>
+                    <div class="pagination-area">
+                        <div class="row">
+                            <div class="col-lg-6 col-md-6">
+                                <p class="pagination-info"> </p>
+                            </div>
+                            <div class="col-lg-6 col-md-6" >
+                                <ul class="pagination pagination-sm justify-content-end">
+                                    <li class="page-item {% if not products.has_previous %} disabled {% endif %}">
+                                        <a class="page-link" href="{% if products.has_previous %}?page={{ products.previous_page_number }}{% endif %}" aria-label="Previous">
+                                            <span aria-hidden="true">&laquo; Previous</span>
+                                        </a>
+                                    </li>
+                                    <li class="page-item disabled">
+                                        <span class="page-link">Page {{ products.number }} of {{ products.paginator.num_pages }}</span>
+                                    </li>
+                                    <li class="page-item {% if not products.has_next %} disabled {% endif %}">
+                                        <a class="page-link" href="{% if products.has_next %}?page={{ products.next_page_number }}{% endif %}" aria-label="Next">
+                                            <span aria-hidden="true">Next &raquo;</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+            <!-- Content Wraper Area End Here -->
+
+            
+            
+        {% endblock content %}

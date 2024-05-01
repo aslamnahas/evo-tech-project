@@ -1,0 +1,94 @@
+
+
+
+
+{% extends 'adminside/header.html' %}
+
+{% load static %}
+{% block content %}
+
+
+<div class="page-wrapper">
+    <div class="content">
+        <div class="row">
+            <div class="col-lg-8 offset-lg-2">
+                <h4 class="page-title">Edit Categories</h4>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-8 offset-lg-2">
+                <form action="{% url 'adminside:update_main_category' data.id %}" method="post" enctype="multipart/form-data">
+
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label>category name</label>
+                        <input class="form-control" type="text"
+                        placeholder="Enter the main category here"
+                        name= "main_category_name"
+                        pattern="^\S(.*\S)?$"
+                        value="{{data.name}}"
+                        required>
+                    </div>
+                    <div>   
+                        <div>
+                            {% for message in messages %}
+                                <li style="color: red;">{{ message }}</li>
+                            {% endfor %}
+                        </div>                                
+                    </div>  
+                    <div class="form-group">
+                        <label>Description</label>
+                        <input class="form-control" type="text" 
+                        placeholder="Add description"
+                        name= "description"
+                        pattern="^\S(.*\S)?$"
+                        value="{{ data.descriptions }}"
+                        required>
+                    </div>
+                    <div class="form-group">
+                        <label>Offer</label>
+                        <input class="form-control" type="number" 
+                               placeholder="Offer"
+                               name="offer"
+                               value="{{data.offer}}"
+                               min = 0
+                                >
+                    </div>
+                    <div class="form-group">
+                        <label>Current Image</label>
+                        <br>
+                        <br>
+                        {% if data.img %}
+                            <img src="{{ data.img.url }}" alt="Current Image" style="max-width: 200px;">
+                        {% else %}
+                            <p>No image available</p>
+                        {% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label>Add image</label>
+                        <div>
+                            <input class="form-control" type="file"
+                                   placeholder="Select image"
+                                   name="image"
+                                   accept=".jpg, .jpeg, .gif, .png, .webp"
+                                   >
+                            <small class="form-text text-muted">Max. file size: 10 MB. Allowed images: jpg, gif, png.</small>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6"> <!-- Column for the "Update" button -->
+                            <div class="m-t-20 text-center">
+                                <button class="btn btn-primary submit-btn">Update</button>
+                            </div>
+                        </div>
+                        <div class="col-md-6"> <!-- Column for the "Cancel" button -->
+                            <div class="m-t-20 text-center">
+                                <a href="{% url 'adminside:categories' %}" class="btn btn-primary submit-btn">Cancel</a>
+                            </div>
+                        </div>
+                    </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

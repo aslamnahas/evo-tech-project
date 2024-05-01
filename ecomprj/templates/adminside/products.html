@@ -1,0 +1,77 @@
+{% extends 'adminside/header.html' %}
+
+{% block content %}
+<div class="page-wrapper">
+    <div class="content">
+        <div class="row">
+            <div class="col-sm-12">
+                <h4 class="page-title">Products</h4>
+            </div>
+             <div class="col-sm-8 col-9 text-right m-b-20">
+                <a href="{% url 'adminside:add_product' %}" class="btn btn btn-primary btn-rounded float-right"><i class="fa fa-plus"></i> Add New Products</a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped custom-table datatable mb-0">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Description</th>
+                                <th>Color</th>
+                                <th>Display Size</th>
+                                <th>Camera</th>
+                                <th>Network</th>
+                                <th>Price</th>
+                                <th>offer</th>
+                                <th>Battery</th>
+                                <th>Stock</th>
+                                <th>Image</th>
+                                <th>Edit</th>
+                                <th>Delete</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in items %}
+                            <tr>
+                                <td>{{ item.model }}</td>
+                                <td>{{ item.description }}</td>
+                                <td>{{ item.color }}</td>
+                                <td>{{ item.display_size }}</td>
+                                <td>{{ item.camera }}</td>
+                                <td>{{ item.network }}</td>
+                                <td>{{ item.price }}</td>
+                                <td>{{ item.offer }}</td>
+                                <td>{{ item.battery }}</td>
+                                <td>{{ item.stock }}</td>
+
+
+                                <td>
+                                    {% if item.image %}
+                                    <img src="{{ item.image.url }}" alt="Product Image" style="max-width: 100px;">
+                                    {% else %}
+                                    No Image
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'adminside:update_product' id=item.id %}" class="btn btn-success">Edit</a>
+                                </td>
+                                <td class="text-center">
+                                    <a href="{% url 'adminside:soft_delete_product' item.id %}" class="btn btn-danger">
+                                        {% if item.deleted %}
+                                            Activate
+                                        {% else %}
+                                            Deactivate
+                                        {% endif %}
+                                    </a>
+                                </td>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

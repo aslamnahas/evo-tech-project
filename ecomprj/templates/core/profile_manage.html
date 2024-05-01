@@ -1,0 +1,41 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block content %}
+<div class="breadcrumb-area">
+    <div class="container">
+        <div class="breadcrumb-content">
+            <ul>
+                <li><a href="{% url 'core:home' %}"> Home</a></li>
+                <li class="active">Edit Profile</li>
+            </ul>
+        </div>
+    </div>
+</div>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <h2 class="text-center mb-4 text-muted">Edit Profile</h2>
+            <form action="{% url 'core:manage_profile' %}" method="post">
+                {% csrf_token %}
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="inputUsername">Username</label>
+                        <input type="text" class="form-control" id="inputUsername" name="username" placeholder="Username" required value="{{ user.username }}">
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="inputEmail">Email</label>
+                        <input type="email" class="form-control" id="inputEmail" name="email" placeholder="Email" required value="{{ user.email }}"  readonly>
+                    </div>
+                </div> 
+                <div class="form-group">
+                    <label for="inputPhone">Phone</label>
+                    <input type="tel" class="form-control" id="inputPhone" name="phone" placeholder="Phone" required value="{{ user.phone }}">
+                </div>
+                <div class="text-center">
+                    <button type="submit" class="btn btn-warning">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock content %}
