@@ -1,0 +1,71 @@
+
+{% extends 'core/base.html' %}
+
+{% load static %}
+
+
+{% block content %}
+<div class="table-responsive container mt-5">
+   
+    <table class="table table-sm text-start align-middle table-hover mb-0">
+        <thead>
+            <tr class="text-dark">
+                <th scope="col">Order Id</th>
+                <th scope="col">Product</th>
+                <th scope="col">Quantity</th>
+                <th scope="col">Amount</th>
+                <th scope="col">Payment Type</th>
+                <th scope="col">Date</th>
+                <th scope="col">Status</th>
+                <th scope="col">Cancel</th>
+                <th scope="col">Action</th>
+            </tr>
+        </thead>
+        <tbody>  
+            {% for order in orders %}
+                {% for order_item in order.order_items.all %}
+                    <tr {% if order.status == 'cancelled' %}style=" background-color: #ffcccc;"{% endif %}>  
+                        <td>{{ order.id }}</td>
+                        <td>
+                            <div class="mb-2">
+                                <img src="{{ order_item.image.url }}" alt="" width="60">
+                            </div>
+                        </td>
+                        <td class="border-bottom-0">
+                            <h6 class="fw-semibold mb-1">
+                                {{ order_item.product.product_name }} (x{{ order_item.quantity }})
+                            </h6>
+                        </td>
+                        <td>{{ order.amount }}</td>
+                        <td>{{ order.payment_type }}</td>
+                        <td>{{ order.date }}</td>
+                        <td>{{ order.status }}</td>
+                        <td>
+                            {% if order.status == 'pending' or order.status == 'processing' %}
+                            <form action="{% url 'core:cancel_order' order.id order_item.id %}" method="POST" name="cancel_form">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-danger btn-sm">Cancel</button>
+                                </form>
+                            {% endif %}
+                            {% if order.status == 'delivered' or order.status == 'completed' %}
+                            {% comment %} <form action="{% url 'return_order' order.id order_item.id %}" method="POST" name="cancel_form"> {% endcomment %}
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-success btn-sm">Return</button>
+                                </form>
+                            {% endif %}
+                        </td>
+                        <td>
+                            
+                        <a href="#" class="btn btn-sm btn-custom">Generate Invoice</a>
+
+                        </td>
+                    </tr>
+                {% endfor %}
+            {% endfor %}
+        </tbody>
+        
+    </table>
+   
+</div>
+
+{% endblock %}

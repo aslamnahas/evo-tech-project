@@ -1,0 +1,284 @@
+{% extends 'core/base.html' %}
+
+{% load static %}
+
+
+{% block content %}
+<style>
+    /* Add your CSS styles here */
+    .address-radio-group {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;  /* Adjust the gap between radio buttons as needed */
+    }
+
+    .address-radio-group div {
+        border: 1px solid #ccc; /* Add a border to create a box around each address */
+        padding: 10px; /* Add padding to create space within the box */
+        border-radius: 5px; /* Optional: Add border-radius for rounded corners */
+        width: 300px; /* Adjust the width of the box */
+    }
+
+    .address-radio-group label {
+        display: flex;
+        align-items: center;
+    }
+
+    .address-radio-group input {
+        margin-right: 5px;  /* Adjust the margin between the radio button and the label text as needed */
+        width: 15px; /* Adjust the width of the radio button */
+        height: 15px; /* Adjust the height of the radio button */
+    }
+</style>
+
+<div class="breadcrumb-area">
+                <div class="container">
+                    <div class="breadcrumb-content">
+                        <ul>
+                            <li><a href="{% url 'core:home' %}">Home</a></li>
+                            <li><a href="{% url 'core:cart' %}">Cart</a></li>
+                            <li class="active">Checkout</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <!-- Li's Breadcrumb Area End Here -->
+            <!--Checkout Area Strat-->
+            <div class="checkout-area pt-60 pb-30">
+                <div class="container">
+                    
+                    <div class="row">
+
+                
+                        <div class="col-lg-6 col-12">
+                            <form id="order-form" action="{%  url 'core:placeorder' %}" method="post">
+                                {% csrf_token %}
+                                <div class="checkbox-form">
+                                    <h3>Billing Details</h3>
+                                    <div class="row">
+                                      <div class="error-message">
+                                        {% if messages %}
+                                            {% for message in messages %}
+                                                <p style="font-size: 25px;" class="text-danger">{{ message }}</p>
+                                            {% endfor %}
+                                        {% endif %}
+                                       
+                                    </div>
+                                        <label for="addressDropdown"></label>
+                                        <div class="address-radio-group">
+                                            <label style="background-color: rgb(129, 129, 164); color: white;">Select an address</label>
+                                            {% for address in user_addresses %}
+                                                <div>
+                                                    <input type="radio" id="address{{ address.id }}" name="addressId" value="{{ address.id }}">
+                                                    <label for="address{{ address.id }}">
+                                                        {{ address.address_name }} - {{ address.city }}, {{ address.state }} - {{ address.pin }}, {{ address.user.username }}
+                                                    </label>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    <br>
+                                    <a href="{% url 'core:address' %}" class="btn btn-secondary btn-sm active" role="button" aria-pressed="true">Manage Address</a>
+
+                                    <br><br>
+                                    <div class="different-address">
+                                        <div class="ship-different-title">
+                                            <h3>
+                                                <label>Ship to a different address?</label>
+                                                <input id="ship-box" type="checkbox">
+                                            </h3>
+                                        </div>
+                                        <div id="ship-box-info" class="row">
+                                            <a href="{% url 'core:add_address' %}">
+                                            <button type="button" class="btn btn-primary btn-small mt-2" data-toggle="modal" data-target="#exampleModalCenters">
+                                                Add New Address
+                                            </button>
+                                        </a>
+                                        </div>
+    
+                                    </div>
+                                </div>
+                                <div class="card border-secondary mb-5 pt-3">
+                                    <div class="card-header bg-secondary border-0">
+                                        <h4 class="font-weight-semi-bold m-0 ">Payment</h4>
+                                    </div>
+                                    <div class="card-body">
+                                      
+                                        <div class="form-group">
+                                            <div class="custom-control custom-radio">
+                                                <input type="radio" class="custom-control-input" name="payment" id="directcheck" value="cod" onchange="handlePaymentSelection()">
+                                                <label class="custom-control-label" for="directcheck">COD (cash on delivery)</label>
+                                            </div>
+                                        </div>
+        
+                                        {% comment %} <div class="form-group">
+                                            <div class="custom-control custom-radio">
+                                                <input type="radio" class="custom-control-input" name="payment" id="banktransfer" value="razorpay" onchange="handlePaymentSelection()">
+                                                <label class="custom-control-label" for="banktransfer">RAZORPAY</label>
+                                            </div>
+                                        </div> {% endcomment %}
+        <!-- Your existing HTML code for the checkout page -->
+
+{% if messages %}
+<div class="messages">
+  {% for message in messages %}
+    <div class="{{ message.tags }}">
+      {{ message }}
+    </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- Continue with the rest of your HTML code -->
+
+                                    </div>
+                                   
+                                    <div class="card-footer border-secondary bg-transparent">
+                                        <button id="place-order-button" class="btn btn-lg btn-block btn-secondary font-weight-bold my-3 py-3" type="submit">Place Order</button>
+                                        {% comment %} <button id="rzp-button1" class="btn btn-lg btn-block btn-secondary font-weight-bold my-3 py-3 paywithrazorpay" type="submit">Pay with RAZORPAY</button> {% endcomment %}
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="col-lg-6 col-12">
+                            <div class="your-order">
+                                <h3>Your order</h3>
+                                <div class="your-order-table table-responsive">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th class="cart-product-name">Product</th>
+                                                <th class="cart-product-total">Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for cart_item in cart_items %}
+                                            <tr class="cart_item">
+                                              <td class="cart-product-name"> {{ cart_item.product.model }}<strong class="product-quantity"> x {{ cart_item.quantity }}</strong></td>
+                                              
+                                              {% if cart_item.product.category.category_offer %}
+                                              {% with offer_price=cart_item.product.price|add:'-'|add:cart_item.product.category.category_offer %}
+                                              <td class="cart-product-total"><span class="amount">₹{{ cart_item.product.price }} - ({{ cart_item.product.category.category_offer }}%)</span></td>
+                                              {% endwith %}
+                                              {% else %}
+                                              <td class="cart-product-total"><span class="amount">₹{{ cart_item.product.get_discounted_price }}</span></td>
+                                              {% endif %}
+                                            </tr>
+                                            {% endfor %}                                          
+                                        </tbody>
+                                        <tfoot>
+                                            <tr class="cart-subtotal">
+                                                <th>Cart Subtotal</th>
+                                                <td><span class="amount">Rs {{ subtotal }}</span></td>
+                                            </tr>
+                                            <tr class="cart-subtotal">
+                                                <th>Shipping Charge</th>
+                                                <td><span class="amount">Rs 10</span></td>
+                                            </tr>
+                                            {% if discount_amount %}
+                                            <tr class="cart-subtotal">
+                                                <th>Applied coupon</th>
+                                                <td><span class="amount"> ₹{{ discount_amount }}</span></td>
+                                            </tr>
+                                            {% endif %}
+                                            <tr class="order-total">
+                                                <th>Order Total</th>
+                                                <td><strong><span class="amount">RS {{ total }}</span></strong></td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                                <div class="payment-method">
+                                    <div class="payment-accordion">
+                                        <div id="accordion">
+                                          <div class="card">
+                                            <div class="card-header" id="#payment-1">
+                                              <h5 class="panel-title">
+                                                <a class="" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                                  Direct Bank Transfer.
+                                                </a>
+                                              </h5>
+                                            </div>
+                                            <div id="collapseOne" class="collapse show" data-parent="#accordion">
+                                              <div class="card-body">
+                                                <p>Make your payment directly into our bank account. Please use your Order ID as the payment reference. Your order won’t be shipped until the funds have cleared in our account.</p>
+                                              </div>
+                                            </div>
+                                          </div>
+                                          <div class="card">
+                                            <div class="card-header" id="#payment-2">
+                                              <h5 class="panel-title">
+                                                <a class="collapsed" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                                  Cheque Payment
+                                                </a>
+                                              </h5>
+                                            </div>
+                                            <div id="collapseTwo" class="collapse" data-parent="#accordion">
+                                              <div class="card-body">
+                                                <p>Make your payment directly into our bank account. Please use your Order ID as the payment reference. Your order won’t be shipped until the funds have cleared in our account.</p>
+                                              </div>
+                                            </div>
+                                          </div>
+                                          <div class="card">
+                                            <div class="card-header" id="#payment-3">
+                                              <h5 class="panel-title">
+                                                <a class="collapsed" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                                  PayPal
+                                                </a>
+                                              </h5>
+                                            </div>
+                                            <div id="collapseThree" class="collapse" data-parent="#accordion">
+                                              <div class="card-body">
+                                                <p>Make your payment directly into our bank account. Please use your Order ID as the payment reference. Your order won’t be shipped until the funds have cleared in our account.</p>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        </div>
+                                       
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!--Checkout Area End-->
+
+
+
+            
+
+
+            <script>
+              document.getElementById('place-order-button').addEventListener('click', function() {
+                  document.getElementById('order-form').submit();
+              });
+          </script>
+           
+             <script>
+        function handlePaymentSelection() {
+            var codRadio = document.getElementById("directcheck");
+            var placeOrderButton = document.getElementById("place-order-button");
+            {% comment %} var razorpayButton = document.getElementById("rzp-button1"); {% endcomment %}
+            console.log("Selected Payment Method:", selectedPayment);
+
+    
+            if (codRadio.checked) {
+                placeOrderButton.style.display = "block";
+                {% comment %} razorpayButton.style.display = "none"; {% endcomment %}
+            } else {
+                placeOrderButton.style.display = "none";
+                {% comment %} razorpayButton.style.display = "block"; {% endcomment %}
+            }
+        }
+    </script>
+
+       <!-- razorpay -->
+       <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+       <!-- alert-message -->
+       <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+
+                               
+                                {% endblock content %}
+
+          

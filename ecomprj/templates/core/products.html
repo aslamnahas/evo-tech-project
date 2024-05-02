@@ -154,11 +154,11 @@
                                                                 {% if i.stock > 0 %}
                                                                 <li class="add-cart addToCartBtn pl-3"><a href="{% url 'core:add_to_cart' i.id %}">Add to Cart</a></li>
 
-                                                                <li class="wishlist"><a href="###"><i class="fa fa-heart-o"></i>Add to wishlist</a></li>
+                                                                <li class="wishlist"><a href="{% url 'core:add_to_wishlist' i.id %}"><i class="fa fa-heart-o"></i>Add to wishlist</a></li>
                                                                 
                                                                 {% else %}
                                                                 
-                                                                <li class="wishlist"><a href="###"><i class="fa fa-heart-o"></i>Add to wishlist</a></li>
+                                                                <li class="wishlist"><a href="{% url 'core:add_to_wishlist' i.id %}"><i class="fa fa-heart-o"></i>Add to wishlist</a></li>
                                                                 <li><a class="quick-view" data-toggle="modal" data-target="#exampleModalCenter" href="#"><i class="fa fa-eye"></i>Quick view</a></li>
                                                                 {% endif %}
                                                             </ul>
@@ -242,11 +242,11 @@
                                                                             {% if i.stock > 0 %}
                                                                                 <li class="add-cart addToCartBtn pl-3"><a href="{% url 'core:add_to_cart' i.id %}">Add to Cart</a></li>
                                                                                 {% comment %} <li><a href="{% url 'core:product_details' i.product.id i.id %}" title="quick view" class="quick-view-btn" data-toggle="modal" data-target="#exampleModalCenter"><i class="fa fa-eye"></i></a></li> {% endcomment %}
-                                                                                <li><a class="links-details wishBtn" href="###"><i class="fa fa-heart-o"></i></a></li>
+                                                                                <li><a class="links-details wishBtn" href="{% url 'core:add_to_wishlist' i.id %}"><i class="fa fa-heart-o"></i></a></li>
                                                                             {% else %}
-                                                                                {% comment %} <p> Out of Stock </p> {% endcomment %}
+                                                                                <p> Out of Stock </p>
                                                                                 {% comment %} <li><a href="{% url 'core:product_details' i.product.id i.id %}" title="quick view" class="quick-view-btn" data-toggle="modal" data-target="#exampleModalCenter"><i class="fa fa-eye"></i></a></li> {% endcomment %}
-                                                                                <li><a class="links-details wishBtn" href="###"><i class="fa fa-heart-o"></i></a></li>
+                                                                                <li><a class="links-details wishBtn" href="{% url 'core:add_to_wishlist' i.id %}"><i class="fa fa-heart-o"></i></a></li>
                                                                             {% endif %}
                                                                            
                                                                         </ul>

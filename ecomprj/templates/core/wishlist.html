@@ -1,0 +1,93 @@
+
+{% extends 'core/base.html' %}
+
+{% load static %}
+
+
+{% block content %}
+
+<!-- Header Area End Here -->
+            <!-- Begin Li's Breadcrumb Area -->
+            <div class="breadcrumb-area">
+                <div class="container">
+                    <div class="breadcrumb-content">
+                        <ul>
+                            <li><a href="{% url 'core:home' %}">Home</a></li>
+                            <li><a href="{% url 'core:products' %}">Products</a></li>
+                            <li class="active">Wishlist</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <!-- Li's Breadcrumb Area End Here -->
+<div class="container mt-4">
+    <h2>Your Wishlist</h2>
+    <table class="table table-bordered text-center mb-0">
+        <thead class="bg-yellow text-dark">
+            <tr>
+                <th colspan="2">Products</th>
+                <th>Price</th>
+                <th>Action</th>
+                <th>Remove</th>
+                
+            </tr>
+        </thead>
+        <tbody class="align-middle">
+            {% for wishlist_item in wishlist_items %}
+                <tr id="wishlist_row_{{ wishlist_item.id }}">
+                    <td class="align-middle"><img src="{{ wishlist_item.product.image.url }}" alt="" style="width: 50px;"></td>
+                    <td class="align-middle">{{ wishlist_item.product.product_name }}</td>
+                    <td class="align-middle">
+                        {% if wishlist_item.product.category.category_offer %}
+                            ₹{{ wishlist_item.product.price }} 
+                        {% else %}
+                            ₹{{ wishlist_item.product.price }}
+                        {% endif %}
+                    </td>
+                    <td class="align-middle text-center">
+                        <a href="{% url 'core:add_to_cart' wishlist_item.product.id %}">
+                            <button class="btn btn-sm btn-secondary" type="button">Add to Cart</button>
+                        </a>
+                    </td>
+                    
+                    <td class="align-middle">
+                        <form action="{% url 'core:remove_from_wishlist' wishlist_item.id %}" method="POST" id="remove_wishlist_form_{{ wishlist_item.id }}">
+                            {% csrf_token %}
+                            <button class="btn btn-sm btn-danger" type="submit"><i class="fa fa-times"></i></button>
+                        </form>
+                    </td> 
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+
+<script>
+  function addToCart(wishlistItemId) {
+        // Trigger form submission
+        document.getElementById(`remove_wishlist_form_${wishlistItemId}`).submit();
+        // Remove the row from the wishlist table
+        document.getElementById(`wishlist_row_${wishlistItemId}`).remove();
+    }
+
+</script>
+
+<script>
+    function updateWishlistCount() {
+        fetch("{% url 'core:wishlist_count' %}")
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('wishlist-item-count').textContent = data.wishlist_count;
+            })
+            .catch(error => console.error('Error fetching wishlist count:', error));
+    }
+
+    // Call the function when the page loads
+    updateWishlistCount();
+</script>
+<!-- Wishlist Area End -->
+
+    {% endblock content %}
+    
+   

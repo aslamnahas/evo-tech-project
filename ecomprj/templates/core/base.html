@@ -162,12 +162,12 @@
                                 </form>
                                 <!-- Header Middle Searchbox Area End Here -->
                                 <!-- Begin Header Middle Right Area -->
-                                <div class="header-middle-right">
+                                <div class="header-middle-right ">
                                     <ul class="hm-menu">
                                         <!-- Begin Header Middle Wishlist Area -->
-                                        <li class="hm-wishlist">
-                                            <a href="wishlist.html">
-                                                <span class="cart-item-count wishlist-item-count">0</span>
+                                        <li class="hm-wishlist" >
+                                            <a href="{% url 'core:wishlist' %}">
+                                                <span class="cart-item-count wishlist-item-count" id="wishlist-item-count">{{ wishlist_count }}</span>
                                                 <i class="fa fa-heart-o"></i>
                                             </a>
                                         </li>
@@ -700,6 +700,21 @@
         <script src="{% static 'user/js/scrollUp.min.js' %}"></script>
         <!-- Main/Activator js -->
         <script src="{% static 'user/js/main.js' %}"></script>
+        <script>
+            function updateWishlistCount() {
+                fetch("{% url 'core:wishlist_count' %}")
+                    .then(response => response.json())
+                    .then(data => {
+                        document.getElementById('wishlist-item-count').textContent = data.wishlist_count;
+                    })
+                    .catch(error => console.error('Error fetching wishlist count:', error));
+            }
+    
+            // Call the function when the page loads
+            updateWishlistCount();
+        </script>
+        
+        
     </body>
 
 <!-- index30:23-->

@@ -1,0 +1,61 @@
+{% extends 'core/base.html' %}
+
+{% load static %}
+
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        {% for i in orders %}
+        <div class="col-md-6 mb-3">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Order Details</h5>
+                </div>
+                <div class="card-body">
+                    {% for j in i.orderitem_set.all %}
+                    <img src="{{j.image.url}}" alt="Product Image" class="product-image" style="max-width: 100px; max-height: 100px;">
+                    <h6>{{j.product.product_name}}</h6>
+                    <p>Price: {{j.product.price}}</p>
+                    <p>Quantity: {{j.quantity}}</p>
+                    <p>Order Date:{{i.date}}</p>
+                    <p>Expected Delivery: DD/MM/YYYY</p>
+                    <hr>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-3">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Order Summary</h5>
+                </div>
+                <div class="card-body">
+                    <p>Shipping: 10</p>
+                    <p>Subtotal: {{i.amount}}</p>
+                    <p>Payment Method: {{i.payment_type}}</p>
+                    <p style="color:blue;">Status: {{i.status}}</p>
+                </div>
+                <div class="card-header">
+                    <h5 class="card-title">Delivery Address</h5>
+                </div>
+                <div class="card-body">
+                    <p>Name: {{i.user.username}}</p>
+                    <p>Address: {{i.address.address_2}}</p>
+                    <p>City: {{i.address.city}}</p>
+                    <p>Phone No:{{i.customer.ph_no }}</p>
+                </div>
+                <div class="card-footer">
+                    {% if i.status == 'cancelled' %}
+                    <label style="color:red">Order cancelled</label>
+                    {% endif %}
+                    {% if i.status == 'delivered' or i.status == 'completed' %}
+                    <a href="#"><button type="button" class="btn btn-danger btn-sm">Return</button></a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock content %}

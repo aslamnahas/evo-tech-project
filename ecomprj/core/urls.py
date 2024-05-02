@@ -34,4 +34,19 @@ urlpatterns = [
      path('add_to_cart/<int:product_id>/', views.add_to_cart, name='add_to_cart'),
      path('remove_from_cart/<int:cart_item_id>/', views.remove_from_cart, name='remove_from_cart'),
 
+
+
+    path('wishlist/',views.wishlist, name='wishlist'),
+    path('addtowishlist/<int:product_id>/', views.add_to_wishlist, name='add_to_wishlist'),
+    path('remove_from_wishlist/<int:wishlist_item_id>/', views.remove_from_wishlist, name='remove_from_wishlist'),
+    path('wishlist_count/', views.wishlist_count, name='wishlist_count'),
+
+    path('checkout',views.checkout,name='checkout'),
+    path('success/',views.success,name='success'),
+    path('placeorder/',views.placeorder,name='placeorder'),
+    path('order_details/<int:id>/',views.order_details,name='order_details'),
+    # path('order/',views.order,name = 'order'),
+    path('customerorder/',views.customer_order,name = 'customer_order'),
+    path('cancel-order/<int:order_id>/<int:order_item_id>/', views.cancel_order, name='cancel_order'),
+    path('cancel_success/',views.cancel_success,name='cancel_success'),
 ]

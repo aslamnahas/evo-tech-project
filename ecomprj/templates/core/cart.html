@@ -15,7 +15,8 @@
                     <div class="breadcrumb-content">
                         <ul>
                             <li><a href="{% url 'core:home' %}">Home</a></li>
-                            <li class="active">Shopping Cart</li>
+                            <li><a href="{% url 'core:products' %}">Products</a></li>
+                            <li class="active"> Cart</li>
                         </ul>
                     </div>
                 </div>
@@ -42,7 +43,7 @@
                                             {% for cart_item in cart_items %}
                                             <tr>
                                                 <td class="align-middle"><img src="{{ cart_item.product.image.url }}" alt="" style="width: 50px;"></td>
-                                                <td class="align-middle"> {{ cart_item.product.product_name }}</td>
+                                                <td class="align-middle"> {{ cart_item.product.model }}</td>
                                                 <td class="align-middle">
                                                     {% if cart_item.product.get_discounted_price != cart_item.product.price %}
                                                         ₹{{ cart_item.product.get_discounted_price }} 
@@ -59,6 +60,7 @@
                                                         <div class="input-group-append">
                                                             <button onclick="updateQuantity('{{ cart_item.product.id }}', 'increase')" class="btn btn-outline-primary btn-sm" type="button">+</button>
                                                         </div>
+                                                        
                                                     </div>
                                                                                                                                                          
                                                     
@@ -161,9 +163,9 @@
                                                 <li>Total <span id="total-price">{{ total }}</span></li>                                     
                                             </ul>
                                             {% if cart_items %}
-                                            {% comment %} <a href="{% url 'checkout' %}">Proceed to checkout</a> {% endcomment %}
+                                            <a href="{% url 'core:checkout' %}">Proceed to checkout</a>
                                             {% else %}
-                                            <a href="">Cart is empty</a>
+                                            <a href="##">Cart is empty</a>
                                             {% endif %}
                                         </div>
                                     </div>

@@ -29,6 +29,7 @@ from django.http import JsonResponse
 import json
 from django.contrib.auth.models import AnonymousUser
 from django.views.decorators.csrf import csrf_exempt
+from django.http import Http404
 # def home(request):
 #     return render(request,'core/home.html')
 
@@ -62,7 +63,7 @@ def send_otp(email):
 @never_cache
 def signupPage(request):
     if 'email' in request.session:
-        return redirect('home')
+        return redirect('core:home')
 
     if request.method == 'POST':
         email     =    request.POST.get('email')
@@ -505,6 +506,9 @@ def cart(request):
     total = total_without_coupon_discount 
     request.session['cart_subtotal'] = str(subtotal)  
     request.session['cart_total'] = str(total)
+    # request.session['user'] = user
+    # request.session['email'] = request.email
+    # print(request.email,"kkkkkkkkkkkeeeeeeeee")
 
     # coupons = Coupon.objects.all()
 
@@ -587,3 +591,266 @@ def remove_from_cart(request, cart_item_id):
             print("Cart doesn't Exist!")
         
         return redirect('core:cart')
+
+
+
+#favuraite all ==================================
+
+@login_required(login_url='login') 
+def wishlist(request):
+    user = request.user
+    if isinstance(user, AnonymousUser):
+        return redirect('login')  
+    else:
+        wishlist_items = Wishlist.objects.filter(user=user)
+        wishlist_count = wishlist_items.count()
+
+    context = {
+        'wishlist_items': wishlist_items,
+        'wishlist_count': wishlist_count,
+    }
+
+    return render(request, 'core/wishlist.html', context)
+
+
+
+
+
+def wishlist_count(request):
+    user = request.user
+    wishlist_items = Wishlist.objects.filter(user=user)
+    wishlist_count = wishlist_items.count()
+
+    return JsonResponse({'wishlist_count': wishlist_count})
+
+def add_to_wishlist(request, product_id):
+    try:
+        product = Product.objects.get(id=product_id)
+    except Product.DoesNotExist:
+        return redirect('product_not_found')
+    user = request.user
+    if isinstance(user, AnonymousUser):
+            return redirect('login')
+    else:
+        wishlist, created = Wishlist.objects.get_or_create(product=product, user=user)
+    wishlist.save()
+
+    return redirect('core:wishlist')
+
+
+@login_required(login_url='login')
+def remove_from_wishlist(request, wishlist_item_id):
+    wishlist_item = get_object_or_404(Wishlist, id=wishlist_item_id, user=request.user)
+    wishlist_item.delete()
+    return redirect('core:wishlist')
+
+#order manag==================================================================
+
+
+@never_cache
+# @cache_control(no_cache=True, must_revalidate=True, no_store=True)
+def checkout(request):
+        print('////////////////////////')
+    # if 'email' in request.session:
+    #     print('email found in session')
+    #     email = request.session['email']
+    #     print('Email:', email)
+        user = request.user
+    #     print('User:', user)
+        cart_items = Cart.objects.filter(user=user)
+        subtotal = 0
+
+        for cart_item in cart_items:
+            if cart_item.quantity > cart_item.product.stock:
+                messages.warning(
+                    request, f"{cart_item.product.product_name} is out of stock."
+                )
+                print("hhhhhh")
+                cart_item.quantity = cart_item.product.stock
+                cart_item.save()
+                return redirect('core:cart')
+
+        
+
+        for cart_item in cart_items:
+            if cart_item.product:
+                itemprice2 = (cart_item.product.price ) * (cart_item.quantity)
+                subtotal += itemprice2  
+            else:
+                itemprice2 = (cart_item.product.price) * (cart_item.quantity)
+                subtotal += itemprice2  
+
+        shipping_cost = 10 
+        discount = request.session.get('discount', 0)
+        if discount:
+            total = subtotal + shipping_cost - discount if subtotal else 0
+            print(discount,"dddddddissssssss")
+        else:
+            total = subtotal + shipping_cost  if subtotal else 0
+        
+        subtotal = Decimal(request.session.get('cart_subtotal', 0))
+        total = Decimal(request.session.get('cart_total', 0)) - discount
+        print(subtotal)
+        print(total)
+        request.session['subtotal'] = str(subtotal)
+        request.session['total'] = str(total)
+
+        user_addresses = Address.objects.filter(user=request.user)
+
+        context = {
+            'cart_items': cart_items,
+            'subtotal': subtotal,
+            'total': total,
+            'user_addresses': user_addresses,
+            'discount_amount': discount,
+            'itemprice': itemprice2  
+        }
+        return render(request, 'core/checkout.html', context)
+    # else:
+    #      return redirect('core:signupPage')
+
+@login_required
+def placeorder(request):
+    user = request.user
+    cart_items = Cart.objects.filter(user=user)
+
+    shipping_cost = 10
+    discount = request.session.get("discount", 0)
+    subtotal = 0
+
+    address_id = request.POST.get("addressId")
+    # if not payment:
+    #     messages.info(request,"choose any pament method!! ")
+    #     return redirect("core:checkout")
+    if not address_id:
+        messages.info(request, "Input Address!!!")
+        return redirect("core:checkout")
+
+    address = Address.objects.get(id=address_id)
+    payment = request.POST.get("payment")
+    print(payment,'lllllllllllllllllllllllllllllllwwwwwwwwwweeeeeeeeeeeewwwwwwee')
+    if not payment:
+        messages.info(request,"choose any pament method!! ")
+        return redirect("core:checkout")
+        
+    for cart_item in cart_items:
+        product = cart_item.product
+
+        if cart_item.quantity > product.stock:
+            messages.error(request, f"Insufficient stock for {product.product_name}.")
+            return redirect("core:checkout")
+
+        item_price = cart_item.product.price * cart_item.quantity
+
+        # Check for any offer/discount for the product
+        # effective_offer = 0
+        # if cart_item.product.price:
+        # effective_offer = cart_item.product.price
+
+        # Calculate the discount amount
+        # discount_am count_amount
+
+        subtotal += item_price
+
+        order = Order.objects.create(
+            user=user,
+            address=address,
+            amount=subtotal + shipping_cost,
+            payment_type=payment,
+        )
+
+        product.stock -= cart_item.quantity
+        product.save()
+
+        order_item = OrderItem.objects.create(
+            order=order,
+            product=product,
+            quantity=cart_item.quantity,
+            image=product.image,
+        )
+
+    if discount:
+        total = subtotal + shipping_cost - discount
+    else:
+        total = subtotal + shipping_cost
+
+    cart_items.delete()
+    return redirect("core:success")
+
+
+
+
+
+def success(request):
+    orders = Order.objects.order_by("-id")[:1]
+    context = {
+        "orders": orders,
+    }
+    return render(request, "core/placeorder.html", context)
+
+
+def order_details(request, id):
+    orders = Order.objects.filter(id=id)
+    print(orders)
+    context = {
+        "orders": orders,
+    }
+    return render(request, "core/order_details.html", context)
+
+def customer_order(request):
+    # if "email" in request.session:
+        user = request.user
+        orders = Order.objects.filter(user=user).order_by("-id")
+        for order in orders:
+            order_items = order.order_items.all()
+ 
+        context = {
+            "orders": orders,
+        }
+        return render(request, "core/customer_order.html", context)
+    # else:
+    #     return redirect("core:home")
+
+
+
+def cancel_order(request, order_id, order_item_id):
+    user = request.user
+    usercustm = Customer.objects.get(email=user)
+    try:
+        order = Order.objects.get(id=order_id)
+        order_item = OrderItem.objects.get(id=order_item_id, order=order)
+    except Order.DoesNotExist or OrderItem.DoesNotExist:
+        return render(request, 'order_not_found.html')
+
+    if order.status in ["completed", "processing","pending"]:
+        wallet = Wallet.objects.create(
+            user=user,
+            order=order,
+            amount=order_item.product.price * order_item.quantity,
+            status="Credited",
+        )
+        wallet.save()
+        product = order_item.product
+        product.stock += order_item.quantity
+        product.save()
+        usercustm.wallet_bal += order_item.product.price * order_item.quantity
+        usercustm.save()
+    order_item.delete()
+    if order.order_items.count() == 0:
+        order.status = "cancelled"
+        order.save()
+
+    return redirect("core:order_details", order_id)
+
+
+
+
+def cancel_success(request):
+    print("successsssssssssssssssssss")
+    orders = Order.objects.order_by("-id")[:1]
+    context = {
+        "orders": orders,
+    }
+    return render(request, "core/cancel_order.html", context)
+
+

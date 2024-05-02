@@ -26,6 +26,7 @@
                     <div class="breadcrumb-content">
                         <ul>
                             <li><a href="{% url 'core:home' %}">Home</a></li>
+                            <li><a href="{% url 'core:products' %}">Products</a></li>
                             <li class="active">Single Product Normal</li>
                         </ul>
                     </div>
@@ -132,7 +133,7 @@
                                             
                                             {% comment %} {% endif %} {% endcomment %}
 
-                                            <a class="wishlist-btn" href="#"><i class="fa fa-heart-o"></i></a>                                        
+                                            <a class="wishlist-btn" href="{% url 'core:add_to_wishlist' product.id %}"><i class="fa fa-heart-o"></i></a>                                        
                                     </div>                                                           
                                     <div class="product-additional-info">
                                         <div class="product-social-sharing">
