@@ -25,6 +25,7 @@ from email.mime.multipart import MIMEMultipart
 from django.views.decorators.cache import never_cache,cache_control
 from django.http.response import JsonResponse
 from . models import *
+from django.http import JsonResponse, HttpResponseRedirect
 from django.http import JsonResponse
 import json
 from django.contrib.auth.models import AnonymousUser
@@ -710,73 +711,68 @@ def checkout(request):
     #      return redirect('core:signupPage')
 
 @login_required
-def placeorder(request):
-    user = request.user
-    cart_items = Cart.objects.filter(user=user)
+def place_order(request):
+    if request.method == 'POST':
+        user = request.user
+        address_id = request.POST.get('addressId')
+        payment_type = request.POST.get('payment')  
 
-    shipping_cost = 10
-    discount = request.session.get("discount", 0)
-    subtotal = 0
-
-    address_id = request.POST.get("addressId")
-    # if not payment:
-    #     messages.info(request,"choose any pament method!! ")
-    #     return redirect("core:checkout")
-    if not address_id:
-        messages.info(request, "Input Address!!!")
-        return redirect("core:checkout")
-
-    address = Address.objects.get(id=address_id)
-    payment = request.POST.get("payment")
-    print(payment,'lllllllllllllllllllllllllllllllwwwwwwwwwweeeeeeeeeeeewwwwwwee')
-    if not payment:
-        messages.info(request,"choose any pament method!! ")
-        return redirect("core:checkout")
+        # Check if address is selected
+        if not address_id:
+            messages.error(request, "Please select an address.")
+            return HttpResponseRedirect(reverse('core:checkout')) 
         
-    for cart_item in cart_items:
-        product = cart_item.product
+        if not payment_type:
+            messages.error(request, "Please select payment method.")
+            return HttpResponseRedirect(reverse('core:checkout'))
 
-        if cart_item.quantity > product.stock:
-            messages.error(request, f"Insufficient stock for {product.product_name}.")
-            return redirect("core:checkout")
+        cart_items = Cart.objects.filter(user=user, quantity__gt=0)
+        in_stock_items = []
+        out_of_stock_items = []
 
-        item_price = cart_item.product.price * cart_item.quantity
+        for cart_item in cart_items:
+            if cart_item.quantity <= cart_item.product.stock:
+                in_stock_items.append(cart_item)
+            else:
+                out_of_stock_items.append(cart_item)
 
-        # Check for any offer/discount for the product
-        # effective_offer = 0
-        # if cart_item.product.price:
-        # effective_offer = cart_item.product.price
+        # If any item is out of stock, return to checkout page
+        if out_of_stock_items:
+            messages.warning(request, "Some items are out of stock. Please remove them from your cart.")
+            return HttpResponseRedirect(reverse('core:cart'))
 
-        # Calculate the discount amount
-        # discount_am count_amount
+        total_offer_price = 0
+        total_price = 0
+        total_quantity = 0
+        for cart_item in in_stock_items:
+            # Create order objects within the loop
+            order = Order.objects.create(
+                user=user,
+                address_id=address_id,
+                product=cart_item.product,
+                amount=cart_item.product.price,
+                payment_type=payment_type, 
+                status='pending',
+                quantity=cart_item.quantity,
+            )
+       
+            total_offer_price += cart_item.product.price
+            total_price += cart_item.product.price * cart_item.quantity
+            total_quantity += cart_item.quantity
 
-        subtotal += item_price
+            cart_item.product.stock -= cart_item.quantity
+            cart_item.product.save()
+            cart_item.delete()
 
-        order = Order.objects.create(
-            user=user,
-            address=address,
-            amount=subtotal + shipping_cost,
-            payment_type=payment,
-        )
+            # You can move this code block here if you want to create order items for each cart item
+            OrderItem.objects.create(
+                order=order,
+                product=cart_item.product,
+                quantity=cart_item.quantity,
+                image=cart_item.product.image,  # Use cart item's product's image
+            )
 
-        product.stock -= cart_item.quantity
-        product.save()
-
-        order_item = OrderItem.objects.create(
-            order=order,
-            product=product,
-            quantity=cart_item.quantity,
-            image=product.image,
-        )
-
-    if discount:
-        total = subtotal + shipping_cost - discount
-    else:
-        total = subtotal + shipping_cost
-
-    cart_items.delete()
-    return redirect("core:success")
-
+        return redirect("core:success")
 
 
 
@@ -790,59 +786,68 @@ def success(request):
 
 
 def order_details(request, id):
-    orders = Order.objects.filter(id=id)
-    print(orders)
+    product = get_object_or_404(Order, id=id)
     context = {
-        "orders": orders,
+        'product' : product
     }
     return render(request, "core/order_details.html", context)
-
 def customer_order(request):
     # if "email" in request.session:
-        user = request.user
-        orders = Order.objects.filter(user=user).order_by("-id")
-        for order in orders:
-            order_items = order.order_items.all()
+        # user = request.user
+        user_orders= Order.objects.all().order_by('-id')
+
+        # Accumulate all order items for all orders
+        # all_order_items = []
+        # for order in orders:
+        #     order_items = order.order_items.all()
+        #     all_order_items.extend(order_items)
  
-        context = {
-            "orders": orders,
-        }
-        return render(request, "core/customer_order.html", context)
+        # context = {
+        #     "orders": orders,
+        #     "all_order_items": all_order_items,  # Pass all_order_items to the template context
+        # }
+        return render(request, "core/customer_order.html", {'orders': user_orders})
+
     # else:
     #     return redirect("core:home")
 
+@login_required
+def cancel(request, order_id):
+    if request.method == 'POST':
+        # Get the order object based on the order_id
+        order = get_object_or_404(Order, pk=order_id)
 
+        # Check if the status should be changed to Cancelled
+        if order.status in ['pending', 'processing', 'shipped']:
+            order.status = 'cancelled'
+        else:
+            order.status = 'returned'
 
-def cancel_order(request, order_id, order_item_id):
-    user = request.user
-    usercustm = Customer.objects.get(email=user)
-    try:
-        order = Order.objects.get(id=order_id)
-        order_item = OrderItem.objects.get(id=order_item_id, order=order)
-    except Order.DoesNotExist or OrderItem.DoesNotExist:
-        return render(request, 'order_not_found.html')
+        variant = order.product
+        variant.stock += order.quantity
+        variant.save()
+        # Return amount to user's wallet
+        user = request.user
+        # try:
+        #     # Retrieve user's wallet
+        #     wallet = Wallet.objects.get(user=user)
+        # except Wallet.DoesNotExist:
+            # If wallet doesn't exist, create one for the user
+        wallet = Wallet.objects.create(user=user)
 
-    if order.status in ["completed", "processing","pending"]:
-        wallet = Wallet.objects.create(
-            user=user,
-            order=order,
-            amount=order_item.product.price * order_item.quantity,
-            status="Credited",
-        )
-        wallet.save()
-        product = order_item.product
-        product.stock += order_item.quantity
-        product.save()
-        usercustm.wallet_bal += order_item.product.price * order_item.quantity
-        usercustm.save()
-    order_item.delete()
-    if order.order_items.count() == 0:
-        order.status = "cancelled"
-        order.save()
+        # Add the amount of cancelled order to the wallet balance if order via razorpay
+        if order.payment_type == 'razorpay' or order.payment_type == 'wallet':
+            wallet.balance += Decimal(order.amount)
+            wallet.save()
 
-    return redirect("core:order_details", order_id)
+        order.save()  # Save the updated status
 
-
+        # Redirect to the same page or any desired page after status change
+        return redirect('core:customer_order')  # Assuming you have a URL named 'orders' defined in your urls.py file
+    else:
+        # Handle GET requests appropriately, if needed
+        # For now, let's redirect to the 'orders' page
+        return redirect('core:customer_order')
 
 
 def cancel_success(request):
@@ -854,3 +859,9 @@ def cancel_success(request):
     return render(request, "core/cancel_order.html", context)
 
 
+def restock_products(order):
+    order_items = OrderItem.objects.filter(order=order)
+    for order_item in order_items:
+        product = order_item.product
+        product.stock += order_item.quantity
+        product.save()
