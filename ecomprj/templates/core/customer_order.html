@@ -75,7 +75,7 @@
                                                             <button type="submit" class="btn btn-danger">Cancel</button>
                                                         </form>
                                                     {% elif i.status == 'completed' or i.status == 'delivered' %}
-                                                        {% comment %} <form method="post" action="{% url 'main_app:cancel' order_id=i.id %}"> {% endcomment %}
+                                                        <form method="post" action="{% url 'core:cancel' order_id=i.id %}">
                                                             {% csrf_token %}
                                                             <button type="submit" class="btn btn-success">Return</button>
                                                         </form>

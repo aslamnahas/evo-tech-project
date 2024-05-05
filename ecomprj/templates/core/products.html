@@ -50,10 +50,10 @@
                 <div class="container">
                     <div class="row">
                         <div class="col-lg-9 order-1 order-lg-2">
-                            <!-- Begin Li's Banner Area -->
+                            <!-- Begin Li's Banner Area -->                 
                             <div class="single-banner shop-page-banner">
                                 <a href="#">
-                                    {% comment %} <img src="{% static 'main/images/bg-banner/2.jpg' %}" alt="Li's Static Banner"> {% endcomment %}
+                                    <img src="{% static 'user/images/bg-banner/2.jpg' %}" alt="Li's Static Banner">
                                 </a>
                             </div>
                             <!-- Li's Banner Area End Here -->
@@ -72,7 +72,7 @@
                                         <span> </span>
                                     </div>
                                 </div>
-                                {% comment %} <form method="get" action="{% url 'main_app:sort' %}"> {% endcomment %}
+                                <form method="get" action="{% url 'core:sort' %}">
                                     <div class="product-select-box">
                                         <div class="product-short">
                                             <p>Sort By:</p>

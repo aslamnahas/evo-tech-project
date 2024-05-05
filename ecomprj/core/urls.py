@@ -20,6 +20,7 @@ urlpatterns = [
 
      path('profile/',views.profile,name='profile'),
      path('manage_profile/',views.manage_profile,name='manage_profile'),
+     path('change_password/', views.change_password, name='change_password'),
    
   
      path('address/',views.address,name='address'),
@@ -52,6 +53,9 @@ urlpatterns = [
 
     path('order/',views.order,name = 'order'),
     path('update_order/', views.updateorder, name='update_order'),
-    
+    path('return-order/<int:order_id>/<int:order_item_id>/', views.return_order, name='return_order'),
+
+    path('sort/',views.sort,name='sort'),
+    path('search/', views.product_search, name='product_search'),
  
 ]

@@ -144,20 +144,11 @@
                             </div>
                             <!-- Header Logo Area End Here -->
                             <!-- Begin Header Middle Right Area -->
-                            <div class="col-lg-9 pl-0 ml-sm-15 ml-xs-15">
+                            <div class="col-lg-9'  pl-0 ml-sm-15 ml-xs-15">
                                 <!-- Begin Header Middle Searchbox Area -->
-                                <form action="#" class="hm-searchbox">
-                                    <select class="nice-select select-search-category">
-                                        <option value="0">All</option>                         
-                                        <option value="10">Laptops</option>                     
-                                        <option value="17">- -  Tv</option>                    
-                                        <option value="20">- - - -  Mobile Phone</option>                     
-                                        <option value="21">- - - -  Speakers</option>                        
-                                        <option value="22">- - - -  Watch</option>                
-                                       
-                                        {% comment %} <option value="16">Accessories</option> {% endcomment %}
-                                    </select>
-                                    <input type="text" placeholder="Enter your search key ...">
+                                <form action="{% url 'core:product_search' %}" method="POST" class="hm-searchbox">
+                                    {% csrf_token %}
+                                    <input type="text" name="searched" placeholder="Enter your search key ..." value="{{ query }}">
                                     <button class="li-btn" type="submit"><i class="fa fa-search"></i></button>
                                 </form>
                                 <!-- Header Middle Searchbox Area End Here -->

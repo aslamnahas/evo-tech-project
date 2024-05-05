@@ -32,6 +32,8 @@ from django.contrib.auth.models import AnonymousUser
 from django.views.decorators.csrf import csrf_exempt
 from django.http import Http404
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.contrib.auth import update_session_auth_hash
+from django.db.models import Q
 # def home(request):
 #     return render(request,'core/home.html')
 
@@ -442,6 +444,42 @@ def delete_address(request,id):
     data = Address.objects.get(id=id) 
     data.delete()  
     return redirect('core:address')
+
+
+
+@login_required
+def change_password(request):
+    if request.method == 'POST':
+        old_password = request.POST.get('old')
+        new_password1 = request.POST.get('new_password1')
+        new_password2 = request.POST.get('new_password2')
+
+        user = request.user
+
+        # Check if the user is authenticated (not AnonymousUser)
+        if not user.is_anonymous:
+            # Check if the old password matches the user's current password
+            if user.check_password(old_password):
+                # Check if the new passwords match
+                if new_password1 == new_password2:
+                    # Set the new password for the user
+                    user.set_password(new_password1)
+                    user.save()
+
+                    # Update the session to prevent the user from being logged out
+                    update_session_auth_hash(request, user)
+
+                    messages.success(request, 'Password reset successful.')
+                    return redirect('core:profile')
+                else:
+                    messages.error(request, 'New password and confirm password do not match.')
+            else:
+                messages.error(request, 'Old password is incorrect.')
+        else:
+            messages.error(request, 'User is not authenticated.')
+
+    return redirect('core:profile')
+
 
 
 
@@ -924,16 +962,16 @@ from django.utils import timezone
 def handle_cancellation(order):
     if order.payment_type == 'razorpay':
         order_items = order.order_items.all()
-        total_amount = sum(order_item.product.price * order_item.quantity for order_item in order_items)
+        # total_amount = sum(order_item.product.price * order_item.quantity for order_item in order_items)
 
-        wallet = Wallet.objects.create(
-            user=order.user,
-            order=order,
-            amount=total_amount,
-            status="Credited",
-            created_at=timezone.now(),
-        )
-        wallet.save()
+        # wallet = Wallet.objects.create(
+        #     user=order.user,
+        #     order=order,
+        #     amount=total_amount,
+        #     status="Credited",
+        #     created_at=timezone.now(),
+        # )
+        # wallet.save()
 
         for order_item in order_items:
             product = order_item.product
@@ -942,3 +980,81 @@ def handle_cancellation(order):
 
             order.user.wallet_bal += order_item.product.price * order_item.quantity
             order.user.save()
+
+
+def return_order(request, order_id, order_item_id):
+    user = request.user
+    usercustm = Customer.objects.get(email=user)
+    try:
+        order = Order.objects.get(id=order_id)
+        order_item = OrderItem.objects.get(id=order_item_id, order=order)
+    except Order.DoesNotExist or OrderItem.DoesNotExist:
+        return render(request, 'order_not_found.html')
+
+    # if order.status in ["completed", "delivered"]:
+    #     wallet = Wallet.objects.create(
+    #         user=user,
+    #         order=order,
+    #         amount=order_item.product.price * order_item.quantity,
+    #         status="Credited",
+    #     )
+    #     wallet.save()
+    product = order_item.product
+    product.stock += order_item.quantity
+    product.save()
+    usercustm.wallet_bal += order_item.product.price * order_item.quantity
+    usercustm.save()
+    order_item.delete()
+    if order.order_items.count() == 0:
+        order.status = "Return successful"
+        order.save()
+
+    return redirect("core:order_details", order_id=order_id)
+
+
+
+
+def sort(request):
+    products = Product.objects.filter(deleted=False).order_by('-id')  # Retrieve all products initially
+
+    # Sorting logic
+    sort_by = request.GET.get('sort_by')
+    if sort_by:
+        if sort_by == 'price+':
+            products = products.order_by('price')
+        elif sort_by == 'price-':
+            products = products.order_by('-price')
+        elif sort_by == 'name+':
+            products = products.order_by('model')
+        elif sort_by == 'release_date-':
+            products = products.order_by('-id')
+
+    return render(request, 'core/products.html', {'products': products})
+
+
+
+def product_search(request):
+    if request.method == "POST":
+        searched = request.POST.get('searched')
+
+        # Split the searched term into individual words
+        search_terms = searched.split()
+
+        # Initialize an empty Q object to build the query dynamically
+        q_objects = Q()
+
+        # Iterate through each search term and construct the query
+        for term in search_terms:
+            q_objects |= Q(model__icontains=term) | Q(color__icontains=term)
+
+        # Filter products based on the constructed query
+        products = Product.objects.filter(q_objects).distinct()
+
+        context = {
+            'products': products,
+        }
+        return render(request, 'core/products.html', context)
+
+    return redirect('core:home')
+
+

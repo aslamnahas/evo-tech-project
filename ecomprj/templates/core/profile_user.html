@@ -19,7 +19,7 @@
         <div class="row">
             <div class="col-md-4">
                 <div class="profile-img" style="margin: 30px;">
-                    <img src="{% static 'main/images/profile_photo/profile.png' %}" alt="Li's Product Image" style="width: 150px;">
+                    <img src="{% static 'user\images\a-user.png' %}" alt="Li's Product Image" style="width: 150px;">
                 </div>
                 <br>
                 <br>
@@ -81,12 +81,78 @@
                     </div>
                     <a href="{% url 'core:manage_profile' %}" class="btn btn-secondary btn-lg active" role="button" aria-pressed="true">Manage Profile</a>
                     <a href="{% url 'core:address' %}" class="btn btn-secondary btn-lg active" role="button" aria-pressed="true">Manage Address</a>
+                    {% comment %} <a href="{% url 'core:change_password' %}" class="btn btn-secondary btn-lg active" role="button" aria-pressed="true">Cart</a> {% endcomment %}
 
                 </div>
             </div>
         </div>
     </form>
+      <div class="form-group">                           
+                                <button style="text-decoration: underline;" type="button" class="btn bg-white" data-toggle="modal" data-target="#exampleModalLongs">
+                                    Change Password
+                                </button>
+                            </div> 
+                        </div>
+                        
+                       
+                    </div>
+                    {% comment %} <a href="{% url 'core:manage_profile' %}" class="btn btn-secondary btn active" role="button" aria-pressed="true">Edit profile</a> {% endcomment %}
+                    {% for message in messages %}
+                    <div id="success-message" class="alert alert-success">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+                
+                <script>
+                $(document).ready(function() {
+                    // Set a timeout to fade out the success message after 3000 milliseconds (3 seconds)
+                    setTimeout(function() {
+                        $("#success-message").fadeOut("slow");
+                    }, 3000);
+                });
+                </script>
+                   </div>
+                
+            </div>
+        </div>
+        
+    </form>
+
+    <div class="modal fade" id="exampleModalLongs" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLongTitle">Change Password</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+             
+                <form method="POST" action="{% url 'core:change_password' %}">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <label>Old Password</label>
+                        <input name="old" type="password" class="form-control" required>
+                
+                        <label>New Password</label>
+                        <input name="new_password1" type="password" class="form-control" required>
+                
+                        <label>Confirm Password</label>
+                        <input name="new_password2" type="password" class="form-control" required>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Save changes</button>
+                    </div>
+                </form>
+            </div>
+          
+          </div>
+        </div>
+      </div>
+    
+
 </div>
-<br>
-<br>
+
 {% endblock content %}
