@@ -31,6 +31,7 @@ import json
 from django.contrib.auth.models import AnonymousUser
 from django.views.decorators.csrf import csrf_exempt
 from django.http import Http404
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 # def home(request):
 #     return render(request,'core/home.html')
 
@@ -865,3 +866,79 @@ def restock_products(order):
         product = order_item.product
         product.stock += order_item.quantity
         product.save()
+
+
+
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+@never_cache
+def order(request):
+    user = request.user
+    
+      
+    orders = Order.objects.all().order_by("-id")
+
+    paginator = Paginator(orders, per_page=15)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        "orders": page_obj,
+        'user':user
+    }
+    return render(request, "adminside/orders.html", context)
+    # else:
+        # return redirect("adminside:dashboard")
+
+
+
+
+def updateorder(request):
+    if request.method == "POST":
+        order_id = request.POST.get("order_id")
+        status = request.POST.get("status")
+        new_status = request.POST.get("status")
+        order = get_object_or_404(Order, id=order_id)
+
+        try:
+            order = Order.objects.get(id=order_id)
+        except Order.DoesNotExist:
+            return redirect("order")
+        if new_status == 'cancelled':
+            handle_cancellation(order)
+
+        order.status = status
+        order.save()
+        messages.success(request, "Order status updated successfully.")
+
+        return redirect("core:order")
+    
+    return redirect("adminside:dashboard")
+
+
+
+
+
+from decimal import Decimal
+from django.utils import timezone
+
+def handle_cancellation(order):
+    if order.payment_type == 'razorpay':
+        order_items = order.order_items.all()
+        total_amount = sum(order_item.product.price * order_item.quantity for order_item in order_items)
+
+        wallet = Wallet.objects.create(
+            user=order.user,
+            order=order,
+            amount=total_amount,
+            status="Credited",
+            created_at=timezone.now(),
+        )
+        wallet.save()
+
+        for order_item in order_items:
+            product = order_item.product
+            product.stock += order_item.quantity
+            product.save()
+
+            order.user.wallet_bal += order_item.product.price * order_item.quantity
+            order.user.save()

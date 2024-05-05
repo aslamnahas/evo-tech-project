@@ -150,9 +150,9 @@
                         <li {% if request.path == '/adminside/products/' %}class="active"col{% endif %}>
                             <a href="{% url 'adminside:products' %}"><i class="fa fa-calendar"></i> <span>Products</span></a>
                         </li>
-                        {% comment %} <li {% if request.path == '/adminside/brands/' %}class="active"{% endif %}>
-                            <a href="{% url 'adminside:brands' %}"><i class="fa fa-calendar-check-o"></i> <span>Brand</span></a>
-                        </li> {% endcomment %}
+                         <li {% if request.path == '/adminside/brands/' %}class="active"{% endif %}>
+                            <a href="{% url 'core:order' %}"><i class="fa fa-calendar-check-o"></i> <span>Order</span></a>
+                        </li> 
                     </ul>
                 </div>
             </div>

@@ -1,0 +1,110 @@
+{% extends 'adminside/header.html' %}
+{% load static %}
+{% block content %}
+<div class="content">
+	<div class="row">
+		<div class="col-sm-4 col-3">
+			<h4 class="page-title">Orders List</h4>
+		</div>
+		<div class="col-sm-12 col-9 text-left m-b-20 ml-3">
+			<a href="" class="btn btn btn-primary btn-rounded float-right">
+					 Orders List</a>
+		</div>
+            {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-success">{{ message }}</div>
+            {% endfor %}
+            {% endif %} 
+	</div>
+	<div class="row">
+		<div class="col-md-12 pr-2">
+			<div class="table-responsive">
+				<table class="table table-striped custom-table">
+					<thead>
+						<tr>
+							<th scope="col" class="text-center">Username</th>
+							<th scope="col" class="text-center">Order Id</th>
+                            <th scope="col" class="text-center">Image</th>
+							<th scope="col" class="text-center">Quantity</th>
+							<th scope="col" class="text-center">Amount</th>
+                            <th scope="col" class="text-center">Address</th>
+							<th scope="col" class="text-center">Payment Type</th>
+                            <th scope="col" class="text-center">Date</th>
+
+							<th scope="col" class="text-center">Status</th>
+						</tr>
+					</thead>
+
+					<tbody>
+                        {% for order in orders %}
+                        {% for order_item in order.order_items.all %}
+                            <tr {% if order.status == 'cancelled' %}style="text-decoration: line-through; background-color: #ffcccc;"{% endif %}>  
+                                <td>{{ order.user.username }}</td>
+                                <td>
+                                    <h6 class="fw-semibold mb-1">
+                                        <a href="#">{{ order.id }}</a>
+                                    </h6>
+                                </td>
+                                <td class="border-bottom-0">
+                                    <div class="mb-2">
+                                        <img src="{{ order_item.image.url }}" alt="" width="60">
+                                    </div>
+                                </td>
+                                <td class="border-bottom-0">
+                                    <h6 class="fw-semibold mb-1">
+                                        {{ order_item.product.product_name }} (x{{ order_item.quantity }})
+                                    </h6>
+                                </td>
+                                <!-- <td>{{ order_item.product.price }}</td> -->
+                                <td>{{ order.amount }}</td>
+                                <td>{{ order.address.address_1 }} {{ order.address.address_2 }}<br>{{ order.address.city }}, {{ order.address.state }} {{ order.address.pin }}<br>{{ order.address.country }}</td>
+                                <td>{{ order.payment_type }}</td>
+                                <td>{{ order.date }}</td>
+
+                                <td>
+                                    <form action="{% url 'core:update_order' %}" method="POST">
+                                        {% csrf_token %}
+                                        <select name="status" id="status">
+                                            <!-- Your status options here -->
+                                            <option value="pending" {% if order.status == 'pending' %}selected{% endif %}>Pending</option>
+                                            <option value="processing" {% if order.status == 'processing' %}selected{% endif %}>Processing</option>
+                                            <option value="shipped" {% if order.status == 'shipped' %}selected{% endif %}>Shipped</option>
+                                            <option value="delivered" {% if order.status == 'delivered' %}selected{% endif %}>Delivered</option>
+                                            <option value="completed" {% if order.status == 'completed' %}selected{% endif %}>Completed</option>
+                                            <option value="cancelled" {% if order.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                                            <option value="refunded" {% if order.status == 'refunded' %}selected{% endif %}>Refunded</option>
+                                            <option value="on_hold" {% if order.status == 'on_hold' %}selected{% endif %}>On Hold</option>
+                                        </select>
+                                        <br>
+                                        <input type="hidden" name="order_id" value="{{ order.id }}">
+                                        <button style="color: green;" type="submit">Update</button>
+                                    </form>
+                                </td>
+                                 
+                            </tr>
+                        {% endfor %}
+                    {% endfor %}
+                    
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+ <!-- Pagination -->
+ <div class="pagination">
+    {% if orders.has_previous %}
+        <a href="?page=1">&laquo; First</a>
+        <a href="?page={{ orders.previous_page_number }}">Previous</a>
+    {% endif %}
+
+    <span class="current-page">{{ orders.number }}</span>
+
+    {% if orders.has_next %}
+        <a href="?page={{ orders.next_page_number }}">Next</a>
+        <a href="?page={{ orders.paginator.num_pages }}">Last &raquo;</a>
+    {% endif %}
+</div>
+      
+  </div>
+{% endblock content %}
