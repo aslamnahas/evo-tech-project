@@ -66,6 +66,15 @@
                                                     
                                                     
                                                 </td>
+                                                <form method="post" class="mb-5" action="{% url 'core:cart' %}">
+                                                    {% csrf_token %}
+                                                    <div class="input-group" style="width: 27%;">
+                                                        <input type="text" class="form-control p-4" placeholder="Coupon Code" name="coupon_code">
+                                                        <div class="input-group-append">
+                                                            <button class="btn btn-primary" type="submit">Apply Coupon</button>
+                                                        </div>
+                                                    </div>
+                                                </form>
                                         
                                                 <td class="align-middle">₹<span id="total-price-{{ cart_item.product.id }}">{{ cart_item.total_price }}</span></td>
 

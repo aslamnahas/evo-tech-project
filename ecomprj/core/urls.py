@@ -57,5 +57,7 @@ urlpatterns = [
 
     path('sort/',views.sort,name='sort'),
     path('search/', views.product_search, name='product_search'),
+    path('coupon/',views.coupon,name = 'coupon'),
+    path('addcoupon/',views.addcoupon,name='addcoupon'),
  
 ]

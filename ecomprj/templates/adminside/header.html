@@ -152,6 +152,10 @@
                         </li>
                          <li {% if request.path == '/adminside/brands/' %}class="active"{% endif %}>
                             <a href="{% url 'core:order' %}"><i class="fa fa-calendar-check-o"></i> <span>Order</span></a>
+                        </li>
+                         </li>
+                         <li {% if request.path == '/adminside/brands/' %}class="active"{% endif %}>
+                            <a href="{% url 'core:coupon' %}"><i class="fa fa-calendar-check-o"></i> <span>Coupon</span></a>
                         </li> 
                     </ul>
                 </div>

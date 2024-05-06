@@ -498,12 +498,13 @@ def cart(request):
         
     if request.method == "POST":
         coupon_code = request.POST.get("coupon_code")
-
-        # try:
-        #     coupon = Coupon.objects.get(coupon_code=coupon_code, expired=False)
-        # except Coupon.DoesNotExist:
-        #     messages.error(request, "Invalid or expired coupon code")
-        #     return redirect("cart")
+        try:
+            coupon = Coupon.objects.get(coupon_code=coupon_code, expired=False)
+            # Apply coupon logic here (e.g., calculate discount, update session)
+            request.session['discount'] = coupon.discount_amount
+            messages.success(request, "Coupon applied successfully")
+        except Coupon.DoesNotExist:
+            messages.error(request, "Invalid or expired coupon code")
 
         for cart_item in cart_items:
            
@@ -831,8 +832,10 @@ def order_details(request, id):
         'product' : product
     }
     return render(request, "core/order_details.html", context)
+
+@login_required
 def customer_order(request):
-    # if "email" in request.session:
+    if "email" in request.session:
         # user = request.user
         user_orders= Order.objects.all().order_by('-id')
 
@@ -848,8 +851,8 @@ def customer_order(request):
         # }
         return render(request, "core/customer_order.html", {'orders': user_orders})
 
-    # else:
-    #     return redirect("core:home")
+    else:
+        return redirect("core:home")
 
 @login_required
 def cancel(request, order_id):
@@ -1057,5 +1060,36 @@ def product_search(request):
         return render(request, 'core/products.html', context)
 
     return redirect('core:home')
+
+
+
+
+
+
+@never_cache
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+def coupon(request):
+    if "admin" in request.session:
+        coupons = Coupon.objects.all().order_by("id")
+        context = {"coupons": coupons}
+        return render(request, "adminside/coupon.html", context)
+    else:
+        return redirect("adminside:dashboard")
+
+
+def addcoupon(request):
+    if request.method == "POST":
+        coupon_code = request.POST.get("Couponcode")
+        discount_price = request.POST.get("dprice")
+        minimum_amount = request.POST.get("amount")
+
+        coupon = Coupon(
+            coupon_code=coupon_code,
+            discount_price=discount_price,
+            minimum_amount=minimum_amount,
+        )
+        coupon.save()
+
+        return redirect("core:coupon")
 
 
