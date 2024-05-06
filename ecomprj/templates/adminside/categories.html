@@ -21,7 +21,7 @@
                                 <th class="text-center">Main Category</th>
                                 <th class="text-center">Image</th>
                                 <th class="text-center">Description</th>
-                                <th class="text-center">Offer</th>
+                                {% comment %} <th class="text-center">Offer</th> {% endcomment %}
                                 <th class="text-center">Edit</th>
                                 <th class="text-center">Delete</th>
                             </tr>
@@ -45,7 +45,7 @@
                                     {% endif %}
                                 </td>
                                 <td class="text-center">{{ main_category.descriptions }}</td>
-                                <td class="text-center">{{ main_category.offer }}</td>
+                                {% comment %} <td class="text-center">{{ main_category.offer }}</td> {% endcomment %}
                                 <td class="text-center">
                                     <a href="{% url 'adminside:update_main_category' main_category.id %}" class="btn btn-success">Edit</a>
                                 </td>

@@ -135,6 +135,7 @@ def signupPage(request):
         request.session['email'] =  email
         request.session['otp']   =  otp
         messages.success (request, 'OTP is sent to your email')
+        print(otp)
         
         return redirect('core:verify_otp')
 

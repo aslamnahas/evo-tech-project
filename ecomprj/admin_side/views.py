@@ -62,7 +62,7 @@ def add_main_category(request):
     if request.method == 'POST':
         main_category_name = request.POST.get('main_category_name')
         description = request.POST.get('description')
-        offer = request.POST.get('offer')
+        # offer = request.POST.get('offer')
         image = request.FILES.get('image')
         delete = request.POST.get('delete', False) == 'True'
         
@@ -73,30 +73,30 @@ def add_main_category(request):
         if not description.strip():
             messages.error(request, "Description cannot be empty.")
             return redirect('adminside:add_categories')
-        if not offer:
-            messages.error(request, "Offer cannot be empty.")
-            return redirect('adminside:add_categories')
-        try:
-            offer = float(offer)
-            if offer < 0:
-                raise ValidationError("Offer must be a positive number.")
-        except ValueError:
-            messages.error(request, "Offer must be a valid number.")
-            return redirect('adminside:add_categories')
-        if not image:
-            messages.error(request, "Please upload an image.")
-            return redirect('adminside:add_categories')
+        # if not offer:
+        #     messages.error(request, "Offer cannot be empty.")
+        #     return redirect('adminside:add_categories')
+        # try:
+        #     offer = float(offer)
+        #     if offer < 0:
+        #         raise ValidationError("Offer must be a positive number.")
+        # except ValueError:
+        #     messages.error(request, "Offer must be a valid number.")
+        #     return redirect('adminside:add_categories')
+        # if not image:
+        #     messages.error(request, "Please upload an image.")
+        #     return redirect('adminside:add_categories')
             
         # Check if the category name already exists
         if Main_Category.objects.filter(name=main_category_name).exists():
             messages.error(request, "Category already exists.")
-            return redirect('adminside:add_categories')
+            return redirect('adminside:add_main_category')
             
         # Save data to the database
         main_category = Main_Category(
             name=main_category_name,
             descriptions=description,
-            offer=offer,
+            # offer=offer,
             img=image,
             deleted=delete
         )
@@ -115,7 +115,7 @@ def update_main_category(request, id):
     if request.method      == 'POST':
         main_category_name = request.POST['main_category_name']
         description        = request.POST['description']
-        offer              = request.POST['offer']
+        # offer              = request.POST['offer']
 
         # Retrieve existing data
         edit = Main_Category.objects.get(id=id)
@@ -128,7 +128,7 @@ def update_main_category(request, id):
             
         edit.name = main_category_name
         edit.descriptions = description 
-        edit.offer = offer
+        # edit.offer = offer
 
         if 'image' in request.FILES:
             image = request.FILES['image']

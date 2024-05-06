@@ -144,13 +144,16 @@
                             </div>
                             <!-- Header Logo Area End Here -->
                             <!-- Begin Header Middle Right Area -->
-                            <div class="col-lg-9'  pl-0 ml-sm-15 ml-xs-15">
+                            <div class="col-lg-8'  pl-0 ml-sm-15 ml-xs-15">
                                 <!-- Begin Header Middle Searchbox Area -->
                                 <form action="{% url 'core:product_search' %}" method="POST" class="hm-searchbox">
                                     {% csrf_token %}
                                     <input type="text" name="searched" placeholder="Enter your search key ..." value="{{ query }}">
                                     <button class="li-btn" type="submit"><i class="fa fa-search"></i></button>
                                 </form>
+                            </div>
+
+
                                 <!-- Header Middle Searchbox Area End Here -->
                                 <!-- Begin Header Middle Right Area -->
                                 <div class="header-middle-right ">

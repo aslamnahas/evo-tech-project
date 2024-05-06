@@ -209,7 +209,7 @@
                                                                     <input type="hidden" value="{{ i.product.id }}" class="prod_id">
                                                                     {% comment %} <input type="hidden" value="{{ i.id }}" class="variant_id">   {% endcomment %}
                                                                     <h4><a class="product_name" href="{% url 'core:product_detail' i.id %}">{{ i.model }} &nbsp; ({{ i.color }})</a></h4>
-                                                                    {% comment %} <a href="{% url 'core:product_detail'  %}">View Details</a> {% endcomment %}
+                                                                    {% comment %} <a href="{% url 'core:product_detail' i.id  %}">View Details</a> {% endcomment %}
 
                                                                     <div class="price-box">
                                                                         <span class="new-price ">₹ {{ i.price }}</span>
