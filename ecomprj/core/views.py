@@ -218,8 +218,8 @@ def loginPage(request):
         request.session.flush()
         return render(request, 'core/userlogin.html', context)
 
-def generate_otp(length = 6):
-    return ''.join(secrets.choice("0123456789") for i in range(length)) 
+# def generate_otp(length = 6):
+#     return ''.join(secrets.choice("0123456789") for i in range(length)) 
 
 
 def validate_email(email):
@@ -275,7 +275,7 @@ def product_detail(request, id):
 
     # Fetch similar products based on the main category
     similar_products = Product.objects.filter(
-        main_category=product.main_category  # Filter similar products by main category
+    main_category=product.main_category  # Filter similar products by main category
     ).exclude(id=product.id).order_by('?')  # Exclude the current product and randomize the order
     
     context = {
@@ -495,25 +495,10 @@ def cart(request):
     else:
         user = request.user
         cart_items = Cart.objects.filter(user=user).order_by("id")
-        
-    if request.method == "POST":
-        coupon_code = request.POST.get("coupon_code")
-        try:
-            coupon = Coupon.objects.get(coupon_code=coupon_code, expired=False)
-            # Apply coupon logic here (e.g., calculate discount, update session)
-            request.session['discount'] = coupon.discount_amount
-            messages.success(request, "Coupon applied successfully")
-        except Coupon.DoesNotExist:
-            messages.error(request, "Invalid or expired coupon code")
-
-        for cart_item in cart_items:
-           
-            cart_item.save()
-
-        messages.success(request, "Coupon applied successfully")
 
     subtotal = 0
     total_dict = {}
+    
 
     for cart_item in cart_items:
         if cart_item.quantity > cart_item.product.stock:
@@ -523,6 +508,33 @@ def cart(request):
             cart_item.quantity = cart_item.product.stock
             cart_item.save()
 
+
+        cart_item.total_price = cart_item.quantity * cart_item.product.get_discounted_price()
+        cart_item.save()
+        subtotal += cart_item.total_price
+        
+    if request.method == "POST":
+        coupon_code = request.POST.get("coupon_code")
+        try:
+            coupon = Coupon.objects.get(coupon_code=coupon_code, max_usage_count=1)
+            # for cart_item in cart_items:
+            if subtotal >= coupon.min_amount:
+            # Apply coupon logic here (e.g., calculate discount, update session)
+                request.session['discount'] = coupon.discount_amount
+                messages.success(request, "Coupon applied successfully")
+            else:
+               messages.error(request, f"Total amount is below the minimum required ({coupon.min_amount}) for this coupon")  
+        except Coupon.DoesNotExist:
+            messages.error(request, "Invalid or expired coupon code")
+
+       
+        for cart_item in cart_items:
+            cart_item.coupon = coupon
+            cart_item.save()
+
+        messages.success(request, "Coupon applied successfully")
+   
+
         # item_price = cart_item.product.price * cart_item.quantity
         # effective_offer = calculate_effective_offer(cart_item.product)
         # if effective_offer > 0:
@@ -531,34 +543,34 @@ def cart(request):
 
         # total_dict[cart_item.id] = item_price
         # subtotal += item_price
-        cart_item.total_price = cart_item.quantity * cart_item.product.get_discounted_price()
-        cart_item.save()
-        subtotal += cart_item.total_price
+       
 
 
     # for cart_item in cart_items:
     #    subtotal += cart_item.sub_total
-       
+   
 
     shipping_cost = 10
     total = subtotal + shipping_cost if subtotal else 0
-    total_without_coupon_discount = subtotal + shipping_cost 
-
-# Update total
-    total = total_without_coupon_discount 
+    total_discount = sum(cart_item.coupon.discount_amount for cart_item in cart_items if cart_item.coupon)
+    # print(total_discount)
+    total = subtotal - total_discount + shipping_cost
+    # subtotal = float(subtotal)
+    # total = float(total) 
+    
     request.session['cart_subtotal'] = str(subtotal)  
     request.session['cart_total'] = str(total)
     # request.session['user'] = user
     # request.session['email'] = request.email
     # print(request.email,"kkkkkkkkkkkeeeeeeeee")
 
-    # coupons = Coupon.objects.all()
+    coupons = Coupon.objects.all()
 
     context = {
         "cart_items": cart_items,
         "subtotal": subtotal,
         "total": total,
-        # "coupons": coupons,
+        "coupons": coupons,
     }
     return render(request, "core/cart.html", context)
 
@@ -731,8 +743,10 @@ def checkout(request):
             total = subtotal + shipping_cost  if subtotal else 0
         
         subtotal = Decimal(request.session.get('cart_subtotal', 0))
-        total = Decimal(request.session.get('cart_total', 0)) - discount
+        total = Decimal(request.session.get('cart_total', 0)) 
+        # total=total-discount
         print(subtotal)
+        print(discount)
         print(total)
         request.session['subtotal'] = str(subtotal)
         request.session['total'] = str(total)
@@ -1069,27 +1083,111 @@ def product_search(request):
 @never_cache
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def coupon(request):
-    if "admin" in request.session:
+    if  request.user:
+        
         coupons = Coupon.objects.all().order_by("id")
         context = {"coupons": coupons}
         return render(request, "adminside/coupon.html", context)
     else:
+        
         return redirect("adminside:dashboard")
 
 
 def addcoupon(request):
     if request.method == "POST":
         coupon_code = request.POST.get("Couponcode")
-        discount_price = request.POST.get("dprice")
-        minimum_amount = request.POST.get("amount")
+        discount_amount = request.POST.get("dprice")
+        min_amount = request.POST.get("amount")
 
         coupon = Coupon(
             coupon_code=coupon_code,
-            discount_price=discount_price,
-            minimum_amount=minimum_amount,
+            discount_amount=discount_amount,
+            min_amount= min_amount,
         )
         coupon.save()
 
         return redirect("core:coupon")
 
 
+
+
+
+def apply_coupon(request):
+    if request.method == "POST":
+        coupon_code = request.POST.get("coupon_code")
+
+        try:
+            coupon = Coupon.objects.get(coupon_code=coupon_code)
+        except Coupon.DoesNotExist:
+            messages.error(request, "Invalid coupon code")
+            return redirect("checkout")
+
+        user = request.user
+        cart_items = Cart.objects.filter(user=user)
+        subtotal = 0
+        shipping_cost = 10
+        total_dict = {}
+        coupons = Coupon.objects.all()
+
+
+        for cart_item in cart_items:
+            if cart_item.quantity > cart_item.product.stock:
+                messages.warning(
+                    request, f"{cart_item.product.product_name} is out of stock."
+                )
+                cart_item.quantity = cart_item.product.stock
+                cart_item.save()
+
+            item_price = cart_item.product.price * cart_item.quantity
+            effective_offer = calculate_effective_offer(cart_item.product)
+            if effective_offer > 0:
+                discount_amount = (effective_offer / Decimal('100.0')) * item_price
+                item_price -= discount_amount
+
+            total_dict[cart_item.id] = item_price
+            subtotal += item_price
+
+        for cart_item in cart_items:
+            cart_item.total_price = total_dict.get(cart_item.id, 0)
+            print(cart_item.total_price)
+            cart_item.save()
+
+        shipping_cost = 10
+        total = subtotal + shipping_cost if subtotal else 0
+
+        total_discount = sum(cart_item.coupon.discount_price for cart_item in cart_items if cart_item.coupon)
+        total = subtotal - total_discount + shipping_cost
+
+        request.session['cart_subtotal'] = str(subtotal)  
+        request.session['cart_total'] = str(total)
+
+
+        if subtotal >= coupon.minimum_amount:
+            messages.success(request, "Coupon applied successfully")
+            request.session["discount"] = coupon.discount_price
+            total = subtotal - coupon.discount_price + shipping_cost
+            print(total,"totttal")
+            print(subtotal,"subbbbb")
+            print(coupon.discount_price,"disssss")
+        else:
+            print("Elseeeeeeeeeeeeeeee")
+            messages.error(request, "Coupon not available for this price")
+            total = subtotal + shipping_cost
+
+        for cart_item in cart_items:
+            cart_item.total_price = total_dict.get(cart_item.id, 0)
+            cart_item.save()
+
+        
+
+        context = {
+            "cart_items": cart_items,
+            "subtotal": subtotal,
+            "total": total,
+            "coupons": coupons,
+            "discount_amount": coupon.discount_price,
+        }
+
+        return render(request, "main/cart.html", context)
+
+    return redirect("cart")

@@ -128,6 +128,24 @@ class Address(models.Model):
 
 
 
+class Coupon(models.Model):
+    coupon_code = models.CharField(max_length=50, unique=True)
+    discount_amount = models.PositiveIntegerField(default=100)
+    # expiration_date = models.DateTimeField()
+    max_usage_count = models.IntegerField(default=1)
+    min_amount = models.IntegerField(default=0)
+    current_usage_count = models.IntegerField(default=0)
+    # created_at = models.DateTimeField(default=timezone.now)
+
+    def is_expired(self):
+        return self.expiration_date <= timezone.now()
+
+    def is_max_usage_reached(self):
+        return self.current_usage_count >= self.max_usage_count
+
+    def __str__(self):
+        return self.coupon_code
+
 
 class Cart(models.Model):
     user = models.ForeignKey(Customer, on_delete=models.CASCADE, null=True, blank=True)
@@ -136,7 +154,7 @@ class Cart(models.Model):
     )
     quantity = models.IntegerField(default=0)
     image = models.ImageField(upload_to="products", null=True, blank=True)
-   
+    coupon = models.ForeignKey(Coupon,on_delete=models.SET_NULL, null=True, blank=True)
 
     @property
     def sub_total(self):
@@ -219,22 +237,3 @@ class Wallet(models.Model):
         yield self.pk
 
 
-
-
-class Coupon(models.Model):
-    coupon_code = models.CharField(max_length=50, unique=True)
-    discount_amount = models.DecimalField(max_digits=10, decimal_places=2)
-    expiration_date = models.DateTimeField()
-    max_usage_count = models.IntegerField(default=1)
-    min_amount = models.IntegerField(default=0)
-    current_usage_count = models.IntegerField(default=0)
-    created_at = models.DateTimeField(default=timezone.now)
-
-    def is_expired(self):
-        return self.expiration_date <= timezone.now()
-
-    def is_max_usage_reached(self):
-        return self.current_usage_count >= self.max_usage_count
-
-    def __str__(self):
-        return self.coupon_code
