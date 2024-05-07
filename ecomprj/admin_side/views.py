@@ -7,6 +7,7 @@ from django.shortcuts import get_object_or_404
 from django.core.exceptions import ValidationError
 from core.models import Customer
 from django.contrib.auth import logout
+from django.core.paginator import Paginator
 
 
 def admin_login(request):
@@ -174,11 +175,14 @@ def delete_main_category(request,id):
 # product============================================================================================================
                                 # add --- update ---- delete ---soft delete--
 
-
 def products(request):
-    items = Product.objects.all().order_by('-id')
-    return render(request, 'adminside/products.html', {"items": items})
+    items_list = Product.objects.all().order_by('-id')
+    paginator = Paginator(items_list, 10)  # Show 10 items per page
 
+    page_number = request.GET.get('page')
+    items = paginator.get_page(page_number)
+
+    return render(request, 'adminside/products.html', {"items": items})
 
 def add_product(request):
     data = Main_Category.objects.all()

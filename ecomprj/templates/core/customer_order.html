@@ -99,6 +99,43 @@
                     </div>
                 </div>
             </div>
+            <!-- Pagination Links -->
+            <div class="pagination-area">
+                <div class="row">
+                    <div class="col-lg-6 col-md-6">
+                        <p class="pagination-info"> </p>
+                    </div>
+                    <div class="col-lg-6 col-md-6">
+                        <ul class="pagination pagination-sm justify-content-end">
+                            <li class="page-item {% if not orders.has_previous %} disabled {% endif %}">
+                                <a class="page-link" href="{% if orders.has_previous %}?page={{ orders.previous_page_number }}{% endif %}" aria-label="Previous">
+                                    <span aria-hidden="true">&laquo; Previous</span>
+                                </a>
+                            </li>
+                            <li class="page-item disabled">
+                                <span class="page-link">Page {{ orders.number }} of {{ orders.paginator.num_pages }}</span>
+                            </li>
+                            <li class="page-item {% if not orders.has_next %} disabled {% endif %}">
+                                <a class="page-link" href="{% if orders.has_next %}?page={{ orders.next_page_number }}{% endif %}" aria-label="Next">
+                                    <span aria-hidden="true">Next &raquo;</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        {% comment %} {% else %}
+            <!-- No orders message -->
+            <div class="alert alert-info" role="alert">
+                <h4 class="alert-heading">Your order list is empty</h4>
+            </div>
+        {% endif %} {% endcomment %}
+    </div>
+</div>
+</div>
+</div>
+{% endblock content %}
+  
             <!--Shopping Cart Area End-->
 {% comment %}            
             <script>
@@ -149,9 +186,7 @@
                 }
             </script>
              {% endcomment %}
-
-        {% endblock content %}
-  
+ 
    <!-- Add this script to your cart.html file -->
 
   

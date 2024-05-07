@@ -256,10 +256,22 @@ def user_category_view(request):
 
 # product user side =====================================================================
 
-
 def products(request):
-     products = Product.objects.filter(deleted=False).order_by('-id')
-     return render(request, 'core/products.html', {'products': products})
+    product_list = Product.objects.filter(deleted=False).order_by('-id')
+    paginator = Paginator(product_list, 9)  # Show 12 products per page
+
+    page_number = request.GET.get('page')
+    try:
+        products = paginator.page(page_number)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        products = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range (e.g. 9999), deliver last page of results.
+        products = paginator.page(paginator.num_pages)
+
+    return render(request, 'core/products.html', {'products': products})
+
 
 # productshowing page======================================================================
 
@@ -850,21 +862,22 @@ def order_details(request, id):
 @login_required
 def customer_order(request):
     if "email" in request.session:
-        # user = request.user
-        user_orders= Order.objects.all().order_by('-id')
+        # Fetch all orders
+        all_orders = Order.objects.all().order_by('-id')
+        
+        # Pagination
+        paginator = Paginator(all_orders, 10)  # Show 10 orders per page
+        page_number = request.GET.get('page')
+        try:
+            orders = paginator.page(page_number)
+        except PageNotAnInteger:
+            # If page is not an integer, deliver first page.
+            orders = paginator.page(1)
+        except EmptyPage:
+            # If page is out of range (e.g. 9999), deliver last page of results.
+            orders = paginator.page(paginator.num_pages)
 
-        # Accumulate all order items for all orders
-        # all_order_items = []
-        # for order in orders:
-        #     order_items = order.order_items.all()
-        #     all_order_items.extend(order_items)
- 
-        # context = {
-        #     "orders": orders,
-        #     "all_order_items": all_order_items,  # Pass all_order_items to the template context
-        # }
-        return render(request, "core/customer_order.html", {'orders': user_orders})
-
+        return render(request, "core/customer_order.html", {'orders': orders})
     else:
         return redirect("core:home")
 

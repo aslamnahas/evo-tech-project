@@ -74,4 +74,44 @@
         </div>
     </div>
 </div>
+<div class="pagination-area">
+    <div class="row">
+        <div class="col-lg-6 col-md-6">
+            <p class="pagination-info">{{ items|length }} Items</p>
+        </div>
+        <div class="col-lg-6 col-md-6">
+            {% if items.has_other_pages %}
+            <ul class="pagination pagination-sm justify-content-end">
+                {% if items.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1" aria-label="First">
+                        <span aria-hidden="true">&laquo; First</span>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ items.previous_page_number }}" aria-label="Previous">
+                        <span aria-hidden="true">&lsaquo; Previous</span>
+                    </a>
+                </li>
+                {% endif %}
+                <li class="page-item disabled">
+                    <span class="page-link">Page {{ items.number }} of {{ items.paginator.num_pages }}</span>
+                </li>
+                {% if items.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ items.next_page_number }}" aria-label="Next">
+                        <span aria-hidden="true">Next &rsaquo;</span>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ items.paginator.num_pages }}" aria-label="Last">
+                        <span aria-hidden="true">Last &raquo;</span>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+            {% endif %}
+        </div>
+    </div>
+</div>
 {% endblock %}
