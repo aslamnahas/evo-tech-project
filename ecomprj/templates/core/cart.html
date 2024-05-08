@@ -81,7 +81,7 @@
                                                 <div class="input-group" style="width: 27%;">
                                                     <input type="text" class="form-control p-4" placeholder="Coupon Code" name="coupon_code">
                                                     <div class="input-group-append">
-                                                        <button class="btn btn-primary" type="submit">Apply Coupon</button>
+                                                        <button class="btn btn-primary"style="background-color: rgb(0,174,191);" type="submit">Apply Coupon</button>
                                                     </div>
                                                 </div>
                                             </form>
@@ -152,7 +152,7 @@
                                     </div>
                                 </div>
 
-                                <div class="row">
+                                <div class="row" >
                                     <div class="col-md-5 ml-auto">
                                         <div class="cart-page-total">
                                             <h2>Cart totals</h2>
@@ -173,7 +173,7 @@
                                                 <li>Total <span id="total-price">{{ total }}</span></li>                                     
                                             </ul>
                                             {% if cart_items %}
-                                            <a href="{% url 'core:checkout' %}">Proceed to checkout</a>
+                                            <a style="background-color: rgb(0,174,191);" href="{% url 'core:checkout' %}">Proceed to checkout</a>
                                             {% else %}
                                             <a href="##">Cart is empty</a>
                                             {% endif %}

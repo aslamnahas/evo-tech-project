@@ -60,5 +60,9 @@ urlpatterns = [
     path('coupon/',views.coupon,name = 'coupon'),
     path('addcoupon/',views.addcoupon,name='addcoupon'),
     path('apply_coupon/', views.apply_coupon, name='apply_coupon'),
- 
+
+
+    path('wallet/',views.wallet,name='wallet'),
+
+    
 ]

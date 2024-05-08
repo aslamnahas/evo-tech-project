@@ -183,8 +183,6 @@ def verify_otp(request):
 #         return render(request, 'core/userlogin.html')
 
 @never_cache
-
-
 def loginPage(request):
     context = {
         'messages': messages.get_messages(request)
@@ -558,15 +556,19 @@ def cart(request):
        
 
 
-    # for cart_item in cart_items:
-    #    subtotal += cart_item.sub_total
+    for cart_item in cart_items:
+       subtotal += cart_item.sub_total
    
 
     shipping_cost = 10
     total = subtotal + shipping_cost if subtotal else 0
-    total_discount = sum(cart_item.coupon.discount_amount for cart_item in cart_items if cart_item.coupon)
+    # total_discount = sum(cart_item.coupon.discount_amount for cart_item in cart_items if cart_item.coupon)
     # print(total_discount)
-    total = subtotal - total_discount + shipping_cost
+    # print(total_discount,'pppppppppppppppppppppppppp')
+    # print(cart_item.coupon.discount_amount)
+    # print(subtotal,'kkkkkkkkkkkkkkkkkkkkkkkkkk')
+
+    total = subtotal - cart_item.coupon.discount_amount + shipping_cost
     # subtotal = float(subtotal)
     # total = float(total) 
     
@@ -771,7 +773,7 @@ def checkout(request):
             'total': total,
             'user_addresses': user_addresses,
             'discount_amount': discount,
-            'itemprice': itemprice2  
+            # 'itemprice': itemprice2  
         }
         return render(request, 'core/checkout.html', context)
     # else:
@@ -993,16 +995,16 @@ from django.utils import timezone
 def handle_cancellation(order):
     if order.payment_type == 'razorpay':
         order_items = order.order_items.all()
-        # total_amount = sum(order_item.product.price * order_item.quantity for order_item in order_items)
+        total_amount = sum(order_item.product.price * order_item.quantity for order_item in order_items)
 
-        # wallet = Wallet.objects.create(
-        #     user=order.user,
-        #     order=order,
-        #     amount=total_amount,
-        #     status="Credited",
-        #     created_at=timezone.now(),
-        # )
-        # wallet.save()
+        wallet = Wallet.objects.create(
+            user=order.user,
+            order=order,
+            amount=total_amount,
+            status="Credited",
+            created_at=timezone.now(),
+        )
+        wallet.save()
 
         for order_item in order_items:
             product = order_item.product
@@ -1022,14 +1024,14 @@ def return_order(request, order_id, order_item_id):
     except Order.DoesNotExist or OrderItem.DoesNotExist:
         return render(request, 'order_not_found.html')
 
-    # if order.status in ["completed", "delivered"]:
-    #     wallet = Wallet.objects.create(
-    #         user=user,
-    #         order=order,
-    #         amount=order_item.product.price * order_item.quantity,
-    #         status="Credited",
-    #     )
-    #     wallet.save()
+    if order.status in ["completed", "delivered"]:
+        wallet = Wallet.objects.create(
+            user=user,
+            order=order,
+            amount=order_item.product.price * order_item.quantity,
+            status="Credited",
+        )
+        wallet.save()
     product = order_item.product
     product.stock += order_item.quantity
     product.save()
@@ -1204,3 +1206,21 @@ def apply_coupon(request):
         return render(request, "main/cart.html", context)
 
     return redirect("cart")
+
+
+
+
+def wallet(request):
+    if "email" in request.session:
+        user = request.user
+        customer = Customer.objects.get(email=user)
+        wallets = Wallet.objects.filter(user=user).order_by("-created_at")
+
+        context = {
+            "customer": customer,
+            "wallets": wallets,
+        }
+        return render(request, "core/wallet.html", context)
+    else:
+        return redirect("core:home")
+

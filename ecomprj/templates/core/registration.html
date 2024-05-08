@@ -12,10 +12,15 @@
     <link rel="stylesheet" type="text/css" href="{% static 'dashboard/css/font-awesome.min.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'dashboard/css/style.css' %}">
     <!--[if lt IE 9]>
-		<script src="{% static 'dashboard/js/html5shiv.min.js' %}"></script>
-		<script src="{% static 'dashboard/js/respond.min.js' %}"></script>
-	<![endif]-->
+        <script src="{% static 'dashboard/js/html5shiv.min.js' %}"></script>
+        <script src="{% static 'dashboard/js/respond.min.js' %}"></script>
+    <![endif]-->
     <style>
+        /* Custom Styles */
+        body {
+            background-color: #f2f2f2; /* Set background color for the entire page */
+        }
+
         .account-center {
             display: flex;
             justify-content: center;
@@ -46,6 +51,21 @@
 
         .account-btn {
             width: 100%;
+            background-color: rgb(1, 119, 130); /* Apply specified color */
+            border-color: rgb(1, 119, 130);
+        }
+
+        .account-btn:hover {
+            background-color: #00565e; /* Darker shade on hover */
+            border-color: #00565e;
+        }
+
+        .login-link a {
+            color: rgb(1, 119, 130); /* Apply specified color */
+        }
+
+        .login-link a:hover {
+            color: #00565e; /* Darker shade on hover */
         }
     </style>
 </head>
@@ -72,10 +92,6 @@
                             <label>Mobile Number</label>
                             <input type="number" class="form-control" name="ph_no">
                         </div>
-                        {% comment %} <div class="form-group">
-                            <label>Referral code</label>
-                            <input type="text" class="form-control" name="referral">
-                        </div> {% endcomment %}
                         <div class="form-group">
                             <label>Password</label>
                             <input type="password" class="form-control" name="password1">
@@ -95,15 +111,25 @@
                             <button class="btn btn-primary account-btn" type="submit">Signup</button>
                         </div>
                         <div class="text-center login-link">
-                            {% comment %} Already have an account? <a href="{% url 'login' %}">Login</a> {% endcomment %}
+                            Already have an account? <a href="{% url 'core:loginPage' %}">Login</a>
+
                         </div>
+                        
                     </form>
+                    <div class="google-signin">
+                        <a href="{% url 'core:google' %}">
+                            <img src="{% static 'path_to_your_google_logo.png' %}" alt="Google Sign-In" width="120">
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+    <!-- Google Sign-In Integration -->
+  
+    <!-- End Google Sign-In Integration -->
     <script src="{% static 'dashboard/js/jquery-3.2.1.min.js' %}"></script>
-	<script src="{% static 'dashboard/js/popper.min.js' %}"></script>
+    <script src="{% static 'dashboard/js/popper.min.js' %}"></script>
     <script src="{% static 'dashboard/js/bootstrap.min.js' %}"></script>
     <script src="{% static 'dashboard/js/app.js' %}"></script>
 </body>

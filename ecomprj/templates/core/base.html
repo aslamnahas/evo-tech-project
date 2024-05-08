@@ -63,9 +63,9 @@
                                 <div class="header-top-left">
                                     <ul class="phone-wrap">
                                         {% if user %}
-                                            <li><span>Welcome to Evotech: {{ user.username }}</span><a href="#"></a></li>
+                                            <li><span>Welcome to TECHX: {{ user.username }}</span><a href="#"></a></li>
                                         {% else %}
-                                            <li><span>Welcome to Evotech</span><a href="#"></a></li>
+                                            <li><span>Welcome TECHX</span><a href="#"></a></li>
                                         {% endif %}
                                     </div>
                                 </div>
@@ -138,7 +138,8 @@
                             <div class="col-lg-3">
                                 <div class="logo pb-sm-30 pb-xs-30">
                                     <a href="index.html">
-                                        <img src="{% static 'user/images/menu/logo/1.jpg' %}" alt="">
+                                        <img src="{% static  'user\images\NAHAS KAaaaaa LOGOpng.jpg' %}"alt="" style="max-width: 150px; max-height: 150px;">
+                                    </a>
                                     </a>
                                 </div>
                             </div>
@@ -149,27 +150,27 @@
                                 <form action="{% url 'core:product_search' %}" method="POST" class="hm-searchbox">
                                     {% csrf_token %}
                                     <input type="text" name="searched" placeholder="Enter your search key ..." value="{{ query }}">
-                                    <button class="li-btn" type="submit"><i class="fa fa-search"></i></button>
+                                    <button class="li-btn" type="submit"style="background-color: rgb(0,174,191); color: white;"><i class="fa fa-search"></i></button>
                                 </form>
                             </div>
 
 
                                 <!-- Header Middle Searchbox Area End Here -->
                                 <!-- Begin Header Middle Right Area -->
-                                <div class="header-middle-right ">
+                                <div class="header-middle-right pl-4 pr-4">
                                     <ul class="hm-menu">
                                         <!-- Begin Header Middle Wishlist Area -->
                                         <li class="hm-wishlist" >
                                             <a href="{% url 'core:wishlist' %}">
-                                                <span class="cart-item-count wishlist-item-count" id="wishlist-item-count">{{ wishlist_count }}</span>
+                                                <span class="cart-item-count wishlist-item-count" id="wishlist-item-count"style="background-color:rgb(0,174,191);color: white;">{{ wishlist_count }}</span>
                                                 <i class="fa fa-heart-o"></i>
                                             </a>
                                         </li>
                                         <!-- Header Middle Wishlist Area End Here -->
                                         <!-- Begin Header Mini Cart Area -->
                                         <li class="hm-minicart">
-                                            <div class="hm-minicart-trigger">
-                                                <span class="item-icon"></span>
+                                            <div class="hm-minicart-trigger"style="background-color:rgb(0,174,191);">
+                                                <span class="item-icon" ></span>
                                                 <span class="item-text">₹{{  cart_item.total_price }}
                                                     <span class="cart-item-count">{{  cart_items_count }}</span>
                                                 </span>
@@ -198,7 +199,7 @@
                                                     <a href="{% url 'core:cart' %}" class="li-button li-button-fullwidth li-button-dark">
                                                         <span>View Full Cart</span>
                                                     </a>
-                                                    <a href="#" class="li-button li-button-fullwidth">
+                                                    <a href="{% url 'core:checkout' %}" class="li-button li-button-fullwidth"style="background-color:rgb(0,174,191)">
                                                         <span>Checkout</span>
                                                     </a>
                                                 </div>
@@ -216,7 +217,7 @@
                 </div>
                 <!-- Header Middle Area End Here -->
                 <!-- Begin Header Bottom Area -->
-                <div class="header-bottom header-sticky d-none d-lg-block d-xl-block">
+                <div class="header-bottom header-sticky d-none d-lg-block d-xl-block" style="background-color:rgb(0,174,191);">
                     <div class="container">
                         <div class="row">
                             <div class="col-lg-12">
@@ -224,64 +225,24 @@
                                 <div class="hb-menu">
                                     <nav>
                                         <ul>
-                                            <li class="dropdown-holder"><a href="{% url 'core:home' %}">Home</a>
-                                                <ul class="hb-dropdown">
-                                                    <li class="active"><a href="index.html">Home One</a></li>
-                                                    {% comment %} <li><a href="index-2.html">Home Two</a></li>
-                                                    <li><a href="index-3.html">Home Three</a></li>
-                                                    <li><a href="index-4.html">Home Four</a></li> {% endcomment %}
-                                                </ul>
-                                            </li>
-                                            <li class="megamenu-holder"><a href="{% url 'core:products' %}">Products</a>
-                                                <ul class="megamenu hb-megamenu">
-                                                    {% comment %} <li><a href="shop-left-sidebar.html">Shop Page Layout</a> {% endcomment %}
-                                                         <ul>
-                                                            {% comment %} <li><a href="shop-3-column.html">Shop 3 Column</a></li>
-                                                            <li><a href="shop-4-column.html">Shop 4 Column</a></li>
-                                                            <li><a href="shop-left-sidebar.html">Shop Left Sidebar</a></li>
-                                                            <li><a href="shop-right-sidebar.html">Shop Right Sidebar</a></li>
-                                                            <li><a href="shop-list.html">Shop List</a></li>
-                                                            <li><a href="shop-list-left-sidebar.html">Shop List Left Sidebar</a></li>
-                                                            <li><a href="shop-list-right-sidebar.html">Shop List Right Sidebar</a></li> {% endcomment %}
-                                                        </ul>
-                                                    </li>
-                                                    {% comment %} <li><a href="single-product-gallery-left.html">Single Product Style</a> {% endcomment %}
-                                                        {% comment %} <ul>
-                                                            <li><a href="single-product-carousel.html">Single Product Carousel</a></li>
-                                                            <li><a href="single-product-gallery-left.html">Single Product Gallery Left</a></li>
-                                                            <li><a href="single-product-gallery-right.html">Single Product Gallery Right</a></li>
-                                                            <li><a href="single-product-tab-style-top.html">Single Product Tab Style Top</a></li>
-                                                            <li><a href="single-product-tab-style-left.html">Single Product Tab Style Left</a></li>
-                                                            <li><a href="single-product-tab-style-right.html">Single Product Tab Style Right</a></li>
-                                                        </ul> {% endcomment %}
-                                                    </li>
-                                                    {% comment %} <li><a href="single-product.html">Single Products</a>
-                                                        <ul>
-                                                            <li><a href="single-product.html">Single Product</a></li>
-                                                            <li><a href="single-product-sale.html">Single Product Sale</a></li>
-                                                            <li><a href="single-product-group.html">Single Product Group</a></li>
-                                                            <li><a href="single-product-normal.html">Single Product Normal</a></li>
-                                                            <li><a href="single-product-affiliate.html">Single Product Affiliate</a></li>
-                                                        </ul>
-                                                    </li> {% endcomment %}
-                                                </ul>
-                                            </li> 
+                                            <li class="dropdown-holder"><a href="{% url 'core:home' %}" style="color: white;">Home</a></li>
+                                            <li class="megamenu-holder"><a href="{% url 'core:products' %}" style="color: white;">Products</a></li>
                                             <li class="dropdown-holder">
                                                 {% if user.is_authenticated %}
-                                                    <a href="{% url 'core:signupPage' %}">Profile</a>
-                                                    <ul class="hb-dropdown">
-                                                        <li><a href="{% url 'core:custom_logout' %}">Logout</a></li>
-                                                    </ul>
+                                                <a href="{% url 'core:signupPage' %}" style="color: white;">Profile</a>
+                                                <ul class="hb-dropdown">
+                                                    <li><a href="{% url 'core:custom_logout' %}" style="color: white;">Logout</a></li>
+                                                </ul>
                                                 {% else %}
-                                                    <a href="{% url 'core:loginPage' %}">Login</a>
-                                                    <ul class="hb-dropdown">
-                                                        <li><a href="{% url 'core:loginPage' %}">Login</a></li>
-                                                        <li><a href="{% url 'core:signupPage' %}">Signup</a></li>
-                                                    </ul>
+                                                <a href="{% url 'core:loginPage' %}" style="color: white;">Login</a>
+                                                <ul class="hb-dropdown">
+                                                    <li><a href="{% url 'core:loginPage' %}" style="color: white;">Login</a></li>
+                                                    <li><a href="{% url 'core:signupPage' %}" style="color: white;">Signup</a></li>
+                                                </ul>
                                                 {% endif %}
                                             </li>
-                                            <li><a href="{% url 'core:user_categories' %}">Categories</a></li>
-                                            <li><a href="#">Brands</a></li>
+                                            <li><a href="{% url 'core:user_categories' %}" style="color: white;">Categories</a></li>
+                                            <li><a href="#" style="color: white;">Brands</a></li>
                                         </ul>
                                     </nav>
                                 </div>
@@ -290,6 +251,7 @@
                         </div>
                     </div>
                 </div>
+                
                 <!-- Header Bottom Area End Here -->
                 <!-- Begin Mobile Menu Area -->
                 <div class="mobile-menu-area d-lg-none d-xl-none col-12">
@@ -385,7 +347,7 @@
                                 <!-- Begin Footer Logo Area -->
                                 <div class="col-lg-4 col-md-6">
                                     <div class="footer-logo">
-                                        <img src="{% static 'user/images/menu/logo/1.jpg' %}" alt="Footer Logo">
+                                        <img src="{% static  'user\images\NAHAS KAaaaaa LOGOpng.jpg' %}" alt="Footer Logo" style="max-width: 200px; max-height: 200px;">
                                         <p class="info">
                                             We are a team of designers and developers that create high quality HTML Template & Woocommerce, Shopify Theme.
                                         </p>
@@ -397,11 +359,11 @@
                                         </li>
                                         <li>
                                             <span>Phone: </span>
-                                            <a href="#">(+123) 123 321 345</a>
+                                            <a href="#">(+123) 8156816898</a>
                                         </li>
                                         <li>
                                             <span>Email: </span>
-                                            <a href="mailto://info@yourdomain.com">info@yourdomain.com</a>
+                                            <a href="mailto://info@yourdomain.com">nahasnazz06@gmail.com</a>
                                         </li>
                                     </ul>
                                 </div>
@@ -476,7 +438,7 @@
                                            <div id="mc_embed_signup_scroll">
                                               <div id="mc-form" class="mc-form subscribe-form form-group" >
                                                 <input id="mc-email" type="email" autocomplete="off" placeholder="Enter your email" />
-                                                <button  class="btn" id="mc-submit">Subscribe</button>
+                                                <button  class="btn" id="mc-submit" style="background-color:rgb(0,174,191)">Subscribe</button>
                                               </div>
                                            </div>
                                         </form>

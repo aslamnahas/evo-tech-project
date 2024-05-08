@@ -1,0 +1,37 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block content %}
+
+<div class="container mt-5">
+    <div class="row">
+        
+
+        <div class="col-md-8 mt-10 mx-auto">
+            <h4 style="color: black;">Balance: {{ customer.wallet_bal }}</h4></h4>
+            <table class="table table-bordered text-center mb-0">
+                <thead class=" text-dark">
+                    <tr>
+                        <th>Created At</th>
+                        <th>Status</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+                <tbody class="align-middle">
+                    {% for wallet in wallets %}
+                    <tr>
+                        <td class="align-middle">{{ wallet.created_at }}</td>
+                        <td class="align-middle">{{ wallet.status }}</td>
+                        <td class="align-middle">{{ wallet.amount }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            
+        </div>
+    </div>
+</div>
+
+
+
+
+{% endblock content %}

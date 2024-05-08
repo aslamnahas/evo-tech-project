@@ -12,12 +12,29 @@
     font-weight: bold;
 }
 .wishlist-btn {
-    padding-left: 20px; /* Adjust the padding as needed */
-    padding-top: 50px; /* Adjust the padding as needed */
+    padding-left: 10px; /* Adjust the padding as needed */
+    padding-top: 5px; /* Adjust the padding as needed */
 }
 
 .wishlist-btn i {
     font-size: 40px; /* Adjust the font size as needed */
+}
+.button-container {
+    display: flex;
+    align-items: center; /* Align items vertically */
+}
+
+.out-of-stock-message {
+    color: red; /* Color for out of stock message */
+    margin-right: 10px; /* Adjust margin as needed */
+}
+
+.wishlist-btn {
+    background-color: transparent; /* Remove background color */
+    border: none; /* Remove border */
+    color: rgb(1,119,130); /* Set color */
+    font-size: 16px; /* Adjust font size */
+    cursor: pointer; /* Add cursor pointer */
 }
 </style>
          <!-- Begin Li's Breadcrumb Area -->
@@ -88,7 +105,7 @@
                                             <span> {{product.description}}  </span>
                                             
                                         </p>
-                                        <hr>
+                                       
 
                                          {%   if product.stock > 0 %}
                                                <label class="badge bg-succeess">In Stock</label>
@@ -105,14 +122,14 @@
                                                     <input type="text" name="quantity"class="form-control qty-input text-center"value="1">
                                                     <button class ="input-group-text increment-btn">+</button>
 
-                                            {% comment %} <label for="stock"> Only {{ product.stock }} stock left:</label> {% endcomment %}
+                                                 <label for="stock"> Only {{ product.stock }} stock left:</label>
                                         
 
                                         
 
-                                         <br>
-                                         <br>
-                                    </div>                   
+                                            <br>
+                                            <br>
+                                        </div>                   
                                     {% comment %} <div class="single-add-to-cart product_data">
                                         <form action="#" class="cart-quantity">
                                             <div class="quantity">
@@ -122,19 +139,17 @@
                                                 {% comment %} <label for="quantity">Quantity</label>
                                              </div>
                                              {% endcomment %}
-                                         {% if product.stock > 0 %}
-                                             <a href="{% url 'core:add_to_cart' product.id %}" class="add-to-cart mr-4 addToCartBtn btn btn-warning" type="button">Add to Cart</a>
-                                         {% else %}
-                                             <p class="out-of-stock-message">Sorry, this item is currently out of stock.</p>  
-                                         {% endif %}
 
-                                            {% comment %} {% if variant.stock > 0 %} {% endcomment %}
-                                                {% comment %} <button class="add-to-cart wishBtn" type="submit">Wishlist</button> {% endcomment %}
+                                             <div class="button-container">
+                                                {% if product.stock > 0 %}
+                                                    <a href="{% url 'core:add_to_cart' product.id %}" class="add-to-cart mr-2 addToCartBtn btn btn-warning" type="button" style="background-color: rgb(0,174,191);color:white;">Add to Cart</a>
+                                                {% else %}
+                                                    <p class="out-of-stock-message mr-2">Sorry, this item is currently out of stock.</p>  
+                                                {% endif %}
                                             
-                                            {% comment %} {% endif %} {% endcomment %}
-
-                                            <a class="wishlist-btn" href="{% url 'core:add_to_wishlist' product.id %}"><i class="fa fa-heart-o"></i></a>                                        
-                                    </div>                                                           
+                                                <a class="wishlist-btn" href="{% url 'core:add_to_wishlist' product.id %}"><i class="fa fa-heart-o"></i></a>                                        
+                                             </div>   
+                                        </div>                                                 
                                     <div class="product-additional-info">
                                         <div class="product-social-sharing">
                                             <ul>
@@ -392,7 +407,7 @@
                                                 </div>
                                                 <div class="add-actions">
                                                     <ul class="add-actions-link">
-                                                        <li class="add-cart active"><a href="#">Add to cart</a></li>
+                                                        <li class="add-cart active" ><a href="#">Add to cart</a></li>
                                                         <li><a href="#" title="quick view" class="quick-view-btn" data-toggle="modal" data-target="#exampleModalCenter"><i class="fa fa-eye"></i></a></li>
                                                         <li><a class="links-details wishBtn" href="#"><i class="fa fa-heart-o"></i></a></li>
                                                     </ul>
