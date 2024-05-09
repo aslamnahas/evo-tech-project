@@ -145,14 +145,23 @@
                             </div>
                             <!-- Header Logo Area End Here -->
                             <!-- Begin Header Middle Right Area -->
-                            <div class="col-lg-8'  pl-0 ml-sm-15 ml-xs-15">
+                            <div class="col-lg-8' pl-0 ml-sm-15 ml-xs-15">
                                 <!-- Begin Header Middle Searchbox Area -->
                                 <form action="{% url 'core:product_search' %}" method="POST" class="hm-searchbox">
                                     {% csrf_token %}
                                     <input type="text" name="searched" placeholder="Enter your search key ..." value="{{ query }}">
-                                    <button class="li-btn" type="submit"style="background-color: rgb(0,174,191); color: white;"><i class="fa fa-search"></i></button>
+                                    <select name="category">
+                                        <option value="">All Categories</option>
+                                        {% for category in main_categories %}
+                                            <option value="{{ category.id }}">{{ category.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <button class="li-btn" type="submit" style="background-color: rgb(0,174,191); color: white;">
+                                        <i class="fa fa-search"></i>
+                                    </button>
                                 </form>
                             </div>
+                            
 
 
                                 <!-- Header Middle Searchbox Area End Here -->

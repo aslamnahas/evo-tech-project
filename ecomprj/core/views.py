@@ -1118,34 +1118,32 @@ def sort(request):
 
 
 
+
+
 def product_search(request):
     if request.method == "POST":
         searched = request.POST.get('searched')
+        category_id = request.POST.get('category')
 
-        # Split the searched term into individual words
         search_terms = searched.split()
-
-        # Initialize an empty Q object to build the query dynamically
         q_objects = Q()
 
-        # Iterate through each search term and construct the query
         for term in search_terms:
             q_objects |= Q(model__icontains=term) | Q(color__icontains=term)
 
-        # Filter products based on the constructed query
         products = Product.objects.filter(q_objects).distinct()
+
+        if category_id:
+            products = products.filter(main_category_id=category_id)
 
         context = {
             'products': products,
         }
-        return render(request, 'core/products.html', context)
+        return render(request, 'core/products.html', context)  # Correct template name here
 
-    return redirect('core:home')
-
-
-
-
-
+    main_categories = Main_Category.objects.all()
+    print(main_categories,'ppppppppppppppppppppppppppppppppppppppppppppppppppppmain')
+    return render(request, 'core/base.html', {'main_categories': main_categories})
 
 @never_cache
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
@@ -1339,19 +1337,22 @@ def proceedtopay(request):
             messages.error(request, f"Insufficient stock for {product.product_name}.")
             return redirect("core:checkout")
         
-        item_price = cart_item.product.price * cart_item.quantity
+        item_price = cart_item.product.get_discounted_price() * cart_item.quantity
         subtotal += item_price
+        print(subtotal)
         
         # Check if a discount is applied to the cart item
-        if cart_item.coupon:
-            discount += cart_item.coupon.discount_amount
-    
+        # if cart_item.coupon:
+            # discount += cart_item.coupon.discount_amount
+            # print(discount,'2222222222222')
     # Check if there is any discount applied globally
     global_discount = request.session.get("discount", 0)
     discount += global_discount
-    print(global_discount)
+    print(discount,'44444444444444444444444')
     # Calculate total including shipping and discounts
-    total = subtotal + shipping - discount
+    total = subtotal - discount + shipping
     print(total)
+    # total =+ shipping
+    # print(total)
     
     return JsonResponse({"total": total})
