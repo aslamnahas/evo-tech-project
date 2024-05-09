@@ -535,16 +535,18 @@ def cart(request):
     shipping_cost = 10
     total = subtotal + shipping_cost if subtotal else 0
     
-    if total >= 40000:
+    # if total >= coupon.min_amount:
         # Calculate total discount only if there's a coupon applied
-        total_discount = sum(cart_item.coupon.discount_amount for cart_item in cart_items if cart_item.coupon)
+    total_discount = request.session.get('discount', 0)
         
         # Apply total discount to the total
-        total -= total_discount
+    total -= total_discount
+    # 
+    print(total)
 
     request.session['cart_subtotal'] = str(subtotal)  
     request.session['cart_total'] = str(total)
-
+    
     coupons = Coupon.objects.all()
 
     context = {
@@ -1322,15 +1324,14 @@ def razorpay(request, address_id):
     cart_items.delete()
     return redirect("core:success")
 
-
-
+@login_required
 def proceedtopay(request):
     cart = Cart.objects.filter(user=request.user)
-    print("Proccedddddd")
-    product = Product.objects.all()
-    total = 0
     shipping = 10
     subtotal = 0
+    discount = 0  # Initialize discount to 0
+    
+    # Calculate subtotal and apply discounts
     for cart_item in cart:
         product = cart_item.product
 
@@ -1338,25 +1339,19 @@ def proceedtopay(request):
             messages.error(request, f"Insufficient stock for {product.product_name}.")
             return redirect("core:checkout")
         
-    # for cart_item in cart:
-    #     if cart_item.product.category.category_offer:
-    #         itemprice2 = (
-    #             cart_item.product.price - cart_item.product.category.category_offer
-    #         ) * (cart_item.quantity)
-    #         subtotal = subtotal + itemprice2
-
-    #     else:
-    
-    for cart_item in cart:
         item_price = cart_item.product.price * cart_item.quantity
-    subtotal += item_price
-
-    for item in cart:
-        discount = request.session.get("discount", 0)
-    total = subtotal + shipping
-    if discount:
-        total -= discount
+        subtotal += item_price
+        
+        # Check if a discount is applied to the cart item
+        if cart_item.coupon:
+            discount += cart_item.coupon.discount_amount
+    
+    # Check if there is any discount applied globally
+    global_discount = request.session.get("discount", 0)
+    discount += global_discount
+    print(global_discount)
+    # Calculate total including shipping and discounts
+    total = subtotal + shipping - discount
+    print(total)
     
     return JsonResponse({"total": total})
-
-
