@@ -490,15 +490,11 @@ def change_password(request):
             messages.error(request, 'User is not authenticated.')
 
     return redirect('core:profile')
-
-
-
-
-
 @login_required(login_url='core:loginPage') 
 def cart(request):
     if "discount" in request.session:
         del request.session["discount"]
+        
     if isinstance(request.user, AnonymousUser):
         device_id = request.COOKIES.get("device_id")
         cart_items = Cart.objects.filter(device=device_id).order_by("id")
@@ -507,9 +503,7 @@ def cart(request):
         cart_items = Cart.objects.filter(user=user).order_by("id")
 
     subtotal = 0
-    total_dict = {}
     
-
     for cart_item in cart_items:
         if cart_item.quantity > cart_item.product.stock:
             messages.warning(
@@ -517,7 +511,6 @@ def cart(request):
             )
             cart_item.quantity = cart_item.product.stock
             cart_item.save()
-
 
         cart_item.total_price = cart_item.quantity * cart_item.product.get_discounted_price()
         cart_item.save()
@@ -527,59 +520,30 @@ def cart(request):
         coupon_code = request.POST.get("coupon_code")
         try:
             coupon = Coupon.objects.get(coupon_code=coupon_code, max_usage_count=1)
-            # for cart_item in cart_items:
             if subtotal >= coupon.min_amount:
-            # Apply coupon logic here (e.g., calculate discount, update session)
                 request.session['discount'] = coupon.discount_amount
                 messages.success(request, "Coupon applied successfully")
+                # Apply coupon to each cart item
+                for cart_item in cart_items:
+                    cart_item.coupon = coupon
+                    cart_item.save()
             else:
-               messages.error(request, f"Total amount is below the minimum required ({coupon.min_amount}) for this coupon")  
+                messages.error(request, f"Total amount is below the minimum required ({coupon.min_amount}) for this coupon")  
         except Coupon.DoesNotExist:
             messages.error(request, "Invalid or expired coupon code")
 
-       
-        for cart_item in cart_items:
-            cart_item.coupon = coupon
-            cart_item.save()
-
-        messages.success(request, "Coupon applied successfully")
-   
-
-        # item_price = cart_item.product.price * cart_item.quantity
-        # effective_offer = calculate_effective_offer(cart_item.product)
-        # if effective_offer > 0:
-        #     discount_amount = (effective_offer / Decimal('100.0')) * item_price
-        #     item_price -= discount_amount
-
-        # total_dict[cart_item.id] = item_price
-        # subtotal += item_price
-       
-
-
-    # for cart_item in cart_items:
-    #    subtotal += cart_item.sub_total
-   
-
     shipping_cost = 10
     total = subtotal + shipping_cost if subtotal else 0
-    # total_discount = sum(cart_item.coupon.discount_amount for cart_item in cart_items if cart_item.coupon)
-    # print(total_discount)
-    # print(total_discount,'pppppppppppppppppppppppppp')
-    # print(cart_item.coupon.discount_amount)
-    # print(subtotal,'kkkkkkkkkkkkkkkkkkkkkkkkkk')
-    # for cart_item in cart_items:
-    total = subtotal + shipping_cost
-    for cart_item in cart_items:
-       if cart_item.coupon:
-           total -= cart_item.coupon.discount_amount
-    # subtotal = float(subtotal)
-    # total = float(total) 
     
+    if total >= 40000:
+        # Calculate total discount only if there's a coupon applied
+        total_discount = sum(cart_item.coupon.discount_amount for cart_item in cart_items if cart_item.coupon)
+        
+        # Apply total discount to the total
+        total -= total_discount
+
     request.session['cart_subtotal'] = str(subtotal)  
     request.session['cart_total'] = str(total)
-    # request.session['user'] = user
-    # request.session['email'] = request.email
-    # print(request.email,"kkkkkkkkkkkeeeeeeeee")
 
     coupons = Coupon.objects.all()
 
@@ -590,8 +554,6 @@ def cart(request):
         "coupons": coupons,
     }
     return render(request, "core/cart.html", context)
-
-
 
 
 
@@ -848,38 +810,38 @@ def place_order(request):
         return redirect("core:success")
 
 
-def proceedtopay(request):
-    cart = Cart.objects.filter(user=request.user)
-    product = Product.objects.all()
-    total = 0
-    shipping = 10
-    subtotal = 0
-    for cart_item in cart:
-        product = cart_item.product
+# def proceedtopay(request):
+#     cart = Cart.objects.filter(user=request.user)
+#     product = Product.objects.all()
+#     total = 0
+#     shipping = 10
+#     subtotal = 0
+#     for cart_item in cart:
+#         product = cart_item.product
 
-        if cart_item.quantity > product.stock:
-            messages.error(request, f"Insufficient stock for {product.product_name}.")
-            return redirect("checkout")
+#         if cart_item.quantity > product.stock:
+#             messages.error(request, f"Insufficient stock for {product.product_name}.")
+#             return redirect("checkout")
         
-    for cart_item in cart:
-        if cart_item.product.category.category_offer:
-            itemprice2 = (
-                cart_item.product.price - cart_item.product.category.category_offer
-            ) * (cart_item.quantity)
-            subtotal = subtotal + itemprice2
+#     for cart_item in cart:
+#         if cart_item.product.category.category_offer:
+#             itemprice2 = (
+#                 cart_item.product.price - cart_item.product.category.category_offer
+#             ) * (cart_item.quantity)
+#             subtotal = subtotal + itemprice2
 
-        else:
-            itemprice = (cart_item.product.price) * (cart_item.quantity)
+#         else:
+#             itemprice = (cart_item.product.price) * (cart_item.quantity)
 
-            subtotal = subtotal + itemprice
+#             subtotal = subtotal + itemprice
 
-    for item in cart:
-        discount = request.session.get("discount", 0)
-    total = subtotal + shipping
-    if discount:
-        total -= discount
+#     for item in cart:
+#         discount = request.session.get("discount", 0)
+#     total = subtotal + shipping
+#     if discount:
+#         total -= discount
     
-    return JsonResponse({"total": total})
+#     return JsonResponse({"total": total})
 
 
 
@@ -1358,7 +1320,7 @@ def razorpay(request, address_id):
         )
 
     cart_items.delete()
-    return redirect("success")
+    return redirect("core:success")
 
 
 
@@ -1384,9 +1346,10 @@ def proceedtopay(request):
     #         subtotal = subtotal + itemprice2
 
     #     else:
-    itemprice = (cart_item.product.price) * (cart_item.quantity)
-
-    subtotal = subtotal + itemprice
+    
+    for cart_item in cart:
+        item_price = cart_item.product.price * cart_item.quantity
+    subtotal += item_price
 
     for item in cart:
         discount = request.session.get("discount", 0)
