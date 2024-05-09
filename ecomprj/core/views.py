@@ -556,8 +556,8 @@ def cart(request):
        
 
 
-    for cart_item in cart_items:
-       subtotal += cart_item.sub_total
+    # for cart_item in cart_items:
+    #    subtotal += cart_item.sub_total
    
 
     shipping_cost = 10
@@ -567,8 +567,11 @@ def cart(request):
     # print(total_discount,'pppppppppppppppppppppppppp')
     # print(cart_item.coupon.discount_amount)
     # print(subtotal,'kkkkkkkkkkkkkkkkkkkkkkkkkk')
-
-    total = subtotal - cart_item.coupon.discount_amount + shipping_cost
+    # for cart_item in cart_items:
+    total = subtotal + shipping_cost
+    for cart_item in cart_items:
+       if cart_item.coupon:
+           total -= cart_item.coupon.discount_amount
     # subtotal = float(subtotal)
     # total = float(total) 
     
@@ -785,6 +788,7 @@ def place_order(request):
         user = request.user
         address_id = request.POST.get('addressId')
         payment_type = request.POST.get('payment')  
+        print(payment_type)
 
         # Check if address is selected
         if not address_id:
@@ -842,6 +846,90 @@ def place_order(request):
             )
 
         return redirect("core:success")
+
+
+def proceedtopay(request):
+    cart = Cart.objects.filter(user=request.user)
+    product = Product.objects.all()
+    total = 0
+    shipping = 10
+    subtotal = 0
+    for cart_item in cart:
+        product = cart_item.product
+
+        if cart_item.quantity > product.stock:
+            messages.error(request, f"Insufficient stock for {product.product_name}.")
+            return redirect("checkout")
+        
+    for cart_item in cart:
+        if cart_item.product.category.category_offer:
+            itemprice2 = (
+                cart_item.product.price - cart_item.product.category.category_offer
+            ) * (cart_item.quantity)
+            subtotal = subtotal + itemprice2
+
+        else:
+            itemprice = (cart_item.product.price) * (cart_item.quantity)
+
+            subtotal = subtotal + itemprice
+
+    for item in cart:
+        discount = request.session.get("discount", 0)
+    total = subtotal + shipping
+    if discount:
+        total -= discount
+    
+    return JsonResponse({"total": total})
+
+
+
+
+def razorpay(request, address_id):
+    user = request.user
+    cart_items = Cart.objects.filter(user=user)
+    print('rjerhhhhhhhhhhhrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr')
+
+    subtotal = 0
+    
+
+    shipping_cost = 10
+    total = subtotal + shipping_cost if subtotal else 0
+
+    subtotal = Decimal(request.session.get('cart_subtotal', 0))
+    total = Decimal(request.session.get('cart_total', 0))
+
+    discount = request.session.get("discount", 0)
+
+    if discount:
+        total -= discount
+
+    payment = "razorpay"
+    user = request.user
+    cart_items = Cart.objects.filter(user=user)
+    address = Address.objects.get(id=address_id)
+
+    order = Order.objects.create(
+        user=user,
+        address=address,
+        amount=total,
+        payment_type=payment,
+    )
+    print(total,"ttttttotal")
+
+    for cart_item in cart_items:
+        product = cart_item.product
+        product.stock -= cart_item.quantity
+        product.save()
+
+        order_item = OrderItem.objects.create(
+            order=order,
+            product=cart_item.product,
+            quantity=cart_item.quantity,
+            image=cart_item.product.image,
+        )
+
+    cart_items.delete()
+    return redirect("success")
 
 
 
@@ -1223,4 +1311,89 @@ def wallet(request):
         return render(request, "core/wallet.html", context)
     else:
         return redirect("core:home")
+
+
+
+def razorpay(request, address_id):
+    user = request.user
+    cart_items = Cart.objects.filter(user=user)
+
+    subtotal = 0
+    
+
+    shipping_cost = 10
+    total = subtotal + shipping_cost if subtotal else 0
+
+    subtotal = Decimal(request.session.get('cart_subtotal', 0))
+    total = Decimal(request.session.get('cart_total', 0))
+
+    discount = request.session.get("discount", 0)
+
+    if discount:
+        total -= discount
+
+    payment = "razorpay"
+    user = request.user
+    cart_items = Cart.objects.filter(user=user)
+    address = Address.objects.get(id=address_id)
+
+    order = Order.objects.create(
+        user=user,
+        address=address,
+        amount=total,
+        payment_type=payment,
+    )
+    print(total,"ttttttotal")
+
+    for cart_item in cart_items:
+        product = cart_item.product
+        product.stock -= cart_item.quantity
+        product.save()
+
+        order_item = OrderItem.objects.create(
+            order=order,
+            product=cart_item.product,
+            quantity=cart_item.quantity,
+            image=cart_item.product.image,
+        )
+
+    cart_items.delete()
+    return redirect("success")
+
+
+
+def proceedtopay(request):
+    cart = Cart.objects.filter(user=request.user)
+    print("Proccedddddd")
+    product = Product.objects.all()
+    total = 0
+    shipping = 10
+    subtotal = 0
+    for cart_item in cart:
+        product = cart_item.product
+
+        if cart_item.quantity > product.stock:
+            messages.error(request, f"Insufficient stock for {product.product_name}.")
+            return redirect("core:checkout")
+        
+    # for cart_item in cart:
+    #     if cart_item.product.category.category_offer:
+    #         itemprice2 = (
+    #             cart_item.product.price - cart_item.product.category.category_offer
+    #         ) * (cart_item.quantity)
+    #         subtotal = subtotal + itemprice2
+
+    #     else:
+    itemprice = (cart_item.product.price) * (cart_item.quantity)
+
+    subtotal = subtotal + itemprice
+
+    for item in cart:
+        discount = request.session.get("discount", 0)
+    total = subtotal + shipping
+    if discount:
+        total -= discount
+    
+    return JsonResponse({"total": total})
+
 

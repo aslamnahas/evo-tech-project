@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from  core.views import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -26,6 +27,9 @@ urlpatterns = [
     path('',include("core.urls")),
     path('adminn/',include('admin_side.urls')),
     path('accounts/',include('allauth.urls')),
+    path('razorpay/<int:address_id>/',razorpay,name='razorpay'),
+    path('proceed-to-pay/',proceedtopay,name='proceedtopay'),
+    # path('razorpay/<int:address_id>/',razorpay,name='razorpay'),
 ]
 
 if settings.DEBUG:
