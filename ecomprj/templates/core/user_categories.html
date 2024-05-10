@@ -1,73 +1,84 @@
-<!-- user_category.html -->
-
 {% extends 'core/base.html' %}
-
 {% load static %}
+{% block extra_css %}
+<style>
+    /* Custom CSS for user categories page */
+    .breadcrumb-area {
+        margin-bottom: 30px;
+    }
+
+    .category-container {
+        padding-top: 30px;
+    }
+
+    .category-card {
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        overflow: hidden;
+        height: 400px; /* Set fixed height for category cards */
+    }
+
+    .category-card img {
+        width: 100%; /* Ensure images fill the container */
+        height: 200px; /* Set fixed height for images */
+        object-fit: cover; /* Maintain aspect ratio and cover container */
+    }
+
+    .category-card .card-body {
+        padding: 20px;
+        height: 100%; /* Ensure card body fills the category card */
+        display: flex; /* Use flexbox to align content vertically */
+        flex-direction: column; /* Align content vertically */
+    }
+
+    .category-card .card-title {
+        font-size: 1.25rem;
+        margin-bottom: 10px;
+    }
+
+    .category-card .card-text {
+        color: #6c757d;
+        margin-bottom: auto; /* Push card text to the top */
+    }
+
+    .view-products-btn {
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        margin-top: auto; /* Push button to the bottom */
+    }
+
+    .view-products-btn:hover {
+        background-color: #0056b3;
+    }
+</style>
+{% endblock extra_css %}
 
 {% block content %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Category</title>
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <style>
-        /* Additional custom styles */
-        body {
-            background-color: #f8f9fa; /* Light gray background */
-            padding: 20px; /* Add some padding for better readability */
-        }
-        .category-container {
-            margin-top: 30px; /* Add some spacing at the top */
-        }
-        .category-card {
-            background-color: #fff; /* White background for cards */
-            border-radius: 10px; /* Rounded corners for cards */
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Add shadow for depth */
-            margin-bottom: 20px; /* Add some spacing between cards */
-        }
-        .category-img {
-            width: 100px; /* Adjust image width */
-            height: auto; /* Maintain aspect ratio */
-            margin: 0 auto; /* Center the image */
-            display: block; /* Ensure image displays correctly */
-        }
-    </style>
-</head>
-<div class="breadcrumb-area">
-    <div class="container">
-        <div class="breadcrumb-content">
-            <ul>
-                <li><a href="{% url 'core:home' %}"> Home</a></li>
-                <li class="active">Category List</li>
-            </ul>
-        </div>
-    </div>
+<div class="container">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'core:home' %}">Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Category List</li>
+        </ol>
+    </nav>
 </div>
-<body>
-    <div class="container category-container">
-        <h1 class="text-center mb-4">Categories</h1>
-        <div class="row">
-            {% for category in categories %}
-            <div class="col-md-4">
-                <div class="card category-card">
-                    <div class="card-body">
-                        <h2 class="card-title">{{ category.name }}</h2>
-                        {% if category.img %}
-                        <img src="{{ category.img.url }}" alt="{{ category.name }}" class="category-img">
-                        {% else %}
-                        <p>No image available</p>
-                        {% endif %}
-                        <p class="card-text">{{ category.descriptions }}</p>
-                        {% comment %} <p class="card-text">Offer: {{ category.offer }}</p> {% endcomment %}
-                    </div>
+
+<div class="container category-container">
+    <h1 class="text-center mb-4">Categories</h1>
+    <div class="row">
+        {% for category in categories %}
+        <div class="col-md-4 mb-4">
+            <div class="card category-card">
+                <img src="{% if category.img %}{{ category.img.url }}{% else %}{% static 'images/default_image.jpg' %}{% endif %}" class="card-img-top" alt="{{ category.name }}">
+                <div class="card-body">
+                    <h2 class="card-title">{{ category.name }}</h2>
+                    <p class="card-text">{{ category.descriptions }}</p>
+                    <a href="{% url 'core:category_products' category.id %}" class="btn btn-primary view-products-btn">View Products</a>
                 </div>
             </div>
-            {% endfor %}
         </div>
+        {% endfor %}
     </div>
-</body>
-</html>
+</div>
 {% endblock content %}

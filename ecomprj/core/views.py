@@ -244,19 +244,39 @@ def google(request):
 
 # categories user side=================================================================
 
+
 def user_category_view(request):
-    print(request.user)
     categories = Main_Category.objects.filter(deleted=False)  # Fetch active categories
     return render(request, 'core/user_categories.html', {'categories': categories})
 
 
-
-
-# product user side =====================================================================
-
 def products(request):
-    product_list = Product.objects.filter(deleted=False).order_by('-id')
-    paginator = Paginator(product_list, 9)  # Show 12 products per page
+    # Get all products that are not deleted
+    product_list = Product.objects.filter(deleted=False)
+
+    # Filter products based on category
+    category_id = request.GET.get('category')
+    if category_id:
+        product_list = product_list.filter(main_category_id=category_id)
+
+    # Filter products based on price range
+    price_range = request.GET.get('price_range')
+    if price_range:
+        min_price, max_price = map(int, price_range.split('-'))
+        product_list = product_list.filter(price__range=(min_price, max_price))
+
+    # Filter products based on color
+    color_range = request.GET.get('color_range')
+    # print("Color range:", color_range)  # Debugging print statement
+    if color_range:
+        product_list = product_list.filter(color=color_range)
+    # print(product_list)
+
+    # Order products by ID (you can change the ordering as needed)
+    product_list = product_list.order_by('-id')
+
+    # Paginate the filtered product list
+    paginator = Paginator(product_list, 9)  # Show 9 products per page
 
     page_number = request.GET.get('page')
     try:
@@ -269,8 +289,6 @@ def products(request):
         products = paginator.page(paginator.num_pages)
 
     return render(request, 'core/products.html', {'products': products})
-
-
 # productshowing page======================================================================
 
 def product_detail(request, id):
@@ -1356,3 +1374,32 @@ def proceedtopay(request):
     # print(total)
     
     return JsonResponse({"total": total})
+
+
+
+def category_products(request, category_id):
+    # Retrieve selected filters from the request
+    selected_category = request.GET.get('category')
+    selected_price_range = request.GET.get('price_range')
+    selected_color_range = request.GET.get('color_range')
+
+    # Get the main category object
+    main_category = Main_Category.objects.get(pk=category_id)
+
+    # Filter products queryset based on selected filters
+    products = Product.objects.filter(main_category=main_category)
+
+    if selected_price_range:
+        price_min, price_max = map(int, selected_price_range.split('-'))
+        products = products.filter(price__gte=price_min, price__lte=price_max)
+
+    if selected_color_range:
+        products = products.filter(color=selected_color_range)
+
+    # Pass the filtered products and main category to the template
+    context = {
+        'products': products,
+        'main_category': main_category,
+    }
+
+    return render(request, 'core/products.html', context)
