@@ -17,6 +17,7 @@ urlpatterns = [
     path('products/',views.products, name='products'),
     path('products/<int:id>/', views.product_detail, name='product_detail'),
     path('categories/<int:category_id>/products/', views.category_products, name='category_products'), 
+    # path('search/', views.user_category_view, name='search'),
 
 
 
@@ -51,6 +52,7 @@ urlpatterns = [
     path('cancel_success/',views.cancel_success,name='cancel_success'),
     path('cancel/<int:order_id>/', views.cancel, name='cancel'),
     path('order_details/<int:id>',views.order_details,name='order_details'),
+    
 
 
     path('order/',views.order,name = 'order'),

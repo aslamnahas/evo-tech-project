@@ -15,12 +15,12 @@
         border: 1px solid #dee2e6;
         border-radius: 8px;
         overflow: hidden;
-        height: 400px; /* Set fixed height for category cards */
+        height: auto; /* Remove fixed height for category cards */
     }
 
     .category-card img {
         width: 100%; /* Ensure images fill the container */
-        height: 200px; /* Set fixed height for images */
+        max-height: 200px; /* Set maximum height for images */
         object-fit: cover; /* Maintain aspect ratio and cover container */
     }
 
@@ -38,7 +38,6 @@
 
     .category-card .card-text {
         color: #6c757d;
-        margin-bottom: auto; /* Push card text to the top */
     }
 
     .view-products-btn {

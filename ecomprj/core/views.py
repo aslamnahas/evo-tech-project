@@ -931,28 +931,30 @@ def order_details(request, id):
     }
     return render(request, "core/order_details.html", context)
 
+
 @login_required
 def customer_order(request):
     if "email" in request.session:
-        # Fetch all orders
-        all_orders = Order.objects.all().order_by('-id')
-        
-        # Pagination
-        paginator = Paginator(all_orders, 10)  # Show 10 orders per page
-        page_number = request.GET.get('page')
-        try:
-            orders = paginator.page(page_number)
-        except PageNotAnInteger:
-            # If page is not an integer, deliver first page.
-            orders = paginator.page(1)
-        except EmptyPage:
-            # If page is out of range (e.g. 9999), deliver last page of results.
-            orders = paginator.page(paginator.num_pages)
+        # user = request.user
+        user_orders= Order.objects.all().order_by('-id')
 
-        return render(request, "core/customer_order.html", {'orders': orders})
+        # Accumulate all order items for all orders
+        # all_order_items = []
+        # for order in orders:
+        #     order_items = order.order_items.all()
+        #     all_order_items.extend(order_items)
+ 
+        # context = {
+        #     "orders": orders,
+        #     "all_order_items": all_order_items,  # Pass all_order_items to the template context
+        # }
+        return render(request, "core/customer_order.html", {'orders': user_orders})
+
     else:
         return redirect("core:home")
+    
 
+from django.db.models import F
 @login_required
 def cancel(request, order_id):
     if request.method == 'POST':
@@ -965,32 +967,29 @@ def cancel(request, order_id):
         else:
             order.status = 'returned'
 
-        variant = order.product
-        variant.stock += order.quantity
-        variant.save()
+        # Iterate through order items to update stock
+        for item in order.order_items.all():
+            product = item.product
+            product.stock = F('stock') + item.quantity
+            product.save()
+
         # Return amount to user's wallet
         user = request.user
-        # try:
-        #     # Retrieve user's wallet
-        #     wallet = Wallet.objects.get(user=user)
-        # except Wallet.DoesNotExist:
-            # If wallet doesn't exist, create one for the user
-        wallet = Wallet.objects.create(user=user)
+        wallet, _ = Wallet.objects.get_or_create(user=user)
 
-        # Add the amount of cancelled order to the wallet balance if order via razorpay
-        if order.payment_type == 'razorpay' or order.payment_type == 'wallet':
-            wallet.balance += Decimal(order.amount)
+        # Add the amount of cancelled order to the wallet balance if order via razorpay or wallet
+        if order.payment_type in ['razorpay', 'wallet']:
+            wallet.amount += order.amount
             wallet.save()
 
         order.save()  # Save the updated status
 
         # Redirect to the same page or any desired page after status change
-        return redirect('core:customer_order')  # Assuming you have a URL named 'orders' defined in your urls.py file
+        return redirect('core:customer_order')  # Assuming you have a URL named 'customer_order' defined in your urls.py file
     else:
         # Handle GET requests appropriately, if needed
-        # For now, let's redirect to the 'orders' page
+        # For now, let's redirect to the 'customer_order' page
         return redirect('core:customer_order')
-
 
 def cancel_success(request):
     print("successsssssssssssssssssss")
@@ -1084,33 +1083,29 @@ def handle_cancellation(order):
             order.user.wallet_bal += order_item.product.price * order_item.quantity
             order.user.save()
 
-
 def return_order(request, order_id, order_item_id):
-    user = request.user
-    usercustm = Customer.objects.get(email=user)
     try:
         order = Order.objects.get(id=order_id)
         order_item = OrderItem.objects.get(id=order_item_id, order=order)
     except Order.DoesNotExist or OrderItem.DoesNotExist:
         return render(request, 'order_not_found.html')
 
-    if order.status in ["completed", "delivered"]:
-        wallet = Wallet.objects.create(
-            user=user,
-            order=order,
-            amount=order_item.product.price * order_item.quantity,
-            status="Credited",
-        )
-        wallet.save()
-    product = order_item.product
-    product.stock += order_item.quantity
-    product.save()
-    usercustm.wallet_bal += order_item.product.price * order_item.quantity
-    usercustm.save()
-    order_item.delete()
-    if order.order_items.count() == 0:
-        order.status = "Return successful"
-        order.save()
+    if order_item:
+        product = order_item.product
+        if product:
+            product.stock += order_item.quantity
+            product.save()
+
+            user = request.user
+            user_custm = Customer.objects.get(email=user)
+            user_custm.wallet_bal += order_item.product.price * order_item.quantity
+            user_custm.save()
+
+            order_item.delete()
+
+            if order.order_items.count() == 0:
+                order.status = "Return successful"
+                order.save()
 
     return redirect("core:order_details", order_id=order_id)
 

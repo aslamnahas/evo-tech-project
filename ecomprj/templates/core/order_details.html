@@ -23,8 +23,10 @@
             <div class="card-body p-4">
               <div class="d-flex flex-row mb-4 pb-2">
                 <div class="flex-fill">
-                  <h5 class="bold">{{ product.product.brand.name }} {{ product.product.model }}</h5>
-                  <p class="text-muted"> Qt: {{ product.quantity }} item</p>
+                  {% for item in product.order_items.all %}
+    <h5 class="bold">{{ item.product.brand.name }} {{ item.product.model }}</h5>
+    <p class="text-muted"> Qt: {{ item.quantity }} item</p>
+{% endfor %}
                   <h4 class="mb-3"> ₹{{  product.amount }} <span class="small text-muted"> via ({{ product.payment_type }}) </span></h4>
                   <br>
                   <br>
@@ -36,8 +38,10 @@
                   <p class="text-muted mb-0"> <span class="fw-bold text-body">Phone: {{ product.user.ph_no }}</span> </p>
                 </div>
                 <div>
-                  <img class="align-self-center img-fluid ml-100"
-                    src= {{ product.product.image.url }} width="200">
+                  {% for item in product.order_items.all %}
+                     <img class="align-self-center img-fluid ml-100"
+                        src= {{ item.product.image.url }} width="200">
+                        {% endfor %}
                 </div>
               </div>
             </div>
@@ -51,7 +55,7 @@
                     <button type="submit" class="btn btn-danger">Cancel</button>
                 </form>
                  {% elif product.status == 'completed' or product.status == 'delivered' %}
-                <form method="post" action="{% url 'core:cancel' product.id  %}">
+                <form method="post" action="{% url 'core:return_order' product.id  %}">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-success">Return</button>
                 </form>

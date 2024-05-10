@@ -50,41 +50,42 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {% for i in orders %}
-                                            <tr>
-                                                <td class="li-product-name"><a href="#">{{ i.date }}</a></td>
-                                                <td class="li-product-thumbnail">
-                                                    {% if i.product.image %}
-                                                    <a href="{% url 'core:order_details' i.id %}">
-                                                        <img class="product-image" src="{{ i.product.image.url }}" alt="Li's Product Image">
-                                                    </a>
-                                                    {% else %}
-                                                    <span>No Image Available</span>
-                                                    {% endif %}
-                                                </td>                                    
-                                                <td class="li-product-name"><a href="{% url 'core:order_details' i.id %}">{{ i.product.model }}</a></td>
-                                                {% comment %} <td class="li-product-name"><a href="{% url 'core:order_details' i.id %}">{{ i.variant.ram }}GB </a></td>                                                {% endcomment %}
-                                                <td class="li-product-name"><a href="{% url 'core:order_details' i.id %}">{{ i.quantity }}</a></td>                                               
-                                                <td class="li-product-name"><a href="{% url 'core:order_details' i.id %}">{{ i.payment_type }}</a></td>                                               
-                                                <td class="li-product-name"><a href="{% url 'core:order_details' i.id %}">{{ i.amount }}</a></td>                                               
-                                                <td class="li-product-name"><a href="{% url 'core:order_details' i.id %}">{{ i.status }}</a></td>                                               
-                                                <td class="product-subtotal">
-                                                    {% if i.status == 'pending' or i.status == 'processing' or i.status == 'shipped' %}                
-                                                        <form method="post" action="{% url 'core:cancel' order_id=i.id  %}">
-                                                            {% csrf_token %}
-                                                            <button type="submit" class="btn btn-danger">Cancel</button>
-                                                        </form>
-                                                    {% elif i.status == 'completed' or i.status == 'delivered' %}
-                                                        <form method="post" action="{% url 'core:cancel' order_id=i.id %}">
-                                                            {% csrf_token %}
-                                                            <button type="submit" class="btn btn-success">Return</button>
-                                                        </form>
-                                                    {% else %}
-                                                           <p> - </p>
-                                                    {% endif %}
-                                                </td>
-                                            </tr>
-                                            {% endfor %}
+                                            {% for order in orders %}
+    {% for item in order.order_items.all %}
+        <tr>
+            <td class="li-product-name"><a href="#">{{ order.date }}</a></td>
+            <td class="li-product-thumbnail">
+                {% if item.image %}
+                    <a href="{% url 'core:order_details' order.id %}">
+                        <img class="product-image" src="{{ item.image.url }}" alt="Product Image">
+                    </a>
+                {% else %}
+                    <span>No Image Available</span>
+                {% endif %}
+            </td>
+            <td class="li-product-name"><a href="{% url 'core:order_details' order.id %}">{{ item.product.model }}</a></td>
+            <td class="li-product-name"><a href="{% url 'core:order_details' order.id %}">{{ item.quantity }}</a></td>
+            <td class="li-product-name"><a href="{% url 'core:order_details' order.id %}">{{ order.payment_type }}</a></td>
+            <td class="li-product-name"><a href="{% url 'core:order_details' order.id %}">{{ order.amount }}</a></td>
+            <td class="li-product-name"><a href="{% url 'core:order_details' order.id %}">{{ order.status }}</a></td>
+            <td class="product-subtotal">
+                {% if order.status == 'pending' or order.status == 'processing' or order.status == 'shipped' %}
+                    <form method="post" action="{% url 'core:cancel' order_id=order.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">Cancel</button>
+                    </form>
+                {% elif order.status == 'completed' or order.status == 'delivered' %}
+                    <form method="post" action="{% url 'core:cancel' order_id=order.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success">Return</button>
+                    </form>
+                {% else %}
+                    <p> - </p>
+                {% endif %}
+            </td>
+        </tr>
+    {% endfor %}
+{% endfor %}
                                         </tbody>  
                                     </table>
                                 </div>
@@ -99,43 +100,6 @@
                     </div>
                 </div>
             </div>
-            <!-- Pagination Links -->
-            <div class="pagination-area">
-                <div class="row">
-                    <div class="col-lg-6 col-md-6">
-                        <p class="pagination-info"> </p>
-                    </div>
-                    <div class="col-lg-6 col-md-6">
-                        <ul class="pagination pagination-sm justify-content-end">
-                            <li class="page-item {% if not orders.has_previous %} disabled {% endif %}">
-                                <a class="page-link" href="{% if orders.has_previous %}?page={{ orders.previous_page_number }}{% endif %}" aria-label="Previous">
-                                    <span aria-hidden="true">&laquo; Previous</span>
-                                </a>
-                            </li>
-                            <li class="page-item disabled">
-                                <span class="page-link">Page {{ orders.number }} of {{ orders.paginator.num_pages }}</span>
-                            </li>
-                            <li class="page-item {% if not orders.has_next %} disabled {% endif %}">
-                                <a class="page-link" href="{% if orders.has_next %}?page={{ orders.next_page_number }}{% endif %}" aria-label="Next">
-                                    <span aria-hidden="true">Next &raquo;</span>
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        {% comment %} {% else %}
-            <!-- No orders message -->
-            <div class="alert alert-info" role="alert">
-                <h4 class="alert-heading">Your order list is empty</h4>
-            </div>
-        {% endif %} {% endcomment %}
-    </div>
-</div>
-</div>
-</div>
-{% endblock content %}
-  
             <!--Shopping Cart Area End-->
 {% comment %}            
             <script>
@@ -186,7 +150,5 @@
                 }
             </script>
              {% endcomment %}
- 
-   <!-- Add this script to your cart.html file -->
 
-  
+        {% endblock content %}
