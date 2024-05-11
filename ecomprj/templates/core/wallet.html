@@ -1,19 +1,28 @@
+<!-- core/wallet.html -->
 {% extends 'core/base.html' %}
 {% load static %}
+
 {% block content %}
 
 <div class="container mt-5">
     <div class="row">
-        
-
         <div class="col-md-8 mt-10 mx-auto">
-            <h4 style="color: black;">Balance: {{ customer.wallet_bal }}</h4></h4>
+            <h4 style="color: black;">Balance: {{ total_wallet_balance }}</h4>
+            <form id="recharge-form">
+                <div class="form-group">
+                    <label for="amount">Enter Amount to Recharge:</label>
+                    <input type="number" class="form-control" id="amount" name="amount" placeholder="Enter amount" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Recharge Wallet</button>
+            </form>
+            <br>
             <table class="table table-bordered text-center mb-0">
-                <thead class=" text-dark">
+                <thead class="text-dark">
                     <tr>
                         <th>Created At</th>
                         <th>Status</th>
                         <th>Amount</th>
+                        <th>Action</th> <!-- New column for action button -->
                     </tr>
                 </thead>
                 <tbody class="align-middle">
@@ -22,16 +31,83 @@
                         <td class="align-middle">{{ wallet.created_at }}</td>
                         <td class="align-middle">{{ wallet.status }}</td>
                         <td class="align-middle">{{ wallet.amount }}</td>
+                        <td class="align-middle">
+                            {% if wallet.status == 'credited' %}
+                                <button class="btn btn-primary add-amount" data-wallet-id="{{ wallet.id }}">Add Amount</button>
+                            {% endif %}
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
-            
         </div>
     </div>
 </div>
 
-
-
-
 {% endblock content %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelector('#recharge-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            var amount = document.querySelector('#amount').value;
+            initiateRazorpayPayment(amount);
+            console.log(amount)
+        });
+
+        document.querySelectorAll('.add-amount').forEach(function(button) {
+            button.addEventListener('click', function(event) {
+                event.preventDefault();
+                var walletId = this.getAttribute('data-wallet-id');
+                initiateRazorpayPayment(walletId);
+                console.log(walletId)
+            });
+        });
+    });
+
+    function initiateRazorpayPayment(amount) {
+        fetch('/create-razorpay-order/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ amount: amount })
+        })
+        .then(function(response) {
+            return response.json();
+        })
+        .then(function(data) {
+            var options = {
+                key: 'rzp_test_oR7x1WyMRe9zxr',
+                amount: data.amount * 100, // Amount should be in paisa
+                currency: 'INR',
+                name: 'TECHX',
+                description: 'Wallet Recharge',
+                order_id: data.order_id,
+                image: 'https://static-00.iconduck.com/assets.00/bill-payment-icon-2048x2048-vpew78n5.png',
+                handler: function(response) {
+                    // Handle the success callback here if needed
+                },
+                prefill: {
+                    name: '{{ customer.name }}', // Use appropriate user details
+                    email: '{{ customer.email }}',
+                    contact: '{{ customer.phone }}'
+                },
+                theme: {
+                    color: 'rgb(0, 174, 191)'
+                }
+            };
+
+            var rzp = new Razorpay(options);
+            rzp.open();
+        })
+        .catch(function(error) {
+            console.error('Error:', error);
+        });
+    }
+</script>
+<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+  
+{% endblock scripts %}

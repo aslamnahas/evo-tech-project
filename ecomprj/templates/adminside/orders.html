@@ -26,6 +26,7 @@
 						<tr>
 							<th scope="col">Username</th>
 							<th scope="col">Order Id</th>
+                            <th scope="col">Username</th>
                             <th scope="col">Image</th>
 							<th scope="col">Quantity</th>
 							<th scope="col">Amount</th>
@@ -41,10 +42,15 @@
                         {% for order in orders %}
                         {% for order_item in order.order_items.all %}
                             <tr {% if order.status == 'cancelled' %}style="text-decoration: line-through; background-color: #ffcccc;"{% endif %}>  
-                                <td>{{ order.user.username }}</td>
+                                <td>{{ order.user }}</td>
                                 <td>
                                     <h6 class="fw-semibold mb-1">
                                         <a href="#">{{ order.id }}</a>
+                                    </h6>
+                                </td>
+                                <td>
+                                    <h6 class="fw-semibold mb-1">
+                                        <a href="#">{{ order.user.username }}</a>
                                     </h6>
                                 </td>
                                 <td class="border-bottom-0">

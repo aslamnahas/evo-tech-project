@@ -319,12 +319,16 @@ def product_detail(request, id):
 #user profile details===================================================================================================
 
 
+from django.db.models import Sum
+from decimal import Decimal
 
 def profile(request):
-    if request.user:
+     if request.user.is_authenticated:
+        # Fetch wallet balance for the current user
+        wallet_balance = Wallet.objects.filter(user=request.user).aggregate(total_balance=Sum('amount'))['total_balance'] or Decimal('0.00')
+        return render(request, 'core/profile_user.html', {'wallet_balance': wallet_balance})
+     else:
         return render(request, 'core/profile_user.html')
-
-
 
 
 
@@ -368,8 +372,9 @@ def manage_profile(request):
 
         messages.success(request, 'Profile updated successfully!')
         return redirect(reverse('core:profile'))
-
-    return render(request, 'core/profile_manage.html', {'user': request.user})
+    
+    
+    return render(request, 'core/profile_manage.html', {'user': request.user, 'wallet_balance': wallet_balance})
 
 
 
@@ -931,30 +936,16 @@ def order_details(request, id):
     }
     return render(request, "core/order_details.html", context)
 
-
 @login_required
 def customer_order(request):
-    if "email" in request.session:
-        # user = request.user
-        user_orders= Order.objects.all().order_by('-id')
-
-        # Accumulate all order items for all orders
-        # all_order_items = []
-        # for order in orders:
-        #     order_items = order.order_items.all()
-        #     all_order_items.extend(order_items)
- 
-        # context = {
-        #     "orders": orders,
-        #     "all_order_items": all_order_items,  # Pass all_order_items to the template context
-        # }
+    if request.user.is_authenticated:
+        user_orders = Order.objects.filter(user=request.user).order_by('-id')
         return render(request, "core/customer_order.html", {'orders': user_orders})
-
     else:
         return redirect("core:home")
-    
-
+from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import F
+
 @login_required
 def cancel(request, order_id):
     if request.method == 'POST':
@@ -975,12 +966,7 @@ def cancel(request, order_id):
 
         # Return amount to user's wallet
         user = request.user
-        wallet, _ = Wallet.objects.get_or_create(user=user)
-
-        # Add the amount of cancelled order to the wallet balance if order via razorpay or wallet
-        if order.payment_type in ['razorpay', 'wallet']:
-            wallet.amount += order.amount
-            wallet.save()
+        wallet = Wallet.objects.create(user=user, amount=order.amount, status='credited')
 
         order.save()  # Save the updated status
 
@@ -990,6 +976,9 @@ def cancel(request, order_id):
         # Handle GET requests appropriately, if needed
         # For now, let's redirect to the 'customer_order' page
         return redirect('core:customer_order')
+    
+
+
 
 def cancel_success(request):
     print("successsssssssssssssssssss")
@@ -1012,19 +1001,13 @@ def restock_products(order):
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @never_cache
 def order(request):
-    user = request.user
-    
-      
-    orders = Order.objects.all().order_by("-id")
-
-    paginator = Paginator(orders, per_page=15)
-    page_number = request.GET.get("page")
-    page_obj = paginator.get_page(page_number)
-
+    # Fetch all orders
+    orders = Order.objects.all()
     context = {
-        "orders": page_obj,
-        'user':user
+        'orders': orders,
     }
+    return render(request, 'adminside/orders.html', context)
+      
     return render(request, "adminside/orders.html", context)
     # else:
         # return redirect("adminside:dashboard")
@@ -1270,22 +1253,28 @@ def apply_coupon(request):
 
     return redirect("cart")
 
-
-
+from django.db.models import Sum
 
 def wallet(request):
-    if "email" in request.session:
+    if request.user.is_authenticated:
         user = request.user
-        customer = Customer.objects.get(email=user)
-        wallets = Wallet.objects.filter(user=user).order_by("-created_at")
+        customer = get_object_or_404(Customer, email=user.email)
+        
+        # Calculate total wallet balance
+        total_wallet_balance = Wallet.objects.filter(user=customer).aggregate(total=Sum('amount'))['total']
+        total_wallet_balance = total_wallet_balance or 0  # Handle None value
+        
+        wallets = Wallet.objects.filter(user=customer).order_by("-created_at")
 
         context = {
             "customer": customer,
             "wallets": wallets,
+            "total_wallet_balance": total_wallet_balance,
         }
         return render(request, "core/wallet.html", context)
     else:
         return redirect("core:home")
+
 
 
 
@@ -1398,3 +1387,23 @@ def category_products(request, category_id):
     }
 
     return render(request, 'core/products.html', context)
+
+
+@csrf_exempt  # To allow POST request without CSRF token
+def create_razorpay_order(request):
+    if request.method == 'POST':
+        # Retrieve the amount from the POST request
+        amount = request.POST.get('amount')
+        
+        # Perform any necessary validation on the amount
+        
+        # Example response (replace with your actual logic)
+        response_data = {
+            'order_id': 'some-order-id',
+            'amount': int(amount)  # Convert amount to integer if needed
+        }
+        
+        return JsonResponse(response_data)
+    else:
+        # Handle other HTTP methods if necessary
+        return JsonResponse({'error': 'Method not allowed'}, status=405)

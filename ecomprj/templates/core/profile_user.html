@@ -77,10 +77,20 @@
                                     <p>{{ user.ph_no }}</p>
                                 </div>
                             </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label>Wallet</label>
+                                </div>
+                                <div class="col-md-6">
+                                    <p>{{ wallet_balance }}</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <a href="{% url 'core:manage_profile' %}" class="btn btn-secondary btn-lg active" role="button" aria-pressed="true">Manage Profile</a>
                     <a href="{% url 'core:address' %}" class="btn btn-secondary btn-lg active" role="button" aria-pressed="true">Manage Address</a>
+                    <a href="{% url 'core:wallet' %}" class="btn btn-secondary btn-lg active" role="button" aria-pressed="true"> Add Wallet</a>
+
                     {% comment %} <a href="{% url 'core:change_password' %}" class="btn btn-secondary btn-lg active" role="button" aria-pressed="true">Cart</a> {% endcomment %}
 
                 </div>
