@@ -44,14 +44,14 @@ from django.http import HttpResponse
 from django.contrib import messages
 from django.http import FileResponse
 import io
-# from reportlab.pdfgen import canvas
-# from reportlab.lib.units import inch
-# from reportlab.lib.pagesizes import letter
-# from reportlab.lib.pagesizes import A4
-# from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
-# from reportlab.lib import colors
+from reportlab.pdfgen import canvas
+from reportlab.lib.units import inch
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.pagesizes import A4
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+from reportlab.lib import colors
 # from products.models import OrderItem
-
+from reportlab.platypus import SimpleDocTemplate
 
 
 from django.core.serializers.json import DjangoJSONEncoder
@@ -570,7 +570,7 @@ def report_generator(request, orders):
 
         if order_items.exists():
             product_ids = ", ".join([str(item.product.id) for item in order_items])
-            product_names = ", ".join([str(item.product.product_name) for item in order_items])
+            product_names = ", ".join([str(item.product.model) for item in order_items])
         else:
             product_ids = "N/A"
             product_names = "N/A"

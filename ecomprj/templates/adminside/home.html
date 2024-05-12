@@ -95,6 +95,41 @@ input[type="datetime-local"].form-control,
 input[type="month"].form-control {
   appearance: none;
 }
+
+.sidebar {
+    /* Existing styles for sidebar */
+    float: left; /* Ensure sidebar stays on the left */
+    width: 250px; /* Adjust width as needed */
+}
+
+.content {
+    /* Add padding to create space after the sidebar */
+    padding-left: 270px; /* Adjust as needed based on the width of your sidebar */
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100%; /* Display sidebar at full width on smaller screens */
+        float: none; /* Remove float on smaller screens */
+    }
+    .content {
+        padding-left: 0; /* Reset padding on smaller screens */
+    }
+}
+.header {
+    /* Existing styles for header */
+}
+
+.content {
+    /* Add padding to create space below the header */
+    padding-top: 80px; /* Adjust as needed based on the height of your header */
+}
+
+@media (max-width: 768px) {
+    .content {
+        padding-top: 60px; /* Adjust as needed for smaller screens */
+    }
+}
 </style>
             <div class="content">
 
@@ -195,7 +230,7 @@ input[type="month"].form-control {
                     </div>
                 </div>
 
-
+                <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
                 <div class="mt-4">
                     <canvas id="myChart" width="200" height="50"></canvas>
                 </div>
