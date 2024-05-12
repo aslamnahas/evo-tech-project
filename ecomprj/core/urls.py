@@ -70,6 +70,7 @@ urlpatterns = [
     # path('razorpay/<int:address_id>/',views.razorpay,name='razorpay'),
     # path('proceed-to-pay',views.proceedtopay,name='proceedtopay'),
     # path('razorpay/<int:address_id>/',views.razorpay,name='razorpay'),
+    path('create-razorpay-order/',views.create_razorpay_order, name='create_razorpay_order'),
 
     
 ]

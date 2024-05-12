@@ -1387,23 +1387,22 @@ def category_products(request, category_id):
     }
 
     return render(request, 'core/products.html', context)
-
-
-@csrf_exempt  # To allow POST request without CSRF token
+@csrf_exempt
 def create_razorpay_order(request):
     if request.method == 'POST':
-        # Retrieve the amount from the POST request
-        amount = request.POST.get('amount')
+        # Parse JSON data from the request body
+        data = json.loads(request.body)
+        amount = data.get('amount')
         
-        # Perform any necessary validation on the amount
-        
-        # Example response (replace with your actual logic)
-        response_data = {
-            'order_id': 'some-order-id',
-            'amount': int(amount)  # Convert amount to integer if needed
-        }
-        
-        return JsonResponse(response_data)
+        # Add the amount to the wallet
+        if request.user.is_authenticated:
+            user = request.user
+            customer = get_object_or_404(Customer, email=user.email)
+            wallet = Wallet.objects.create(user=customer, amount=amount)
+            # You might want to handle payment status here as well
+            return JsonResponse({"total": amount})
+        else:
+            return JsonResponse({'error': 'User not authenticated'}, status=401)
     else:
-        # Handle other HTTP methods if necessary
+        print("eeeeeeeeeeeeeeeeeerrrrr")
         return JsonResponse({'error': 'Method not allowed'}, status=405)
