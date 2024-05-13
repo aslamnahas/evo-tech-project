@@ -1,6 +1,6 @@
 # views.py
 
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect ,HttpResponse
 from django.contrib.auth import authenticate, login, logout
 # from .forms import *
 # from .forms import LoginForm 
@@ -34,13 +34,20 @@ from django.http import Http404
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib.auth import update_session_auth_hash
 from django.db.models import Q
+from decimal import Decimal
+from random import shuffle
+from datetime import date
+from django.db.models import Count
+from django.template.loader import get_template
+
+
 # def home(request):
 #     return render(request,'core/home.html')
 
-@never_cache
-def home(request):
-        user = request.user
-        return render(request, "core/home.html",{'user': user})
+# @never_cache
+# def home(request):
+#         user = request.user
+#         return render(request, "core/home.html",{'user': user})
     
 def send_otp(email):
     digits = "0123456789"
@@ -1442,3 +1449,71 @@ def create_razorpay_order(request):
     else:
         print("eeeeeeeeeeeeeeeeeerrrrr")
         return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+
+
+def home(request):
+    # Retrieve first 10 products ordered by ID
+    products = list(Product.objects.filter(deleted=False).order_by('-id')[:10])
+
+    # Retrieve first 10 deals ordered by offer
+    deals = list(Product.objects.filter(deleted=False).order_by('-offer')[:12])
+
+    # Retrieve all brands in random order
+    # brands = list(Brand.objects.all().order_by('?'))
+
+    top_products = Product.objects.annotate(total_orders=Count('orderitem_product__order')).order_by('-total_orders')[:5]
+    top_deals = Product.objects.filter(deleted=False).order_by('-offer')
+    # top_brands = Brand.objects.annotate(total_orders=Count('product__order')).order_by('-total_orders')[:5]
+    budget_products = Product.objects.filter(deleted=False).order_by('offer')
+
+
+    # Shuffle the first 10 deals and products separately
+    shuffle(products)
+    shuffle(deals)
+
+    context = {
+        'products': products, 
+        # 'brands': brands,
+        'deals': deals,
+        'top_products': top_products,
+        'top_deals': top_deals,
+        # 'top_brands': top_brands,
+        'budget_products': budget_products,
+    }  
+    return render(request, "core/home.html", context)
+
+
+
+def generate_invoice(request, order_id):
+    order = get_object_or_404(Order, pk=order_id)
+    order_items = OrderItem.objects.filter(order=order)
+
+    user_address = Address.objects.filter(user=request.user, default=True).first()
+
+    # Calculate total amount
+    cart_total_amount = order.amount
+    user_first_name = request.user.first_name
+    user_last_name = request.user.last_name
+
+    subtotal = sum(item.product.price * item.quantity for item in order_items)
+    total = subtotal  
+
+    context = {
+        'order': order,
+        'order_items': order_items,
+        'cart_total_amount': cart_total_amount,
+        'user_address': user_address,  # Add the user's address to the context
+        'user_first_name': user_first_name,
+        'user_last_name': user_last_name,
+        'subtotal': subtotal,
+        'total': total,
+    }
+
+    return render(request, 'core/invoice.html', context)
+
+
+    
+
+def download_invoice(request, order_id):
+    return HttpResponse("This is the invoice content.", content_type='application/pdf')
