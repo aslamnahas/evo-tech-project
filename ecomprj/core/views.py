@@ -1216,6 +1216,18 @@ def addcoupon(request):
         return redirect("adminside:dashboard")
 
 
+def delete_coupon(request, coupon_id):
+    if request.method == "POST":
+        # Get the coupon object
+        coupon = get_object_or_404(Coupon, id=coupon_id)
+        # Delete the coupon
+        coupon.delete()
+        # Redirect to the coupon page
+        return redirect("core:coupon")
+    else:
+        # If request method is not POST, redirect to dashboard
+        return redirect("adminside:dashboard")
+
 def apply_coupon(request):
     if request.method == "POST":
         coupon_code = request.POST.get("coupon_code")

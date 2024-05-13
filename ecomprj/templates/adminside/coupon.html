@@ -2,7 +2,28 @@
 {% load static %}
 {% block content %}
 
-
+<style>
+    .sidebar {
+        /* Existing styles for sidebar */
+        float: left; /* Ensure sidebar stays on the left */
+        width: 150px; /* Adjust width as needed */
+    }
+    
+    .content {
+        /* Add padding to create space after the sidebar */
+        padding-left: 270px; /* Adjust as needed based on the width of your sidebar */
+    }
+    
+    @media (max-width: 768px) {
+        .sidebar {
+            width: 100%; /* Display sidebar at full width on smaller screens */
+            float: none; /* Remove float on smaller screens */
+        }
+        .content {
+            padding-left: 0; /* Reset padding on smaller screens */
+        }
+    }
+    </style>
 
 
 
@@ -37,10 +58,15 @@
                             <td>{{ coupon.coupon_code }}</td>
                             <td>{{ coupon.discount_amount }}</td>
                             <td>{{ coupon.min_amount }}</td>
-                            <td>{{ coupon.status }}</td>
+                            <td>{{ coupon.status }}
+                            
+                                <form action="{% url 'core:delete_coupon' coupon.id %}" method="post">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-danger">Delete</button>
+                                </form>
+                            </td>
                         </tr> 
                         {% endfor %}
-                        
                     </tbody>
                 </table>
               

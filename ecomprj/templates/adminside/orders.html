@@ -5,12 +5,12 @@
 .sidebar {
     /* Existing styles for sidebar */
     float: left; /* Ensure sidebar stays on the left */
-    width: 250px; /* Adjust width as needed */
+    width: 200px; /* Adjust width as needed */
 }
 
 .content {
     /* Add padding to create space after the sidebar */
-    padding-left: 270px; /* Adjust as needed based on the width of your sidebar */
+    padding-left: 220px; /* Adjust as needed based on the width of your sidebar */
 }
 
 @media (max-width: 768px) {
@@ -62,8 +62,9 @@
 					</thead>
                     <tbody>
                         {% for order in orders %}
-                            <tr {% if order.status == 'cancelled' %}style="text-decoration: line-through; background-color: #ffcccc;"{% endif %}>  
-                                <td>{{ order.user }}</td>
+                        <tr {% if order.status == 'cancelled' %}style="background-color: #ffcccc;"{% endif %}
+                            {% if order.status == 'returned' %}style="background-color: lightgreen;"{% endif %}>  
+                         <td>{{ order.user }}</td>
                                 <td>
                                     <h6 class="fw-semibold mb-1">
                                         <a href="#">{{ order.id }}</a>
