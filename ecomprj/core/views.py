@@ -513,6 +513,11 @@ def change_password(request):
             messages.error(request, 'User is not authenticated.')
 
     return redirect('core:profile')
+
+
+
+
+
 @login_required(login_url='core:loginPage') 
 def cart(request):
     if "discount" in request.session:
@@ -541,6 +546,7 @@ def cart(request):
         
     if request.method == "POST":
         coupon_code = request.POST.get("coupon_code")
+        print(coupon_code)
         try:
             coupon = Coupon.objects.get(coupon_code=coupon_code, max_usage_count=1)
             if subtotal >= coupon.min_amount:
@@ -945,7 +951,6 @@ def customer_order(request):
         return redirect("core:home")
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import F
-
 @login_required
 def cancel(request, order_id):
     if request.method == 'POST':
@@ -964,9 +969,13 @@ def cancel(request, order_id):
             product.stock = F('stock') + item.quantity
             product.save()
 
-        # Return amount to user's wallet
-        user = request.user
-        wallet = Wallet.objects.create(user=user, amount=order.amount, status='credited')
+        # Determine the payment method
+        payment_method = order.payment_type  # Assuming you have a field named 'payment_method' in your Order model
+
+        if payment_method == 'Razorpay':
+            # Return amount to user's wallet
+            user = request.user
+            wallet = Wallet.objects.create(user=user, amount=order.amount, status='credited')
 
         order.save()  # Save the updated status
 
@@ -976,7 +985,7 @@ def cancel(request, order_id):
         # Handle GET requests appropriately, if needed
         # For now, let's redirect to the 'customer_order' page
         return redirect('core:customer_order')
-    
+
 
 
 
@@ -1001,14 +1010,12 @@ def restock_products(order):
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @never_cache
 def order(request):
-    # Fetch all orders
-    orders = Order.objects.all()
+    # Fetch all orders ordered by creation date in descending order
+    orders = Order.objects.order_by('-date')
     context = {
         'orders': orders,
     }
     return render(request, 'adminside/orders.html', context)
-      
-    return render(request, "adminside/orders.html", context)
     # else:
         # return redirect("adminside:dashboard")
 
@@ -1154,23 +1161,52 @@ def coupon(request):
         return redirect("adminside:dashboard")
 
 
+
 def addcoupon(request):
     if request.method == "POST":
+        # Retrieve form data
         coupon_code = request.POST.get("Couponcode")
         discount_amount = request.POST.get("dprice")
         min_amount = request.POST.get("amount")
 
-        coupon = Coupon(
-            coupon_code=coupon_code,
-            discount_amount=discount_amount,
-            min_amount= min_amount,
-        )
-        coupon.save()
+        # Check if all fields are provided
+        if not (coupon_code and discount_amount and min_amount):
+            messages.error(request, "Please provide all coupon details.")
+            return redirect("core:coupon")
 
-        return redirect("core:coupon")
+        # Check if coupon code already exists
+        if Coupon.objects.filter(coupon_code=coupon_code).exists():
+            messages.error(request, "Coupon code already exists.")
+            return redirect("core:coupon")
 
+        try:
+            # Attempt to convert discount_amount and min_amount to integers
+            discount_amount = int(discount_amount)
+            min_amount = int(min_amount)
 
+            # Check if discount_amount and min_amount are positive
+            if discount_amount <= 0 or min_amount <= 0:
+                messages.error(request, "Discount amount and minimum amount must be positive integers.")
+                return redirect("core:coupon")
 
+            # Create new coupon instance
+            coupon = Coupon(
+                coupon_code=coupon_code,
+                discount_amount=discount_amount,
+                min_amount=min_amount,
+            )
+
+            # Save the coupon
+            coupon.save()
+
+            messages.success(request, "Coupon added successfully.")
+            return redirect("core:coupon")
+        except ValueError:
+            # If discount_amount or min_amount cannot be converted to integers
+            messages.error(request, "Discount amount and minimum amount must be integers.")
+            return redirect("core:coupon")
+    else:
+        return redirect("adminside:dashboard")
 
 
 def apply_coupon(request):

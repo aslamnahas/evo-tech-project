@@ -1,6 +1,29 @@
 {% extends 'adminside/header.html' %}
 {% load static %}
 {% block content %}
+<style>
+.sidebar {
+    /* Existing styles for sidebar */
+    float: left; /* Ensure sidebar stays on the left */
+    width: 250px; /* Adjust width as needed */
+}
+
+.content {
+    /* Add padding to create space after the sidebar */
+    padding-left: 270px; /* Adjust as needed based on the width of your sidebar */
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100%; /* Display sidebar at full width on smaller screens */
+        float: none; /* Remove float on smaller screens */
+    }
+    .content {
+        padding-left: 0; /* Reset padding on smaller screens */
+    }
+}
+</style>
+
 <div class="content">
 	<div class="row">
 		<div class="col-sm-4 col-3">
@@ -24,7 +47,7 @@
 				<table class="table table-striped custom-table">
 					<thead>
 						<tr>
-							<th scope="col">Username</th>
+							<th scope="col">User</th>
 							<th scope="col">Order Id</th>
                             <th scope="col">Username</th>
                             <th scope="col">Image</th>
@@ -37,10 +60,8 @@
 							<th scope="col">Status</th>
 						</tr>
 					</thead>
-
-					<tbody>
+                    <tbody>
                         {% for order in orders %}
-                        {% for order_item in order.order_items.all %}
                             <tr {% if order.status == 'cancelled' %}style="text-decoration: line-through; background-color: #ffcccc;"{% endif %}>  
                                 <td>{{ order.user }}</td>
                                 <td>
@@ -55,20 +76,18 @@
                                 </td>
                                 <td class="border-bottom-0">
                                     <div class="mb-2">
-                                        <img src="{{ order_item.image.url }}" alt="" width="60">
+                                        <img src="{{ order.order_items.first.image.url }}" alt="" width="60">
                                     </div>
                                 </td>
                                 <td class="border-bottom-0">
                                     <h6 class="fw-semibold mb-1">
-                                        {{ order_item.product.product_name }} (x{{ order_item.quantity }})
+                                        {{ order.order_items.first.product.product_name }} (x{{ order.order_items.first.quantity }})
                                     </h6>
                                 </td>
-                                <!-- <td>{{ order_item.product.price }}</td> -->
                                 <td>{{ order.amount }}</td>
                                 <td>{{ order.address.address_1 }} {{ order.address.address_2 }}<br>{{ order.address.city }}, {{ order.address.state }} {{ order.address.pin }}<br>{{ order.address.country }}</td>
                                 <td>{{ order.payment_type }}</td>
                                 <td>{{ order.date }}</td>
-
                                 <td>
                                     <form action="{% url 'core:update_order' %}" method="POST">
                                         {% csrf_token %}
@@ -90,7 +109,7 @@
                                 </td>
                                  
                             </tr>
-                        {% endfor %}
+                        {% comment %} {% endfor %} {% endcomment %}
                     {% endfor %}
                     
 					</tbody>

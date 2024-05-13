@@ -1,0 +1,20 @@
+<!-- confirm_return.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirm Return</title>
+</head>
+<body>
+    <h2>Confirm Return</h2>
+    <p>Are you sure you want to return the following item?</p>
+    <p>Item: {{ order_item.product }}</p>
+    <form method="post">
+        {% csrf_token %}
+        <label for="reason">Reason for return:</label><br>
+        <textarea id="reason" name="reason" rows="4" cols="50" required></textarea><br>
+        <button type="submit">Return</button>
+    </form>
+</body>
+</html>
