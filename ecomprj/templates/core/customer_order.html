@@ -68,6 +68,7 @@
             <td class="li-product-name"><a href="{% url 'core:order_details' order.id %}">{{ order.payment_type }}</a></td>
             <td class="li-product-name"><a href="{% url 'core:order_details' order.id %}">{{ order.amount }}</a></td>
             <td class="li-product-name"><a href="{% url 'core:order_details' order.id %}">{{ order.status }}</a></td>
+           
             <td class="product-subtotal">
                 {% if order.status == 'pending' or order.status == 'processing' or order.status == 'shipped' %}
                     <form method="post" action="{% url 'core:cancel' order_id=order.id %}">
@@ -81,7 +82,12 @@
                     </form>
                 {% else %}
                     <p> - </p>
+                   
+        
                 {% endif %}
+                <td class="product-action">
+                    <a href="{% url 'core:order_details' order.id %}" class="btn btn-primary">Another Action</a>
+                </td>
             </td>
         </tr>
     {% endfor %}

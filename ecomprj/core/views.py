@@ -788,8 +788,7 @@ def place_order(request):
         user = request.user
         address_id = request.POST.get('addressId')
         payment_type = request.POST.get('payment')  
-        print(payment_type)
-
+       
         # Check if address is selected
         if not address_id:
             messages.error(request, "Please select an address.")
@@ -798,7 +797,7 @@ def place_order(request):
         if not payment_type:
             messages.error(request, "Please select payment method.")
             return HttpResponseRedirect(reverse('core:checkout'))
-
+      
         cart_items = Cart.objects.filter(user=user, quantity__gt=0)
         in_stock_items = []
         out_of_stock_items = []
@@ -813,6 +812,15 @@ def place_order(request):
         if out_of_stock_items:
             messages.warning(request, "Some items are out of stock. Please remove them from your cart.")
             return HttpResponseRedirect(reverse('core:cart'))
+        total_price = sum(cart_item.product.price * cart_item.quantity for cart_item in cart_items)
+       
+
+        # Check if total price is above Rs 1000 and payment type is COD
+        if total_price > 1000 and payment_type == 'cod':
+            messages.error(request, "COD is not available for orders above Rs 1000.")
+            return HttpResponseRedirect(reverse('core:checkout'))
+
+
 
         total_offer_price = 0
         total_price = 0
@@ -976,23 +984,28 @@ def cancel(request, order_id):
             product.stock = F('stock') + item.quantity
             product.save()
 
-        # Determine the payment method
-        payment_method = order.payment_type  # Assuming you have a field named 'payment_method' in your Order model
+        # Get the user's wallet, if exists
+        user_wallets = Wallet.objects.filter(user=request.user)
+        if user_wallets.exists():
+            # If multiple wallets exist, take the first one
+            wallet = user_wallets.first()
+        else:
+            # Create a new wallet for the user
+            wallet = Wallet.objects.create(user=request.user)
 
-        if payment_method == 'Razorpay':
-            # Return amount to user's wallet
-            user = request.user
-            wallet = Wallet.objects.create(user=user, amount=order.amount, status='credited')
+        # Check the payment method and refund the amount if necessary
+        if order.payment_type == 'Razorpay':
+            # Refund the amount to the user's wallet
+            wallet.amount += order.amount
+            wallet.save()
 
         order.save()  # Save the updated status
 
         # Redirect to the same page or any desired page after status change
-        return redirect('core:customer_order')  # Assuming you have a URL named 'customer_order' defined in your urls.py file
+        return redirect('core:customer_order')
     else:
         # Handle GET requests appropriately, if needed
-        # For now, let's redirect to the 'customer_order' page
         return redirect('core:customer_order')
-
 
 
 
@@ -1501,11 +1514,10 @@ def generate_invoice(request, order_id):
     order = get_object_or_404(Order, pk=order_id)
     order_items = OrderItem.objects.filter(order=order)
 
-    user_address = Address.objects.filter(user=request.user, default=True).first()
-
+    user_address = Address.objects.filter(user=request.user).first()
     # Calculate total amount
     cart_total_amount = order.amount
-    user_first_name = request.user.first_name
+    user_first_name = request.user.username
     user_last_name = request.user.last_name
 
     subtotal = sum(item.product.price * item.quantity for item in order_items)
