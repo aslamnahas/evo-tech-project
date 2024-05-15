@@ -26,6 +26,7 @@ urlpatterns = [
 
     path('',include("core.urls")),
     path('adminn/',include('admin_side.urls')),
+    path('map/',include("map.urls")),
     path('accounts/',include('allauth.urls')),
     path('razorpay/<int:address_id>/',razorpay,name='razorpay'),
     path('proceed-to-pay/',proceedtopay,name='proceedtopay'),

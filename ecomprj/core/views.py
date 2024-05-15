@@ -396,6 +396,9 @@ phone_validator = RegexValidator(
 #addresss details=======================================================
 
 
+
+
+
 def address(request):
     data = Address.objects.filter(user=request.user)
     return render(request, 'core/address.html', {'data': data})
@@ -568,8 +571,8 @@ def cart(request):
         except Coupon.DoesNotExist:
             messages.error(request, "Invalid or expired coupon code")
 
-    shipping_cost = 10
-    total = subtotal + shipping_cost if subtotal else 0
+    # shipping_cost = 10
+    total = subtotal 
     
     # if total >= coupon.min_amount:
         # Calculate total discount only if there's a coupon applied
@@ -721,7 +724,9 @@ def remove_from_wishlist(request, wishlist_item_id):
 @never_cache
 # @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def checkout(request):
-        print('////////////////////////')
+        if request.method == 'GET':
+             new(request)
+
     # if 'email' in request.session:
     #     print('email found in session')
     #     email = request.session['email']
@@ -745,28 +750,44 @@ def checkout(request):
 
         for cart_item in cart_items:
             if cart_item.product:
-                itemprice2 = (cart_item.product.price ) * (cart_item.quantity)
+                itemprice2 = (cart_item.product.get_discounted_price() ) * (cart_item.quantity)
                 subtotal += itemprice2  
             else:
-                itemprice2 = (cart_item.product.price) * (cart_item.quantity)
+                itemprice2 = (cart_item.product.get_discounted_price()) * (cart_item.quantity)
                 subtotal += itemprice2  
 
-        shipping_cost = 10 
-        discount = request.session.get('discount', 0)
-        if discount:
-            total = subtotal + shipping_cost - discount if subtotal else 0
-            print(discount,"dddddddissssssss")
-        else:
-            total = subtotal + shipping_cost  if subtotal else 0
+        city_distance = CityDistance.objects.filter(user=request.user).first()
+
+        # Default shipping cost
         
-        subtotal = Decimal(request.session.get('cart_subtotal', 0))
-        total = Decimal(request.session.get('cart_total', 0)) 
+
+        if city_distance:
+             distance_in_km = city_distance.distance
+
+        # Determine shipping amount based on distance
+             if distance_in_km <= 100:
+                  shipping_cost = 50
+             elif distance_in_km <= 500:
+                  shipping_cost = 100
+             elif distance_in_km <= 1000:
+                  shipping_cost = 150
+             else:
+                  shipping_cost = 200
+
+    # Calculate total including shipping cost and any discounts
+        discount = request.session.get('discount', 0)
+        total = subtotal + shipping_cost - discount
+        discount=  + shipping_cost
+        # subtotal = Decimal(request.session.get('cart_subtotal', 0))
+        # total = Decimal(request.session.get('cart_total', 0)) 
         # total=total-discount
         print(subtotal)
         print(discount)
         print(total)
         request.session['subtotal'] = str(subtotal)
         request.session['total'] = str(total)
+        print(subtotal)
+        print(total)
 
         user_addresses = Address.objects.filter(user=request.user)
 
@@ -1541,3 +1562,51 @@ def generate_invoice(request, order_id):
 
 def download_invoice(request, order_id):
     return HttpResponse("This is the invoice content.", content_type='application/pdf')
+
+
+
+from geopy.geocoders import Nominatim
+from geopy import distance
+
+def new(request):
+    geocoder = Nominatim(user_agent="nahjas")
+
+    location1 = "Manjeshwaram"
+
+    # Get the user's address and extract the city from it
+    user_address = Address.objects.filter(user=request.user).first()
+    if user_address:
+        location2 = user_address.city
+        print(location2,'qwertyuioasdfghjklzxcvbnm,')
+       
+    else:
+        # Default to Mangalore if user address not found
+        location2 = "Mangalore"
+        print(location2)
+
+    cor1 = geocoder.geocode(location1)
+    cor2 = geocoder.geocode(location2)
+   
+    lat1, long1 = cor1.latitude, cor1.longitude
+    lat2, long2 = cor2.latitude, cor2.longitude
+    place1 = (lat1, long1)
+    place2 = (lat2, long2)
+
+    dist = distance.distance(place1, place2).km
+    
+    # Determine shipping amount based on distance
+    if dist <= 100:
+        shipping_amount = 50
+    elif dist <= 200:
+        shipping_amount = 100
+    else:
+        shipping_amount = 200
+
+    # Assuming you have a model named CityDistance with fields user and distance
+    # Create or update the user's city distance in the database
+    city_distance, created = CityDistance.objects.get_or_create(user=request.user, defaults={'distance': 0.0, 'price': 0.0})
+
+    city_distance.distance = dist
+    city_distance.save()
+
+    return redirect('core:checkout')

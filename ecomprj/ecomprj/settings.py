@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     #app
     'core',
     'admin_side',
+    'map',
 
     #alluath
     'allauth',

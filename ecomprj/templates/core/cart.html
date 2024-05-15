@@ -166,9 +166,7 @@
                                             <ul>
                                                 <li>Subtotal <span id="subtotal-price">₹{{ subtotal}}</span></li>
                                                 {% if cart_items %}
-                                                <li>Shipping charge <span id="total-price">₹ 10</span></li>
-                                                {% else %}
-                                                <li>Shipping charge <span id="total-price">₹ 0</span></li>
+                                                
                                                 {% endif %}
                                                 <li style="color: green;">Coupon Discount<span id="total-price">
                                                 {% if request.session.discount %}

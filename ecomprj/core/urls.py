@@ -78,6 +78,6 @@ urlpatterns = [
     path('generate_invoice/<int:order_id>/', views.generate_invoice, name='generate_invoice'),
     path('<int:order_id>/download/', views.download_invoice, name='download_invoice'),
 
-
+    path('new/', views.new, name='new'),
 
 ]
