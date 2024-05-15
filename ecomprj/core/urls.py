@@ -79,5 +79,6 @@ urlpatterns = [
     path('<int:order_id>/download/', views.download_invoice, name='download_invoice'),
 
     path('new/', views.new, name='new'),
-
+    # path('update-city-and-shipping-cost/', views.update_city_and_shipping_cost, name='update_city_and_shipping_cost'),
+    # path('update_shipping_info/',views.update_shipping_info, name='update_shipping_info'),
 ]

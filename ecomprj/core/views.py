@@ -594,6 +594,10 @@ def cart(request):
         "total": total,
         "coupons": coupons,
     }
+
+    # if "discount" in request.session:
+    #     context["applied_coupon"] = Coupon.objects.get(discount_amount=request.session['discount'])
+
     return render(request, "core/cart.html", context)
 
 
@@ -799,6 +803,10 @@ def checkout(request):
             'discount_amount': discount,
             # 'itemprice': itemprice2  
         }
+        # if "applied_coupon" in request.session:
+        #     context["applied_coupon"] = request.session["applied_coupon"]
+        #     context["coupon_amount"] = request.session["discount"]
+
         return render(request, 'core/checkout.html', context)
     # else:
     #      return redirect('core:signupPage')
@@ -1610,3 +1618,30 @@ def new(request):
     city_distance.save()
 
     return redirect('core:checkout')
+
+
+
+
+# @csrf_exempt
+# def update_city_and_shipping_cost(request):
+#     if request.method == 'POST' and request.headers.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
+#         address_id = request.POST.get('addressId')
+#         address = Address.objects.filter(id=address_id).first()
+#         if address:
+#             # Calculate shipping cost based on the new city
+#             city_distance = CityDistance.objects.filter(user=request.user, city=address.city).first()
+#             shipping_cost = 0
+#             if city_distance:
+#                 distance_in_km = city_distance.distance
+#                 if distance_in_km <= 100:
+#                     shipping_cost = 50
+#                 elif distance_in_km <= 200:
+#                     shipping_cost = 100
+#                 else:
+#                     shipping_cost = 200
+
+#             return JsonResponse({'city': address.city, 'shipping_cost': shipping_cost})
+#         else:
+#             return JsonResponse({'error': 'Address not found'}, status=400)
+#     else:
+#         return JsonResponse({'error': 'Invalid request'}, status=400)
