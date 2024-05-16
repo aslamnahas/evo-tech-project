@@ -11,7 +11,11 @@ urlpatterns = [
     path('google/',views.google, name='google'),
     path('logout/', views.custom_logout, name='custom_logout'),
     path('verify-otp/',views.verify_otp, name='verify_otp'),
-    
+    path('login/', views.loginPage, name='loginPage'),
+    # path('forgot_password/', views.forgot_password, name='forgot_password'),
+    path('reset_password/<uidb64>/<token>/', views.reset_password, name='reset_password'),  
+
+
 
     path('categories/',views.user_category_view, name='user_categories'),
     path('products/',views.products, name='products'),

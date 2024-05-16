@@ -39,7 +39,10 @@ from random import shuffle
 from datetime import date
 from django.db.models import Count
 from django.template.loader import get_template
-
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.core.mail import send_mail
+from django.contrib.auth.tokens import default_token_generator
 
 # def home(request):
 #     return render(request,'core/home.html')
@@ -149,13 +152,38 @@ def signupPage(request):
     return render(request, 'core/registration.html')
 
      # ......... End Signup .............
+import time
 
+# Modify the verify_otp function to include OTP resend functionality
 def verify_otp(request):
     if request.method == 'POST':
+        if 'resend_otp' in request.POST:
+            # Resend OTP logic
+            email = request.session.get('email')
+            if email:
+                otp = send_otp(email)
+                request.session['otp'] = otp
+                request.session['otp_time'] = time.time()  # Reset the OTP timer
+                messages.success(request, "OTP resent successfully!")
+                print("Resent OTP:", otp)
+                return redirect('core:verify_otp')
+
         entered_otp = request.POST.get('otp')
-        if entered_otp == request.session.get('otp'):
-            # OTP is correct, redirect to home page or wherever needed
+        stored_otp = request.session.get('otp')
+        otp_time = request.session.get('otp_time')
+
+        if not entered_otp or not stored_otp or not otp_time:
+            messages.error(request, "Invalid OTP.")
+            return redirect('core:verify_otp')
+
+        if time.time() - otp_time > 30:
+            messages.error(request, "OTP has expired. Please request a new OTP.")
+            return redirect('core:verify_otp')
+
+        if entered_otp == stored_otp:
+            # OTP is correct, proceed with signup
             del request.session['otp']
+            del request.session['otp_time']
             del request.session['email']
             messages.success(request, "Signup successful! You can now log in.")
             return redirect('core:loginPage')
@@ -163,7 +191,6 @@ def verify_otp(request):
             # Incorrect OTP, handle accordingly
             messages.error(request, "Incorrect OTP, please try again.")
     return render(request, "core/otp_user.html")
-
 
 # def loginPage(request):
 #     if request.method == 'POST':
@@ -234,6 +261,60 @@ def custom_logout(request):
     print(request.user)
     logout(request)
     return redirect('core:home')
+
+from django.template.loader import render_to_string
+
+def forgot_password(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        user = Customer.objects.filter(email=email).first()
+        if user:
+            # Generate a token for password reset
+            uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+            token = default_token_generator.make_token(user)
+            reset_password_link = reverse('core:reset_password', kwargs={'uidb64': uidb64, 'token': token})
+
+            # Send reset password link to user's email
+            subject = 'Reset Your Password'
+            message = render_to_string('core/reset_password_email.html', {
+                'user': user,
+                'reset_password_link': request.build_absolute_uri(reset_password_link),
+            })
+            send_mail(subject, message, 'nahasnazz06@gmail.com', [email])
+            messages.success(request, "An email has been sent with instructions to reset your password.")
+            return redirect('core:loginPage')
+        else:
+            messages.error(request, "No user found with that email address.")
+            return render(request, 'core/forgot_password.html')
+
+    return render(request, 'core/forgot_password.html')
+from django.utils.http import urlsafe_base64_decode
+def reset_password(request, uidb64, token):
+    # Decode uidb64 to get the user
+    try:
+        uid = urlsafe_base64_decode(uidb64).decode()
+        user = Customer.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, Customer.DoesNotExist):
+        user = None
+
+    if user and default_token_generator.check_token(user, token):
+        # Token is valid, allow user to reset password
+        if request.method == 'POST':
+            password1 = request.POST.get('password1')
+            password2 = request.POST.get('password2')
+            if password1 == password2:
+                user.set_password(password1)
+                user.save()
+                messages.success(request, "Your password has been reset successfully. You can now log in with your new password.")
+                return redirect('core:loginPage')
+            else:
+                messages.error(request, "Passwords do not match.")
+                return render(request, 'core/reset_password.html')
+        else:
+            return render(request, 'core/reset_password.html')
+    else:
+        messages.error(request, "Invalid reset password link.")
+        return redirect('core:loginPage')
 
 
 
@@ -675,54 +756,53 @@ def remove_from_cart(request, cart_item_id):
 
 #favuraite all ==================================
 
-@login_required(login_url='login') 
+@login_required(login_url='loginPage') 
 def wishlist(request):
     user = request.user
-    if isinstance(user, AnonymousUser):
-        return redirect('login')  
-    else:
+    if user.is_authenticated:
         wishlist_items = Wishlist.objects.filter(user=user)
         wishlist_count = wishlist_items.count()
+        context = {
+            'wishlist_items': wishlist_items,
+            'wishlist_count': wishlist_count,
+        }
+        return render(request, 'core/wishlist.html', context)
+    else:
+        # Redirect to login if user is not authenticated
+        return redirect('loginPage')
 
-    context = {
-        'wishlist_items': wishlist_items,
-        'wishlist_count': wishlist_count,
-    }
-
-    return render(request, 'core/wishlist.html', context)
-
-
-
-
-
+@login_required(login_url='loginPage')
 def wishlist_count(request):
     user = request.user
-    wishlist_items = Wishlist.objects.filter(user=user)
-    wishlist_count = wishlist_items.count()
+    if user.is_authenticated:
+        wishlist_items = Wishlist.objects.filter(user=user)
+        wishlist_count = wishlist_items.count()
+        return JsonResponse({'wishlist_count': wishlist_count})
+    else:
+        # Redirect to login if user is not authenticated
+        return redirect('loginPage')
 
-    return JsonResponse({'wishlist_count': wishlist_count})
-
+@login_required(login_url='loginPage')
 def add_to_wishlist(request, product_id):
     try:
         product = Product.objects.get(id=product_id)
     except Product.DoesNotExist:
         return redirect('product_not_found')
+    
     user = request.user
-    if isinstance(user, AnonymousUser):
-            return redirect('login')
-    else:
+    if user.is_authenticated:
         wishlist, created = Wishlist.objects.get_or_create(product=product, user=user)
-    wishlist.save()
+        wishlist.save()
+        return redirect('core:wishlist')
+    else:
+        # Redirect to login if user is not authenticated
+        return redirect('loginPage')
 
-    return redirect('core:wishlist')
-
-
-@login_required(login_url='login')
+@login_required(login_url='loginPage')
 def remove_from_wishlist(request, wishlist_item_id):
     wishlist_item = get_object_or_404(Wishlist, id=wishlist_item_id, user=request.user)
     wishlist_item.delete()
     return redirect('core:wishlist')
-
 #order manag==================================================================
 
 
@@ -1606,7 +1686,7 @@ def new(request):
        
     else:
         # Default to Mangalore if user address not found
-        location2 = "Mangalore"
+        location2 = "kasaragod"
         print(location2)
 
     cor1 = geocoder.geocode(location1)
