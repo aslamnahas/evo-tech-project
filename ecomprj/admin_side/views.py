@@ -392,11 +392,20 @@ def dashboard(request):
     orders = Order.objects.order_by("-id")
     labels = []
     data = []
+    top_products = Product.objects.annotate(
+    total_ordered=Count('orderitem_product')
+    ).order_by('-total_ordered')[:10]
+
+    # top_brands = Brand.objects.annotate(total_orders=Count('product__order')).order_by('-total_orders')[:5]
+
+    top_categories = Main_Category.objects.annotate(total_orders=Count('product__order_product')).order_by('-total_orders')[:5]
+
     for order in orders:
         labels.append(str(order.id))
         data.append(float(order.amount))  # Convert Decimal to float
 
     total_customers = Customer.objects.count()
+
     # print(total_customers)
 
     # Calculate the count of new users in the last one week
@@ -478,6 +487,8 @@ def dashboard(request):
 
         return JsonResponse({"labels": filtered_labels, "data": filtered_data})
     context = {
+        "top_products": top_products,
+        "top_categories": top_categories,
         "labels": json.dumps(labels),
         "data": json.dumps(data),
         "total_customers": total_customers,
