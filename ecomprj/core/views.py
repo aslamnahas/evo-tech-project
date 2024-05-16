@@ -577,8 +577,9 @@ def cart(request):
     # if total >= coupon.min_amount:
         # Calculate total discount only if there's a coupon applied
     total_discount = request.session.get('discount', 0)
-        
+    # request.session['discount'] = coupon.discount_amount
         # Apply total discount to the total
+    print(total_discount)
     total -= total_discount
     # 
     print(total)
@@ -764,7 +765,7 @@ def checkout(request):
 
         # Default shipping cost
         
-
+        
         if city_distance:
              distance_in_km = city_distance.distance
 
@@ -778,20 +779,25 @@ def checkout(request):
              else:
                   shipping_cost = 200
 
+            
+
     # Calculate total including shipping cost and any discounts
-        discount = request.session.get('discount', 0)
-        total = subtotal + shipping_cost - discount
+        couponamt = request.session.get('discount', 0)
+        # print(discount,'qwertyuiol')
+        total = subtotal + shipping_cost 
         discount=  + shipping_cost
+        request.session['shipping'] =  shipping_cost
         # subtotal = Decimal(request.session.get('cart_subtotal', 0))
         # total = Decimal(request.session.get('cart_total', 0)) 
         # total=total-discount
         print(subtotal)
-        print(discount)
+        shipping= request.session.get('shipping', 0)
+        print(shipping,'ssssssssssssssssssssssssssssssssssss')
         print(total)
         request.session['subtotal'] = str(subtotal)
         request.session['total'] = str(total)
         print(subtotal)
-        print(total)
+        total = total-couponamt
 
         user_addresses = Address.objects.filter(user=request.user)
 
@@ -801,7 +807,7 @@ def checkout(request):
             'total': total,
             'user_addresses': user_addresses,
             'discount_amount': discount,
-            # 'itemprice': itemprice2  
+            'couponamt': couponamt  
         }
         # if "applied_coupon" in request.session:
         #     context["applied_coupon"] = request.session["applied_coupon"]
@@ -921,52 +927,54 @@ def place_order(request):
 
 
 
-def razorpay(request, address_id):
-    user = request.user
-    cart_items = Cart.objects.filter(user=user)
-    print('rjerhhhhhhhhhhhrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr')
+# def razorpay(request, address_id):
+#     user = request.user
+#     cart_items = Cart.objects.filter(user=user)
+#     print('rjerhhhhhhhhhhhrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr')
 
-    subtotal = 0
+#     subtotal = 0
     
 
-    shipping_cost = 10
-    total = subtotal + shipping_cost if subtotal else 0
+#     shipping_cost = 10
+#     total = subtotal + shipping_cost if subtotal else 0
+#     shipping= request.session.get('shipping', 0)
+#     print(shipping,'ssssssssssssssssssssssssssssssssssssssssssssssssss')
 
-    subtotal = Decimal(request.session.get('cart_subtotal', 0))
-    total = Decimal(request.session.get('cart_total', 0))
+#     subtotal = Decimal(request.session.get('cart_subtotal', 0))
+#     total = Decimal(request.session.get('cart_total', 0))
 
-    discount = request.session.get("discount", 0)
+#     discount = request.session.get("discount", 0)
 
-    if discount:
-        total -= discount
+#     if discount:
+#         total -= discount
+    
+#     payment = "razorpay"
+#     user = request.user
+#     cart_items = Cart.objects.filter(user=user)
+#     address = Address.objects.get(id=address_id)
 
-    payment = "razorpay"
-    user = request.user
-    cart_items = Cart.objects.filter(user=user)
-    address = Address.objects.get(id=address_id)
+#     order = Order.objects.create(
+#         user=user,
+#         address=address,
+#         amount=total,
+#         payment_type=payment,
+#     )
+#     print(total,"ttttttotal")
 
-    order = Order.objects.create(
-        user=user,
-        address=address,
-        amount=total,
-        payment_type=payment,
-    )
-    print(total,"ttttttotal")
+#     for cart_item in cart_items:
+#         product = cart_item.product
+#         product.stock -= cart_item.quantity
+#         product.save()
 
-    for cart_item in cart_items:
-        product = cart_item.product
-        product.stock -= cart_item.quantity
-        product.save()
+#         order_item = OrderItem.objects.create(
+#             order=order,
+#             product=cart_item.product,
+#             quantity=cart_item.quantity,
+#             image=cart_item.product.image,
+#         )
 
-        order_item = OrderItem.objects.create(
-            order=order,
-            product=cart_item.product,
-            quantity=cart_item.quantity,
-            image=cart_item.product.image,
-        )
-
-    cart_items.delete()
-    return redirect("success")
+#     cart_items.delete()
+#     return redirect("success")
 
 
 
@@ -1136,9 +1144,10 @@ def return_order(request, order_id, order_item_id):
             product.save()
 
             user = request.user
-            user_custm = Customer.objects.get(email=user)
-            user_custm.wallet_bal += order_item.product.price * order_item.quantity
-            user_custm.save()
+            user_customer = get_object_or_404(Customer, email=user)
+            returned_amount = order_item.product.price * order_item.quantity
+            user_customer.wallet_bal += returned_amount
+            user_customer.save()
 
             order_item.delete()
 
@@ -1384,15 +1393,20 @@ def razorpay(request, address_id):
 
     shipping_cost = 10
     total = subtotal + shipping_cost if subtotal else 0
-
+    
     subtotal = Decimal(request.session.get('cart_subtotal', 0))
     total = Decimal(request.session.get('cart_total', 0))
+    # shipping= request.session.get('shipping', 0)
+    # print(shipping,'ssssssssssssssssssssssssssssssssssssssssssssssssss')
+
+    # total=+ shipping
+    # print(total,'wertyuioftgyh')
 
     discount = request.session.get("discount", 0)
 
     if discount:
         total -= discount
-
+   
     payment = "razorpay"
     user = request.user
     cart_items = Cart.objects.filter(user=user)
@@ -1424,7 +1438,7 @@ def razorpay(request, address_id):
 @login_required
 def proceedtopay(request):
     cart = Cart.objects.filter(user=request.user)
-    shipping = 10
+    # shipping = 10
     subtotal = 0
     discount = 0  # Initialize discount to 0
     
@@ -1448,6 +1462,9 @@ def proceedtopay(request):
     global_discount = request.session.get("discount", 0)
     discount += global_discount
     print(discount,'44444444444444444444444')
+    shipping= request.session.get('shipping', 0)
+    print(shipping,'ssssssssssssssssssssssssssssssssssssssssssssssssss')
+
     # Calculate total including shipping and discounts
     total = subtotal - discount + shipping
     print(total)
