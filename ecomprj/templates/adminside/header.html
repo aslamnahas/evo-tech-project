@@ -150,12 +150,15 @@
                         <li {% if request.path == '/adminside/products/' %}class="active"col{% endif %}>
                             <a href="{% url 'adminside:products' %}"><i class="fa fa-calendar"></i> <span>Products</span></a>
                         </li>
-                         <li {% if request.path == '/adminside/brands/' %}class="active"{% endif %}>
+                         <li {% if request.path == '/adminside/order/' %}class="active"{% endif %}>
                             <a href="{% url 'core:order' %}"><i class="fa fa-calendar-check-o"></i> <span>Order</span></a>
                         </li>
                          </li>
-                         <li {% if request.path == '/adminside/brands/' %}class="active"{% endif %}>
+                         <li {% if request.path == '/adminside/coupon/' %}class="active"{% endif %}>
                             <a href="{% url 'core:coupon' %}"><i class="fa fa-calendar-check-o"></i> <span>Coupon</span></a>
+                        </li> 
+                        <li {% if request.path == '/adminside/banners/' %}class="active"{% endif %}>
+                            <a href="{% url 'adminside:banners' %}"><i class="fa fa-calendar-check-o"></i> <span>Banner</span></a>
                         </li> 
                     </ul>
                 </div>

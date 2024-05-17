@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from core.models import Main_Category , Product, ProductImage  , Wishlist
 from django.shortcuts import get_object_or_404
 from django.core.exceptions import ValidationError
-from core.models import Customer ,Order,OrderItem 
+from core.models import Customer ,Order,OrderItem ,Banner
 from django.contrib.auth import logout
 from django.core.paginator import Paginator
 import json
@@ -52,6 +52,7 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 from reportlab.lib import colors
 # from products.models import OrderItem
 from reportlab.platypus import SimpleDocTemplate
+from core.forms import BannerForm
 
 
 from django.core.serializers.json import DjangoJSONEncoder
@@ -701,4 +702,60 @@ def home(request):
 
     return render(request, 'adminside/home.html', context)
 
-   
+
+
+
+def banners(request):
+    banners = Banner.objects.all().order_by('-id')
+    
+    return render(request, 'adminside/banners.html', {'banners': banners})
+
+
+
+
+
+
+
+def add_banners(request):
+    if request.method == "POST":
+        form = BannerForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect('adminside:banners')
+    else:
+        form = BannerForm()
+    return render(request, 'adminside/add_banners.html', {'form':form})
+
+
+
+def update_banners(request, id):
+    # Fetch the existing banner object from the database
+    banner = get_object_or_404(Banner, pk=id)
+ 
+    if request.method == 'POST':
+        # If the form is submitted with data, process the form
+        form = BannerForm(request.POST, request.FILES, instance=banner)
+        if form.is_valid():
+            form.save()
+            # Redirect to the updated banner detail page
+            return redirect('adminside:banners')  # Assuming you have a 'banners' URL defined
+        else:
+            # If form validation fails, render the form again with validation errors
+            return render(request, 'adminside/update_banner.html', {'form': form, 'banner': banner})
+    else:
+        # If the request is a GET request, pre-fill the form with the existing banner details
+        form = BannerForm(instance=banner)
+    
+    # Render the template with the form and the existing banner object
+    return render(request, 'adminside/update_banner.html', {'form': form, 'banner': banner})
+
+
+
+def delete_banner(request, id):
+    data = Banner.objects.get(id=id)
+
+    data.deleted = not data.deleted
+    data.save()
+
+    return redirect('adminside:banners')
+

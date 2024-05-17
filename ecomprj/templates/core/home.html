@@ -37,74 +37,74 @@
 
             <!-- Header Area End Here -->
             <!-- Begin Slider With Banner Area -->
-            <div class="slider-with-banner">
-                <div class="container">
-                    <div class="row">
-                        <!-- Begin Slider Area -->
-                        <div class="col-lg-8 col-md-8">
-                            <div class="slider-area">
-                                <div class="slider-active owl-carousel">
-                                    <!-- Begin Single Slide Area -->
-                                    <div class="single-slide align-center-left  animation-style-01 bg-1">
-                                        <div class="slider-progress"></div>
-                                        <div class="slider-content">
-                                            <h5>Sale Offer <span>-20% Off</span> This Week</h5>
-                                            <h2>Chamcham Galaxy S9 | S9+</h2>
-                                            <h3>Starting at <span>$1209.00</span></h3>
-                                            <div class="default-btn slide-btn">
-                                                <a class="links" href="shop-left-sidebar.html">Shopping Now</a>
+            <!-- Begin Slider With Category Menu Area -->
+         <div class="slider-with-banner">
+            <div class="container">
+                <div class="row">
+                    <!-- Begin Category Menu Area -->
+                    <div class="col-lg-3">
+                        <!--Category Menu Start-->
+                        <div class="category-menu category-menu-2">
+                            <div class="category-heading">
+                                <h2 class="categories-toggle"><span>categories</span></h2>
+                            </div>
+                            <div id="cate-toggle" class="category-menu-list">
+                                <ul>
+                                    <li>
+                                        {% for i in default_main_category %}
+                                        <li><a href="{% url 'core:category_products' i.id %}"> {{ i.name }} </a></li>
+                                        {% endfor %}
+                                    </li>
+                                    {% comment %} <li>
+                                        {% for i in brands %}
+                                        <li><a href="{% url 'main_app:brand_products' i.id %}">{{ i.name }}</a></li>
+                                        {% endfor %}
+                                    </li> {% endcomment %}
+                                </ul>
+                            </div>
+                        </div>
+                        <!--Category Menu End-->
+                    </div>
+                    <!-- Category Menu Area End Here -->
+                    <!-- Begin Slider Area -->
+                    <div class="col-lg-9 col-md-9">
+                        <div class="slider-area slider-area-3 pt-sm-30 pt-xs-30 pb-xs-30">
+                            <div class="slider-active owl-carousel">
+                                <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
+                                    <ol class="carousel-indicators">
+                                        {% for banner in banners %}
+                                        <li data-target="#carouselExampleIndicators" data-slide-to="{{ forloop.counter0 }}" class="{% if forloop.first %}active{% endif %}"></li>
+                                        {% endfor %}
+                                    </ol>
+                                    <div class="carousel-inner">
+                                        {% for banner in banners %}
+                                        <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                                            <img class="d-block w-100" src="{{ banner.image.url }}" alt="{{ banner.title }}">
+                                            <div class="carousel-caption d-none d-md-block">
+                                                <h5>{{ banner.title }}</h5>
+                                                <p>{{ banner.description }}</p>
                                             </div>
                                         </div>
+                                        {% endfor %}
                                     </div>
-                                    <!-- Single Slide Area End Here -->
-                                    <!-- Begin Single Slide Area -->
-                                    <div class="single-slide align-center-left animation-style-02 bg-2">
-                                        <div class="slider-progress"></div>
-                                        <div class="slider-content">
-                                            <h5>Sale Offer <span>Black Friday</span> This Week</h5>
-                                            <h2>Work Desk Surface Studio 2018</h2>
-                                            <h3>Starting at <span>$824.00</span></h3>
-                                            <div class="default-btn slide-btn">
-                                                <a class="links" href="shop-left-sidebar.html">Shopping Now</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <!-- Single Slide Area End Here -->
-                                    <!-- Begin Single Slide Area -->
-                                    <div class="single-slide align-center-left animation-style-01 bg-3">
-                                        <div class="slider-progress"></div>
-                                        <div class="slider-content">
-                                            <h5>Sale Offer <span>-10% Off</span> This Week</h5>
-                                            <h2>Phantom 4 Pro+ Obsidian</h2>
-                                            <h3>Starting at <span>$1849.00</span></h3>
-                                            <div class="default-btn slide-btn">
-                                                <a class="links" href="shop-left-sidebar.html">Shopping Now</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <!-- Single Slide Area End Here -->
+                                    <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
+                                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                        <span class="sr-only">Previous</span>
+                                    </a>
+                                    <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
+                                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                        <span class="sr-only">Next</span>
+                                    </a>
                                 </div>
                             </div>
                         </div>
-                        <!-- Slider Area End Here -->
-                        <!-- Begin Li Banner Area -->
-                        <div class="col-lg-4 col-md-4 text-center pt-xs-30">
-                            <div class="li-banner">
-                                <a href="#">
-                                    <img src="{% static 'user/images/banner/1_1.jpg' %}" alt="">
-                                </a>
-                            </div>
-                            <div class="li-banner mt-15 mt-sm-30 mt-xs-30">
-                                <a href="#">
-                                    <img src="{% static 'user/images/banner/1_2.jpg' %}" alt="">
-                                </a>
-                            </div>
-                        </div>
-                        <!-- Li Banner Area End Here -->
                     </div>
+                    <!-- Slider Area End Here -->
                 </div>
             </div>
-            <!-- Slider With Banner Area End Here -->
+        </div>
+
+
             <!-- Begin Product Area -->
           
         <!-- Li's Static Banner Area End Here -->

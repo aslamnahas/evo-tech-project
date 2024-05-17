@@ -1630,15 +1630,16 @@ def home(request):
     top_deals = Product.objects.filter(deleted=False).order_by('-offer')
     # top_brands = Brand.objects.annotate(total_orders=Count('product__order')).order_by('-total_orders')[:5]
     budget_products = Product.objects.filter(deleted=False).order_by('offer')
-
-
+    banners = Banner.objects.filter(deleted=False)
+    default_main_category = Main_Category.objects.filter(deleted=False)
     # Shuffle the first 10 deals and products separately
     shuffle(products)
     shuffle(deals)
 
     context = {
         'products': products, 
-        # 'brands': brands,
+        'default_main_category': default_main_category,
+        'banners': banners,
         'deals': deals,
         'top_products': top_products,
         'top_deals': top_deals,
