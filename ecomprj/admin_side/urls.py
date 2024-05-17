@@ -24,5 +24,5 @@ urlpatterns = [
     path('soft_delete_product/<int:id>/',views.soft_delete_product,name='soft_delete_product'),
     path('home/',views.home,name='home'),
     path('report-pdf-order/', views.report_pdf_order, name='report_pdf_order'),
-
+ 
 ]

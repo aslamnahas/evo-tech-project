@@ -384,8 +384,6 @@ def soft_delete_product(request, id):
     return redirect('adminside:products')
 
 
-
-
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @never_cache
 def dashboard(request):
@@ -393,20 +391,18 @@ def dashboard(request):
     labels = []
     data = []
     top_products = Product.objects.annotate(
-    total_ordered=Count('orderitem_product')
+        total_ordered=Count('orderitem_product')
     ).order_by('-total_ordered')[:10]
 
-    # top_brands = Brand.objects.annotate(total_orders=Count('product__order')).order_by('-total_orders')[:5]
-
-    top_categories = Main_Category.objects.annotate(total_orders=Count('product__order_product')).order_by('-total_orders')[:5]
+    top_categories = Main_Category.objects.annotate(
+        total_orders=Count('product__order_product')
+    ).order_by('-total_orders')[:5]
 
     for order in orders:
         labels.append(str(order.id))
         data.append(float(order.amount))  # Convert Decimal to float
 
     total_customers = Customer.objects.count()
-
-    # print(total_customers)
 
     # Calculate the count of new users in the last one week
     one_week_ago = timezone.now() - timezone.timedelta(weeks=1)
@@ -427,8 +423,6 @@ def dashboard(request):
     total_amount_received_last_week = Order.objects.filter(date__gte=one_week_ago).aggregate(
         total_amount_received=Cast(Sum(F('amount')), FloatField())
     )['total_amount_received'] or 0
-    print(total_amount_received_last_week)
-
 
     categories = Main_Category.objects.annotate(num_products=Count('product'))
     category_labels = [category.name for category in categories]
@@ -439,24 +433,22 @@ def dashboard(request):
     time_interval = request.GET.get('time_interval', 'all')  # Default to 'all' if not provided
     if time_interval == 'yearly':
         orders = Order.objects.annotate(date_truncated=TruncYear('date', output_field=DateField()))
-        orders = orders.values('date_truncated').annotate(total_amount=Sum('amount'))
     elif time_interval == 'monthly':
         orders = Order.objects.annotate(date_truncated=TruncMonth('date', output_field=DateField()))
-        orders = orders.values('date_truncated').annotate(total_amount=Sum('amount'))
     else:
         # Default to 'all' or handle other time intervals as needed
         orders = Order.objects.annotate(date_truncated=F('date'))
-        orders = orders.values('date_truncated').annotate(total_amount=Sum('amount'))
+
+    orders = orders.values('date_truncated').annotate(total_amount=Sum('amount'))
 
     # Calculate monthly sales
     monthly_sales = Order.objects.annotate(
         month=TruncMonth('date')
     ).values('month').annotate(total_amount=Sum('amount')).order_by('month')
-    print(monthly_sales)
+
     # Extract data for the monthly sales chart
     monthly_labels = [entry['month'].strftime('%B %Y') for entry in monthly_sales]
     monthly_data = [float(entry['total_amount']) for entry in monthly_sales]
-    print(monthly_data)
 
     # Add this block to handle AJAX request for filtered data
     headers = HttpHeaders(request.headers)
@@ -480,12 +472,11 @@ def dashboard(request):
             filtered_orders = Order.objects.annotate(date_truncated=F('date'))
 
         filtered_orders = filtered_orders.values('date_truncated').annotate(total_amount=Sum('amount')).order_by('date_truncated')
-        print(filtered_orders)
         filtered_labels = [entry['date_truncated'].strftime('%B %Y') for entry in filtered_orders]
         filtered_data = [float(entry['total_amount']) for entry in filtered_orders]
-        print( filtered_data )
 
         return JsonResponse({"labels": filtered_labels, "data": filtered_data})
+
     context = {
         "top_products": top_products,
         "top_categories": top_categories,
@@ -496,57 +487,94 @@ def dashboard(request):
         "total_orders": total_orders,
         "orders_last_week": orders_last_week,
         "total_amount_received": total_amount_received,
-        "total_amount_received": total_amount_received_last_week,
+        "total_amount_received_last": total_amount_received_last_week,
         "total_products": total_products,
         "category_labels": json.dumps(category_labels),
         "category_data": json.dumps(category_data),
     }
+
+    if request.method == 'GET':
+        from_date_str = request.GET.get('from_date')
+        to_date_str = request.GET.get('to_date')
+
+        if from_date_str and to_date_str:
+            from_date = datetime.strptime(from_date_str, '%Y-%m-%d')
+            to_date = datetime.strptime(to_date_str, '%Y-%m-%d')
+
+            if from_date and to_date:
+                filtered_orders = OrderItem.objects.filter(order__date__range=[from_date, to_date])
+            else:
+                filtered_orders = OrderItem.objects.all()
+
+            order_count = filtered_orders.count()
+
+            filtered_customers_details = Customer.objects.filter(date_joined__range=[from_date, to_date])
+            filtered_customers = filtered_customers_details.count()
+
+            total_quantity_ordered = filtered_orders.aggregate(total_quantity_ordered=Sum('quantity'))
+            total_amount_received = filtered_orders.aggregate(total_offer_price=Sum('order__amount'))['total_offer_price'] or 0
+            total_amount_received /= 1000
+
+            data = []
+            labels = []
+            for order in filtered_orders:
+                data.append(float(order.order.amount))
+                labels.append(str(order.id))
+
+            context.update({
+                'total_orders': order_count,
+                'total_amount_received': total_amount_received,
+                'total_customers': filtered_customers,
+                "labels": json.dumps(labels),
+                'data': json.dumps(data),
+            })
+
     context.update({
         "monthly_labels": json.dumps(monthly_labels),
         "monthly_data": json.dumps(monthly_data),
     })
 
-    # if "admin" in request.session:
     return render(request, "adminside/home.html", context)
+
     # else:
     #     return redirect("adminside:home")
     
 
     
-from django.http import JsonResponse
-from django.db.models import Sum
-from django.db.models.functions import TruncMonth, TruncYear, Cast
-from django.db.models.functions import TruncDate
-from django.views.decorators.http import require_GET
+# from django.http import JsonResponse
+# from django.db.models import Sum
+# from django.db.models.functions import TruncMonth, TruncYear, Cast
+# from django.db.models.functions import TruncDate
+# from django.views.decorators.http import require_GET
 
-@require_GET
-def filter_sales(request):
-    time_interval = request.GET.get('time_interval', 'all')
+# @require_GET
+# def filter_sales(request):
+#     time_interval = request.GET.get('time_interval', 'all')
 
-    if time_interval == 'yearly':
-        # Filter data for yearly sales
-        filtered_data = Order.objects.annotate(
-            date_truncated=TruncYear('date')
-        ).values('date_truncated').annotate(total_amount=Sum('amount')).order_by('date_truncated')
+#     if time_interval == 'yearly':
+#         # Filter data for yearly sales
+#         filtered_data = Order.objects.annotate(
+#             date_truncated=TruncYear('date')
+#         ).values('date_truncated').annotate(total_amount=Sum('amount')).order_by('date_truncated')
 
-    elif time_interval == 'monthly':
-        # Filter data for monthly sales
-        filtered_data = Order.objects.annotate(
-            date_truncated=TruncMonth('date')
-        ).values('date_truncated').annotate(total_amount=Sum('amount')).order_by('date_truncated')
+#     elif time_interval == 'monthly':
+#         # Filter data for monthly sales
+#         filtered_data = Order.objects.annotate(
+#             date_truncated=TruncMonth('date')
+#         ).values('date_truncated').annotate(total_amount=Sum('amount')).order_by('date_truncated')
 
-    else:
-        # Default to 'all' or handle other time intervals as needed
-        # Here, we are using DateTrunc to truncate the date to a day
-        filtered_data = Order.objects.annotate(
-            date_truncated=TruncDate('day', 'date')
-        ).values('date_truncated').annotate(total_amount=Sum('amount')).order_by('date_truncated')
+#     else:
+#         # Default to 'all' or handle other time intervals as needed
+#         # Here, we are using DateTrunc to truncate the date to a day
+#         filtered_data = Order.objects.annotate(
+#             date_truncated=TruncDate('day', 'date')
+#         ).values('date_truncated').annotate(total_amount=Sum('amount')).order_by('date_truncated')
 
-    # Extract data for the filtered chart
-    filtered_labels = [entry['date_truncated'].strftime('%B %Y') for entry in filtered_data]
-    filtered_data = [float(entry['total_amount']) for entry in filtered_data]
+#     # Extract data for the filtered chart
+#     filtered_labels = [entry['date_truncated'].strftime('%B %Y') for entry in filtered_data]
+#     filtered_data = [float(entry['total_amount']) for entry in filtered_data]
 
-    return JsonResponse({"labels": filtered_labels, "data": filtered_data})
+#     return JsonResponse({"labels": filtered_labels, "data": filtered_data})
 
 
 

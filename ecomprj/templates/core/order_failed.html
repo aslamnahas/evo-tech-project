@@ -1,0 +1,25 @@
+<!-- core/order_failed.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Payment Failed</title>
+</head>
+<body>
+    <h1>Payment Failed</h1>
+    <p>Payment was unsuccessful due to a temporary issue. Please try again.</p>
+    <p>Retry payment of ₹570 with the following methods:</p>
+    <div id="qr-code">
+        <!-- Place your QR code here -->
+    </div>
+    <p>QR Code is valid for <span id="qr-timer">11:45</span> minutes</p>
+    <ul>
+        <li><img src="path/to/google_pay_app_logo.png" alt="Google Pay"></li>
+        <li><img src="path/to/phonepe_app_logo.png" alt="PhonePe"></li>
+        <li><img src="path/to/cred_app_logo.png" alt="Cred"></li>
+        <li><img src="path/to/paytm_app_logo.png" alt="Paytm"></li>
+        <li><img src="path/to/bhim_app_logo.png" alt="BHIM"></li>
+    </ul>
+    <button onclick="window.location.href='/razorpay/retry/'">Retry with other methods</button>
+</body>
+</html>

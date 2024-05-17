@@ -34,7 +34,7 @@ urlpatterns = [
      path('add_address/',views.add_address,name='add_address'),
      path('update_address/<int:id>',views.update_address,name='update_address'),
      path('delete_address/<int:id>/',views.delete_address,name='delete_address'),
-   
+        
     
 
      path('cart/',views.cart,name='cart'),
@@ -53,6 +53,7 @@ urlpatterns = [
     path('placeorder/',views.place_order,name='place_order'),
     path('customerorder/',views.customer_order,name = 'customer_order'),
     path('success/',views.success,name='success'),
+    path('razorpay/failed/',views.failed,name='razorpay_failed'),
     path('cancel_success/',views.cancel_success,name='cancel_success'),
     path('cancel/<int:order_id>/', views.cancel, name='cancel'),
     path('order_details/<int:id>',views.order_details,name='order_details'),

@@ -818,7 +818,7 @@ def checkout(request):
     #     print('Email:', email)
         user = request.user
     #     print('User:', user)
-        cart_items = Cart.objects.filter(user=user)
+        cart_items = Cart.obje3cts.filter(user=user)
         subtotal = 0
 
         for cart_item in cart_items:
@@ -1065,6 +1065,19 @@ def success(request):
         "orders": orders,
     }
     return render(request, "core/placeorder.html", context)
+
+
+
+def failed(request):
+    orders = Order.objects.order_by("-id")[:1]
+    context = {
+        "orders": orders,
+    }
+    return render(request, "core/order_failed.html", context)
+
+
+
+
 
 
 def order_details(request, id):

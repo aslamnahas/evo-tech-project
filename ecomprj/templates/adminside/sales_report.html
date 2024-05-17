@@ -1,0 +1,32 @@
+<!-- sales_report.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Report</title>
+</head>
+<body>
+    <h1>Sales Report</h1>
+    <!-- Filter options -->
+    <select id="time_interval">
+        <option value="all">All</option>
+        <option value="yearly">Yearly</option>
+        <option value="monthly">Monthly</option>
+    </select>
+    <button onclick="filterSales()">Filter</button>
+
+    <!-- Display section for filtered data -->
+    <div id="filtered_data_section">
+        <!-- Filtered data will be displayed here -->
+    </div>
+
+    <script>
+        function filterSales() {
+            var timeInterval = document.getElementById('time_interval').value;
+            // Perform AJAX request to get filtered data
+            // Update the content of the 'filtered_data_section' div with the received data
+        }
+    </script>
+</body>
+</html>
