@@ -79,7 +79,7 @@ urlpatterns = [
     # path('proceed-to-pay',views.proceedtopay,name='proceedtopay'),
     # path('razorpay/<int:address_id>/',views.razorpay,name='razorpay'),
     path('create-razorpay-order/',views.create_razorpay_order, name='create_razorpay_order'),
-
+    path('payment_failed/', views.payment_failed, name='payment_failed'),
     path('generate_invoice/<int:order_id>/', views.generate_invoice, name='generate_invoice'),
     path('<int:order_id>/download/', views.download_invoice, name='download_invoice'),
 

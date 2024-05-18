@@ -103,6 +103,13 @@ def admin_login(request):
 #     return render(request,'adminside/dashboard.html')
 
 
+
+def dashboard_logout(request):
+    logout(request)
+    return render(request,'adminside/adminlogin.html')
+
+
+
 def users(request):
      users = Customer.objects.all()
      context = {

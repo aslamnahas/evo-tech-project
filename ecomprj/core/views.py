@@ -818,7 +818,7 @@ def checkout(request):
     #     print('Email:', email)
         user = request.user
     #     print('User:', user)
-        cart_items = Cart.obje3cts.filter(user=user)
+        cart_items = Cart.objects.filter(user=user)
         subtotal = 0
 
         for cart_item in cart_items:
@@ -1057,6 +1057,15 @@ def place_order(request):
 #     return redirect("success")
 
 
+def payment_failed(request):
+    # Extract any necessary information from the request if needed
+    error_message = request.GET.get('error_message', 'Payment failed due to an unknown error.')
+    
+    # Add the error message to Django messages framework
+    messages.error(request, error_message)
+    
+    # Redirect to the product page or any other desired page
+    return redirect('core:products') 
 
 
 def success(request):

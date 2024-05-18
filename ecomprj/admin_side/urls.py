@@ -6,6 +6,7 @@ app_name = "adminside"
 urlpatterns = [
     path('', views.admin_login,name='admin_login'),
     path('dashboard/',views.dashboard,name='dashboard'),
+    path('logout/',views.dashboard_logout,name='dashboard_logout'),
     path('user/',views.users,name='users'),
     path('user_block/<int:user_id>/', views.user_block, name='user_block'),
 
