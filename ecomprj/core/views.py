@@ -607,13 +607,8 @@ def change_password(request):
 
 
 
-
-
 @login_required(login_url='core:loginPage') 
 def cart(request):
-    if "discount" in request.session:
-        del request.session["discount"]
-        
     if isinstance(request.user, AnonymousUser):
         device_id = request.COOKIES.get("device_id")
         cart_items = Cart.objects.filter(device=device_id).order_by("id")
@@ -622,48 +617,37 @@ def cart(request):
         cart_items = Cart.objects.filter(user=user).order_by("id")
 
     subtotal = 0
-    
     for cart_item in cart_items:
         if cart_item.quantity > cart_item.product.stock:
-            messages.warning(
-                request, f"{cart_item.product} this is out of stock."
-            )
+            messages.warning(request, f"{cart_item.product} is out of stock.")
             cart_item.quantity = cart_item.product.stock
             cart_item.save()
 
         cart_item.total_price = cart_item.quantity * cart_item.product.get_discounted_price()
         cart_item.save()
         subtotal += cart_item.total_price
-        
-    if request.method == "POST":
-        coupon_code = request.POST.get("coupon_code")
-        print(coupon_code)
-        try:
-            coupon = Coupon.objects.get(coupon_code=coupon_code, max_usage_count=1)
-            if subtotal >= coupon.min_amount:
-                request.session['discount'] = coupon.discount_amount
-                messages.success(request, "Coupon applied successfully")
-                # Apply coupon to each cart item
-                for cart_item in cart_items:
-                    cart_item.coupon = coupon
-                    cart_item.save()
-            else:
-                messages.error(request, f"Total amount is below the minimum required ({coupon.min_amount}) for this coupon")  
-        except Coupon.DoesNotExist:
-            messages.error(request, "Invalid or expired coupon code")
 
-    # shipping_cost = 10
-    total = subtotal 
-    
-    # if total >= coupon.min_amount:
-        # Calculate total discount only if there's a coupon applied
+    if request.method == "POST":
+        if 'remove_coupon' in request.POST:
+            # Remove coupon from session
+            if "discount" in request.session:
+                del request.session["discount"]
+                messages.success(request, "Coupon removed successfully.")
+        else:
+            # Apply coupon logic
+            coupon_code = request.POST.get("coupon_code")
+            try:
+                coupon = Coupon.objects.get(coupon_code=coupon_code, max_usage_count=1)
+                if subtotal >= coupon.min_amount:
+                    request.session['discount'] = coupon.discount_amount
+                    messages.success(request, "Coupon applied successfully.")
+                else:
+                    messages.error(request, f"Total amount is below the minimum required ({coupon.min_amount}) for this coupon.")
+            except Coupon.DoesNotExist:
+                messages.error(request, "Invalid or expired coupon code.")
+
     total_discount = request.session.get('discount', 0)
-    # request.session['discount'] = coupon.discount_amount
-        # Apply total discount to the total
-    print(total_discount)
-    total -= total_discount
-    # 
-    print(total)
+    total = subtotal - total_discount
 
     request.session['cart_subtotal'] = str(subtotal)  
     request.session['cart_total'] = str(total)
@@ -677,11 +661,7 @@ def cart(request):
         "coupons": coupons,
     }
 
-    # if "discount" in request.session:
-    #     context["applied_coupon"] = Coupon.objects.get(discount_amount=request.session['discount'])
-
     return render(request, "core/cart.html", context)
-
 
 
 @login_required(login_url='core:loginPage') 
