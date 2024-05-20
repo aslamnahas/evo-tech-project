@@ -645,6 +645,7 @@ def cart(request):
                     messages.error(request, f"Total amount is below the minimum required ({coupon.min_amount}) for this coupon.")
             except Coupon.DoesNotExist:
                 messages.error(request, "Invalid or expired coupon code.")
+            
 
     total_discount = request.session.get('discount', 0)
     total = subtotal - total_discount
@@ -1049,6 +1050,8 @@ def payment_failed(request):
 
 
 def success(request):
+    if "discount" in request.session:
+      del request.session["discount"]
     orders = Order.objects.order_by("-id")[:1]
     context = {
         "orders": orders,
