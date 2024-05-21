@@ -1,112 +1,133 @@
-
 {% extends 'core/base.html' %}
 {% load static %}
-
 
 {% block content %}
 <section class="vh-100 gradient-custom-2">
     <div class="container py-5 h-100">
-      <div class="row d-flex justify-content-center align-items-center h-100">
-        <div class="col-md-12 col-lg-10 col-xl-8">
-          <div class="card card-stepper" style="border-radius: 16px;">
-            <div class="card-header p-4">
-              <div class="d-flex justify-content-between align-items-center">
-                <div>
-                  <p class="text-muted mb-2"> Order ID <span class="fw-bold text-body">{{ product.id }}</span></p>
-                  <p class="text-muted mb-0"> Place On <span class="fw-bold text-body"> {{ product.date }}</span> </p>
-                </div>
-                <div>
-                  <h6 class="mb-0"> <a href="#">{{ product.status }}</a> </h6>
-                </div>
-              </div>
-            </div>
-            <div class="card-body p-4">
-              <div class="d-flex flex-row mb-4 pb-2">
-                <div class="flex-fill">
-                  {% for item in product.order_items.all %}
-    <h5 class="bold">{{ item.product.brand.name }} {{ item.product.model }}</h5>
-    <p class="text-muted"> Qt: {{ item.quantity }} item</p>
-{% endfor %}
-                  <h4 class="mb-3"> ₹{{  product.amount }} <span class="small text-muted"> via ({{ product.payment_type }}) </span></h4>
-                  <br>
-                  <br>
-                  <p class="text-muted mb-0"> <span class="fw-bold text-body"> {{ product.address.first_name }} {{ product.address.first_name }}</span> </p>
-                  <p class="text-muted mb-0"> <span class="fw-bold text-body"> {{ product.address.address_1 }} {{ product.address.address_2 }}</span> </p>
-                  <p class="text-muted mb-0"> <span class="fw-bold text-body"> {{ product.address.state }} {{ product.address.country }}</span> </p>
-                  <p class="text-muted mb-0"> <span class="fw-bold text-body"> {{ product.address.city }} {{ product.address.pin }}</span> </p>
-                  <p class="text-muted mb-0"> <span class="fw-bold text-body">PIN: {{ product.address.pin}}</span> </p>
-                  <p class="text-muted mb-0"> <span class="fw-bold text-body">Phone: {{ product.user.ph_no }}</span> </p>
-                </div>
-                <div>
-                  {% for item in product.order_items.all %}
-                     <img class="align-self-center img-fluid ml-100"
-                        src= {{ item.product.image.url }} width="200">
+        <div class="row d-flex justify-content-center align-items-center h-100">
+            <div class="col-md-12 col-lg-10 col-xl-8">
+                <div class="card card-stepper" style="border-radius: 16px;">
+                    <div class="card-header p-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <p class="text-muted mb-2"> Order ID <span class="fw-bold text-body">{{ order.id }}</span></p>
+                                <p class="text-muted mb-0"> Place On <span class="fw-bold text-body"> {{ order.date }}</span> </p>
+                            </div>
+                            <div>
+                                <h6 class="mb-0"> <a href="#">{{ order.status }}</a> </h6>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="d-flex flex-row mb-4 pb-2">
+                            <div class="flex-fill">
+                                {% for item in products %}
+                                    <h5 class="bold">{{ item.product.model }}</h5>
+                                    <p class="text-muted"> Qt: {{ item.quantity }} item</p>
+                                    <img class="align-self-center img-fluid ml-100" src="{{ item.product.image.url }}" width="200">
+                                {% endfor %}
+                                <h4 class="mb-3"> ₹{{ order.amount }} <span class="small text-muted"> via ({{ order.payment_type }}) </span></h4>
+                                <p class="text-muted mb-0"> <span class="fw-bold text-body"> {{ order.address.first_name }} {{ order.address.last_name }}</span> </p>
+                                <p class="text-muted mb-0"> <span class="fw-bold text-body"> {{ order.address.address_1 }} {{ order.address.address_2 }}</span> </p>
+                                <p class="text-muted mb-0"> <span class="fw-bold text-body"> {{ order.address.state }} {{ order.address.country }}</span> </p>
+                                <p class="text-muted mb-0"> <span class="fw-bold text-body"> {{ order.address.city }} {{ order.address.pin }}</span> </p>
+                                <p class="text-muted mb-0"> <span class="fw-bold text-body">Phone: {{ order.user.ph_no }}</span> </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer p-4">
+                        <div class="d-flex justify-content-between">
+                            <h5 class="fw-normal mb-0"><a href="#!"> </a></h5>
+                            <div class="border-start h-100"></div>
+                            {% if order.status == 'pending' or order.status == 'processing' or order.status == 'shipped' %}
+                            <form method="post" action="{% url 'core:cancel' order.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger">Cancel</button>
+                            </form>
+                            {% elif order.status == 'completed' or order.status == 'delivered' %}
+                            <form method="post" action="{% url 'core:return_order' order.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-primary">Return</button>
+                            </form>
+                            {% endif %}
+                            <div class="border-start h-100"></div>
+                            <a href="{% url 'core:generate_invoice' order.id %}">
+                                <button type="button" class="btn btn-secondary">Invoice</button>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="mb-4">Leave a Review</h5>
+                        {% for item in products %}
+                        <form method="post" action="{% url 'core:add_review' item.product.id %}">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label class="form-label">Rating for {{ item.product.model }}</label>
+                                <div class="star-rating">
+                                    {% for i in "12345" %}
+                                        <input type="radio" id="star{{ forloop.counter }}" name="rating" value="{{ forloop.counter }}" />
+                                        <label for="star{{ forloop.counter }}" title="{{ forloop.counter }} star{{ forloop.counter|pluralize }}">&#9733;</label>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="comment" class="form-label">Comment</label>
+                                <textarea id="comment" name="comment" class="form-control" rows="3"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Submit Review</button>
+                        </form>
                         {% endfor %}
+                    </div>
                 </div>
-              </div>
             </div>
-            <div class="card-footer p-4">
-              <div class="d-flex justify-content-between">
-                <h5 class="fw-normal mb-0"><a href="#!"> </a></h5>
-                <div class="border-start h-100"></div>
-                {% if product.status == 'pending' or product.status == 'processing' or product.status == 'shipped' %}                
-                <form method="post" action="{% url 'core:cancel' product.id  %}">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-danger">Cancel</button>
-                </form>
-                 {% elif product.status == 'completed' or product.status == 'delivered' %}
-                <form method="post" action="{% url 'core:return_order' product.id  %}">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-success">Return</button>
-                </form>
-                {% else %}
-                   <p>  </p>
-                 {% endif %}
-                <div class="border-start h-100"></div>
-                <a href="{% url 'core:generate_invoice' product.id  %}">
-                  <button type="button" class="btn btn-secondary">Invoice</button>
-                </a>
-              </div>
-            </div>
-          </div>
         </div>
-      </div>
     </div>
-  </section>
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-  <script>
-     // Wait for the document to be ready
-     document.addEventListener("DOMContentLoaded", function() {
-         // Select all cancel buttons
-         const cancelButtons = document.querySelectorAll('.btn-danger');
- 
-         // Attach event listener to each cancel button
-         cancelButtons.forEach(button => {
-             button.addEventListener('click', function(e) {
-                 e.preventDefault(); // Prevent the default action of the button
- 
-                 // Display the confirmation dialog
-                 Swal.fire({
-                     title: "Are you sure?",
-                     text: "You won't be able to revert this!",
-                     icon: "warning",
-                     showCancelButton: true,
-                     confirmButtonColor: "#3085d6",
-                     cancelButtonColor: "#d33",
-                     confirmButtonText: "Yes, cancel it!"
-                 }).then((result) => {
-                     // If the user confirms the cancellation
-                     if (result.isConfirmed) {
-                         // Submit the cancellation form
-                         const form = button.closest('form');
-                         form.submit();
-                     }
-                 });
-             });
-         });
-     });
- </script>
-
-
+</section>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const cancelButtons = document.querySelectorAll('.btn-danger');
+        cancelButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                Swal.fire({
+                    title: "Are you sure?",
+                    text: "You won't be able to revert this!",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    confirmButtonText: "Yes, cancel it!"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const form = button.closest('form');
+                        form.submit();
+                    }
+                });
+            });
+        });
+    });
+</script>
+<style>
+    .star-rating {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: flex-start;
+    }
+    .star-rating input {
+        display: none;
+    }
+    .star-rating label {
+        cursor: pointer;
+        font-size: 2em;
+        color: #ddd;
+        margin: 0 0.1em;
+        transition: color 0.2s;
+    }
+    .star-rating input:checked ~ label,
+    .star-rating label:hover,
+    .star-rating label:hover ~ label {
+        color: #f5c518;
+    }
+</style>
 {% endblock content %}

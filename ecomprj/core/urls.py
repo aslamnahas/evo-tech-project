@@ -60,7 +60,6 @@ urlpatterns = [
     
     
 
-
     path('order/',views.order,name = 'order'),
     path('update_order/', views.updateorder, name='update_order'),
     path('return-order/<int:order_id>/<int:order_item_id>/', views.return_order, name='return_order'),
@@ -86,4 +85,8 @@ urlpatterns = [
     path('new/', views.new, name='new'),
     # path('update-city-and-shipping-cost/', views.update_city_and_shipping_cost, name='update_city_and_shipping_cost'),
     # path('update_shipping_info/',views.update_shipping_info, name='update_shipping_info'),
+
+    # path('product/<int:product_id>/review/', views.add_review, name='add_review'),
+    path('product/<int:product_id>/review/', views.add_review, name='add_review'),
+
 ]

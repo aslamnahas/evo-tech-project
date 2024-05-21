@@ -103,6 +103,15 @@ class ProductImage(models.Model):
         self.save()
 
 
+class Review(models.Model):
+    user = models.ForeignKey(Customer, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='reviews')
+    rating = models.PositiveIntegerField(default=1)
+    comment = models.TextField()
+    created_at = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f'Review by {self.user.email} for {self.product.model}'
 
 
 

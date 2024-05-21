@@ -1,0 +1,20 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card mt-5">
+                <div class="card-header bg-danger text-white">
+                    Payment Failed
+                </div>
+                <div class="card-body">
+                    <p>We're sorry, but your payment could not be processed at this time. Please try again or contact support if the issue persists.</p>
+                    <a href="{% url 'core:home' %}" class="btn btn-primary">Return to Home</a>
+                    <a href="{% url 'core:checkout' %}" class="btn btn-secondary">Retry Payment</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

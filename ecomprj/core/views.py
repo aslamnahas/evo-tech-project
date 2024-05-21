@@ -37,7 +37,7 @@ from django.db.models import Q
 from decimal import Decimal
 from random import shuffle
 from datetime import date
-from django.db.models import Count
+from django.db.models import Count, Avg
 from django.template.loader import get_template
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
@@ -393,12 +393,40 @@ def product_detail(request, id):
     similar_products = Product.objects.filter(
     main_category=product.main_category  # Filter similar products by main category
     ).exclude(id=product.id).order_by('?')  # Exclude the current product and randomize the order
-    
+    reviews = Review.objects.filter(product=product)
+   
+    form = ReviewForm()
+  
+    if reviews.exists():
+        avg_rating = reviews.aggregate(Avg('rating'))['rating__avg']
+        print(avg_rating)
+    else:
+        avg_rating = 0 
+
+    full_stars = int(avg_rating)
+    half_star = 1 if avg_rating - full_stars >= 0.5 else 0
+    empty_stars = 5 - full_stars - half_star
+
+
+
+    full_stars_range = range(full_stars)
+    empty_stars_range = range(empty_stars)
     context = {
         "product": product,
         "additional_images": additional_images,
         "similar_products": similar_products,
         "discounted_price": discounted_price,
+        "reviews": reviews,
+        'avg_rating': avg_rating,
+        'avg_rating': avg_rating,
+        'full_stars': full_stars,
+        'full_stars_range': full_stars_range,
+
+        'half_star': half_star,
+        'empty_stars': empty_stars,
+        'empty_stars_range': empty_stars_range,
+        'form': form,
+
     }
     return render(request, "core/product_details.html", context)
 
@@ -1068,14 +1096,16 @@ def failed(request):
     return render(request, "core/order_failed.html", context)
 
 
+def payment_failed(request):
+    return render(request, 'core/payment_failed.html')
 
 
-
-
+@login_required
 def order_details(request, id):
-    product = get_object_or_404(Order, id=id)
+    order = get_object_or_404(Order, id=id)
     context = {
-        'product' : product
+        'order': order,
+        'products': order.order_items.all(),
     }
     return render(request, "core/order_details.html", context)
 
@@ -1560,6 +1590,9 @@ def proceedtopay(request):
 
 
 
+
+
+
 def category_products(request, category_id):
     # Retrieve selected filters from the request
     selected_category = request.GET.get('category')
@@ -1748,3 +1781,25 @@ def new(request):
 #             return JsonResponse({'error': 'Address not found'}, status=400)
 #     else:
 #         return JsonResponse({'error': 'Invalid request'}, status=400)
+from .forms import ReviewForm 
+
+@login_required
+def add_review(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    
+    if request.method == 'POST':
+        form = ReviewForm(request.POST)
+        if form.is_valid():
+            review = form.save(commit=False)
+            review.user = request.user
+            review.product = product  # Assign the Product instance
+            review.save()
+            return redirect('core:product_detail', id=product.id)
+    else:
+        form = ReviewForm()
+
+    return render(request, 'core/product_details.html', {
+        'product': product,
+        'form': form,
+        'reviews': product.review_set.all(),
+    })
