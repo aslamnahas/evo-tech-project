@@ -36,6 +36,24 @@
     font-size: 16px; /* Adjust font size */
     cursor: pointer; /* Add cursor pointer */
 }
+
+/* Ensure all images within the product details have some spacing */
+.product-details-left .lg-image {
+    margin-bottom: 100px; /* Adds space below each large image */
+}
+
+.product-details-left .sm-image {
+    margin: 5px; /* Adds space around each thumbnail */
+}
+
+/* Additional styling for the container holding the thumbnails */
+.product-details-thumbs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px; /* Adds a consistent gap between all thumbnails */
+}
+
+    
 </style>
          <!-- Begin Li's Breadcrumb Area -->
             <div class="breadcrumb-area">
@@ -54,7 +72,7 @@
             <div class="content-wraper product_data">
                 <div class="container">
                     <div class="row single-product-area ">
-                        <div class="col-lg-5 col-md-6">
+                        <div class="col-lg-5 col-md-6 mt-4">
                            <!-- Product Details Left -->
                             <div class="product-details-left">
                                 <div class="product-details-images slider-navigation-1">
@@ -108,7 +126,6 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
                         
                         
 
@@ -155,7 +172,7 @@
                                                 <a class="wishlist-btn" href="{% url 'core:add_to_wishlist' product.id %}"><i class="fa fa-heart-o"></i></a>                                        
                                              </div>   
                                         </div>                                                 
-                                    <div class="product-additional-info">
+                                    <div class="product-additional-info p-3">
                                         <div class="product-social-sharing">
                                             <ul>
                                                 <li class="facebook"><a href="#"><i class="fa fa-facebook"></i>Facebook</a></li>

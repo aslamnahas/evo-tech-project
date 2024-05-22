@@ -91,19 +91,6 @@ def admin_login(request):
     # Render the login form
     return render(request, 'adminside/adminlogin.html')
 
-# def users(request):
-
-#     return render(request,'adminside/users.html')
-
-# @login_required
-# def dashboard(request):
-#     # Set session data
-#     request.session['user_id'] = request.user.id
-#     request.session['username'] = request.user.username
-#     return render(request,'adminside/dashboard.html')
-
-
-
 def dashboard_logout(request):
     logout(request)
     return render(request,'adminside/adminlogin.html')
@@ -147,19 +134,7 @@ def add_main_category(request):
         if not description.strip():
             messages.error(request, "Description cannot be empty.")
             return redirect('adminside:add_categories')
-        # if not offer:
-        #     messages.error(request, "Offer cannot be empty.")
-        #     return redirect('adminside:add_categories')
-        # try:
-        #     offer = float(offer)
-        #     if offer < 0:
-        #         raise ValidationError("Offer must be a positive number.")
-        # except ValueError:
-        #     messages.error(request, "Offer must be a valid number.")
-        #     return redirect('adminside:add_categories')
-        # if not image:
-        #     messages.error(request, "Please upload an image.")
-        #     return redirect('adminside:add_categories')
+    
             
         # Check if the category name already exists
         if Main_Category.objects.filter(name=main_category_name).exists():
@@ -547,44 +522,6 @@ def dashboard(request):
     # else:
     #     return redirect("adminside:home")
     
-
-    
-# from django.http import JsonResponse
-# from django.db.models import Sum
-# from django.db.models.functions import TruncMonth, TruncYear, Cast
-# from django.db.models.functions import TruncDate
-# from django.views.decorators.http import require_GET
-
-# @require_GET
-# def filter_sales(request):
-#     time_interval = request.GET.get('time_interval', 'all')
-
-#     if time_interval == 'yearly':
-#         # Filter data for yearly sales
-#         filtered_data = Order.objects.annotate(
-#             date_truncated=TruncYear('date')
-#         ).values('date_truncated').annotate(total_amount=Sum('amount')).order_by('date_truncated')
-
-#     elif time_interval == 'monthly':
-#         # Filter data for monthly sales
-#         filtered_data = Order.objects.annotate(
-#             date_truncated=TruncMonth('date')
-#         ).values('date_truncated').annotate(total_amount=Sum('amount')).order_by('date_truncated')
-
-#     else:
-#         # Default to 'all' or handle other time intervals as needed
-#         # Here, we are using DateTrunc to truncate the date to a day
-#         filtered_data = Order.objects.annotate(
-#             date_truncated=TruncDate('day', 'date')
-#         ).values('date_truncated').annotate(total_amount=Sum('amount')).order_by('date_truncated')
-
-#     # Extract data for the filtered chart
-#     filtered_labels = [entry['date_truncated'].strftime('%B %Y') for entry in filtered_data]
-#     filtered_data = [float(entry['total_amount']) for entry in filtered_data]
-
-#     return JsonResponse({"labels": filtered_labels, "data": filtered_data})
-
-
 
 
 

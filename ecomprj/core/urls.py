@@ -12,7 +12,6 @@ urlpatterns = [
     path('logout/', views.custom_logout, name='custom_logout'),
     path('verify-otp/',views.verify_otp, name='verify_otp'),
     path('login/', views.loginPage, name='loginPage'),
-    # path('forgot_password/', views.forgot_password, name='forgot_password'),
     path('reset_password/<uidb64>/<token>/', views.reset_password, name='reset_password'),  
 
 
@@ -21,7 +20,7 @@ urlpatterns = [
     path('products/',views.products, name='products'),
     path('products/<int:id>/', views.product_detail, name='product_detail'),
     path('categories/<int:category_id>/products/', views.category_products, name='category_products'), 
-    # path('search/', views.user_category_view, name='search'),
+  
 
 
 
@@ -74,21 +73,13 @@ urlpatterns = [
 
 
     path('wallet/',views.wallet,name='wallet'),
-    # path('razorpay/<int:address_id>/',views.razorpay,name='razorpay'),
-    # path('proceed-to-pay',views.proceedtopay,name='proceedtopay'),
-    # path('razorpay/<int:address_id>/',views.razorpay,name='razorpay'),
     path('create-razorpay-order/',views.create_razorpay_order, name='create_razorpay_order'),
     path('payment_failed/', views.payment_failed, name='payment_failed'),
     path('generate_invoice/<int:order_id>/', views.generate_invoice, name='generate_invoice'),
     path('<int:order_id>/download/', views.download_invoice, name='download_invoice'),
 
     path('new/', views.new, name='new'),
-    # path('update-city-and-shipping-cost/', views.update_city_and_shipping_cost, name='update_city_and_shipping_cost'),
-    # path('update_shipping_info/',views.update_shipping_info, name='update_shipping_info'),
-
-    # path('product/<int:product_id>/review/', views.add_review, name='add_review'),
+  
     path('product/<int:product_id>/review/', views.add_review, name='add_review'),
-    # path('inbox/', views.inbox, name='inbox'),
-    # path('sent/', views.sent_messages, name='sent_messages'),
-    # path('compose/', views.send_message, name='compose_message'), 
+  
 ]

@@ -4,7 +4,7 @@
 
 <head>
     <meta charset="utf-8" />
-    <title>Techzone - invoice</title>
+    <title>TECHX- invoice</title>
     <meta http-equiv="x-ua-compatible" content="ie=edge" />
     <meta name="description" content="" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -651,25 +651,25 @@ table, th, td {
                                             <tr>
                                                 <td>
                                                     <div class="item-desc-1">
-                                                        <span>{{ item.product.product_name }}</span>
+                                                        <span>{{ item.product.model }}</span>
                                                     </div>
                                                 </td>
                                                 <td class="text-center">{{ item.product.price }}</td>
                                                 <td class="text-center">{{ item.quantity }}</td>
-                                                <td class="text-center">{{item.product.category.category_offer}}%</td>
-                                                <td class="text-right">{{ item.product.price }}</td>
+                                                <td class="text-center">{{item.product.offer}}%</td>
+                                                <td class="text-right">{{ subtotalss }}</td>
                                                 </td>
                                             </tr>
                                         {% endfor %}
 
                                         <tr>
                                             <td colspan="4" class="text-left f-w-600">Shipping Charge</td>
-                                            <td class="text-right"> 10</td>
+                                            <td class="text-right"> {{ shipping }}</td>
                                         </tr>
                                             
                                             <tr>
                                                 <td colspan="4" class="text-left f-w-600">SubTotal</td>
-                                                <td class="text-right">{{cart_total_amount}}</td>
+                                                <td class="text-right">{{ subtotalss }}</td>
                                             </tr>
                                             <!-- <tr>
                                                 <td colspan="3" class="text-end f-w-600">Tax</td>
@@ -677,7 +677,7 @@ table, th, td {
                                             </tr> -->
                                             <tr>
                                                 <td colspan="4" class="text-left f-w-600">Grand Total</td>
-                                                <td class="text-right f-w-600">{{cart_total_amount}}</td>
+                                                <td class="text-right f-w-600">{{ totals }}</td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -693,7 +693,7 @@ table, th, td {
                                     </div>
                                     <div class="col-md-6 text-end">
                                         <h6 class="mb-15">Total Amount</h6>
-                                        <h3 class="mt-0 mb-0 text-brand">{{cart_total_amount}}</h3>
+                                        <h3 class="mt-0 mb-0 text-brand">{{ totals }}</h3>
                                         <p class="mb-0 text-muted">Taxes Included</p>
                                     </div>
                                 </div>

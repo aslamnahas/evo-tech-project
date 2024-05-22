@@ -1,11 +1,7 @@
-# views.py
 
 from django.shortcuts import render, redirect ,HttpResponse
 from django.contrib.auth import authenticate, login, logout
-# from .forms import *
-# from .forms import LoginForm 
 from core.models import Main_Category ,Product
-# from .models import Customer
 from .manager import BaseUserManager
 from .models import Customer ,Address
 from django.shortcuts import get_object_or_404
@@ -44,14 +40,7 @@ from django.utils.encoding import force_bytes
 from django.core.mail import send_mail
 from django.contrib.auth.tokens import default_token_generator
 
-# def home(request):
-#     return render(request,'core/home.html')
-
-# @never_cache
-# def home(request):
-#         user = request.user
-#         return render(request, "core/home.html",{'user': user})
-    
+#=============================otp=========================================================
 def send_otp(email):
     digits = "0123456789"
     OTP = ""
@@ -73,7 +62,7 @@ def send_otp(email):
     s.quit()
 
     return OTP
-               
+#=====================================================signup===============================#   
 @never_cache
 def signupPage(request):
     if 'email' in request.session:
@@ -115,31 +104,11 @@ def signupPage(request):
             messages.error(request, 'Number already exist')
             return redirect('core:signupPage')
  
-        # message = generate_otp()
-        # print(message)
-        # sender_email = "aslamthayamkulam@gmail.com"
-        # receiver_mail = email
-        # password = "qzyrtqxbcrdoqlpm"
-
-
-        # try:
-        #     with smtplib.SMTP("smtp.gmail.com", 587) as server:
-        #         server.starttls()
-        #         server.login(sender_email, password)
-        #         server.sendmail(sender_email, receiver_mail, message)
-
-        # except smtplib.SMTPAuthenticationError:
-        #     messages.error(request, 'Failed to send OTP email. Please check your email configuration.')
-        #     return redirect('core:signupPage')
-        # referral_codes = generate_referral_code()
+       
         user = Customer.objects.create_user(username=username, password=pass1, email=email,ph_no=ph_no)
         user.save()
 
-        # if refferal:
-        #     referrer = Customer.objects.get(referral_code = refferal)
-        #     if referrer:
-        #         referrer.referral_amount += 100
-        #         referrer.save()
+      
         email = request.POST.get('email')
         otp=send_otp(email)
         request.session['email'] =  email
@@ -181,41 +150,16 @@ def verify_otp(request):
             return redirect('core:verify_otp')
 
         if entered_otp == stored_otp:
-            # OTP is correct, proceed with signup
             del request.session['otp']
             del request.session['otp_time']
             del request.session['email']
             messages.success(request, "Signup successful! You can now log in.")
             return redirect('core:loginPage')
         else:
-            # Incorrect OTP, handle accordingly
             messages.error(request, "Incorrect OTP, please try again.")
     return render(request, "core/otp_user.html")
 
-# def loginPage(request):
-#     if request.method == 'POST':
-#         email = request.POST.get('email')
-#         password = request.POST.get('password')
-        
-#         print("Email:", email)  # Debugging statement
-#         print("Password:", password)  # Debugging statement
-        
-#         # Use authenticate() method to verify credentials
-#         user = authenticate(request, email=email, password=password)
-        
-#         print("Authenticated User:", user)  # Debugging statement
-        
-#         if user is not None:
-#             # Use login() method to log in the user
-#             login(request, user)
-#             messages.success(request, "Login successful. Welcome back!")
-#             return redirect('core:home')
-#         else:
-#             messages.error(request, "Username or password is incorrect")
-#             return render(request, 'core/userlogin.html')
-#     else:
-#         return render(request, 'core/userlogin.html')
-
+#===============================loginpage================================================#
 @never_cache
 def loginPage(request):
     context = {
@@ -250,20 +194,17 @@ def loginPage(request):
         request.session.flush()
         return render(request, 'core/userlogin.html', context)
 
-# def generate_otp(length = 6):
-#     return ''.join(secrets.choice("0123456789") for i in range(length)) 
-
-
 def validate_email(email):
     return '@' in email and '.' in email
-
+#=====================logout===================================#
 def custom_logout(request):
     print(request.user)
     logout(request)
     return redirect('core:home')
 
-from django.template.loader import render_to_string
+#=======================forgotpassword================================#
 
+from django.template.loader import render_to_string
 def forgot_password(request):
     if request.method == 'POST':
         email = request.POST.get('email')
@@ -288,6 +229,7 @@ def forgot_password(request):
             return render(request, 'core/forgot_password.html')
 
     return render(request, 'core/forgot_password.html')
+#===================================resetpassword====================================#
 from django.utils.http import urlsafe_base64_decode
 def reset_password(request, uidb64, token):
     # Decode uidb64 to get the user
@@ -316,8 +258,7 @@ def reset_password(request, uidb64, token):
         messages.error(request, "Invalid reset password link.")
         return redirect('core:loginPage')
 
-
-
+#=================================google===================================#
 def google(request):
 
       context = {
@@ -325,19 +266,14 @@ def google(request):
      }
       return render(request,'core/google.html',context)
 
-
-
-
-
-
-# categories user side=================================================================
+# ============================categories user side============================================#
 
 
 def user_category_view(request):
     categories = Main_Category.objects.filter(deleted=False)  # Fetch active categories
     return render(request, 'core/user_categories.html', {'categories': categories})
 
-
+#==============================products view user  ==============================#
 def products(request):
     # Get all products that are not deleted
     product_list = Product.objects.filter(deleted=False)
@@ -383,12 +319,8 @@ def product_detail(request, id):
     # Get the product and its variants
     product = get_object_or_404(Product, id=id)
     discounted_price = product.get_discounted_price()
-    
-    
     # Fetch additional images from the related ProductImage model
     additional_images = product.additional_images.all()
-
-
     # Fetch similar products based on the main category
     similar_products = Product.objects.filter(
     main_category=product.main_category  # Filter similar products by main category
@@ -406,8 +338,6 @@ def product_detail(request, id):
     full_stars = int(avg_rating)
     half_star = 1 if avg_rating - full_stars >= 0.5 else 0
     empty_stars = 5 - full_stars - half_star
-
-
 
     full_stars_range = range(full_stars)
     empty_stars_range = range(empty_stars)
@@ -430,10 +360,7 @@ def product_detail(request, id):
     }
     return render(request, "core/product_details.html", context)
 
-
-
-#user profile details===================================================================================================
-
+#=============================user profile details===================================#
 
 from django.db.models import Sum
 from decimal import Decimal
@@ -445,16 +372,12 @@ def profile(request):
         return render(request, 'core/profile_user.html', {'wallet_balance': wallet_balance})
      else:
         return render(request, 'core/profile_user.html')
-
-
-
+#========================================profile editting=================================#
 @login_required
 def manage_profile(request):
     if request.method == 'POST':
         # Get user object
         user = request.user
-
-        # Get user input
         username = request.POST.get('username')
         email = request.POST.get('email')
         phone = request.POST.get('phone')
@@ -463,19 +386,15 @@ def manage_profile(request):
         if not ( username and email and phone):
             messages.error(request, 'Please fill in all the required fields.')
             return redirect(reverse('core:manage_profile'))
-        
-        # Validate phone number
         try:
             phone_validator(phone)
-            
 
         except ValidationError:
             
             messages.error(request, 'Invalid phone number format.')
           
 
-            return redirect(reverse('core:manage_profile'))
-        
+            return redirect(reverse('core:manage_profile'))    
 
         # Update user profile information
         user.username = username
@@ -484,13 +403,12 @@ def manage_profile(request):
 
         # Update user model
         user.save()
-    
 
         messages.success(request, 'Profile updated successfully!')
         return redirect(reverse('core:profile'))
     
     
-    return render(request, 'core/profile_manage.html', {'user': request.user, 'wallet_balance': wallet_balance})
+    return render(request, 'core/profile_manage.html', {'user': request.user })
 
 
 
@@ -500,20 +418,11 @@ phone_validator = RegexValidator(
     message='Enter a valid phone number.',
 )
 
-
-
-#addresss details=======================================================
-
-
-
-
+#==================================addresss details,-add address ,-- update udress===========================================#
 
 def address(request):
     data = Address.objects.filter(user=request.user)
     return render(request, 'core/address.html', {'data': data})
-
-
-
 
 def add_address(request):
     if request.method == 'POST':
@@ -550,7 +459,6 @@ def add_address(request):
         )
         query.save()
         return redirect('core:address')
-    print(';;;;;;;;;;;;after')
     return render(request, 'core/add_address.html')
 
 
@@ -598,8 +506,7 @@ def delete_address(request,id):
     data.delete()  
     return redirect('core:address')
 
-
-
+#===============================change password==============================================#
 @login_required
 def change_password(request):
     if request.method == 'POST':
@@ -632,9 +539,7 @@ def change_password(request):
             messages.error(request, 'User is not authenticated.')
 
     return redirect('core:profile')
-
-
-
+#========================cart===============================================#
 @login_required(login_url='core:loginPage') 
 def cart(request):
     if isinstance(request.user, AnonymousUser):
@@ -681,6 +586,7 @@ def cart(request):
     request.session['cart_subtotal'] = str(subtotal)  
     request.session['cart_total'] = str(total)
     
+    
     coupons = Coupon.objects.all()
 
     context = {
@@ -691,8 +597,7 @@ def cart(request):
     }
 
     return render(request, "core/cart.html", context)
-
-
+#======================add to cart ====================================#
 @login_required(login_url='core:loginPage') 
 def add_to_cart(request, product_id):
     try:
@@ -706,7 +611,6 @@ def add_to_cart(request, product_id):
 
     if not quantity:
         quantity = 1
-    
     # Check if the requested quantity is greater than the available stock
     if int(quantity) > product.stock:
         messages.error(request, f"Insufficient stock for {product.product_name}.")
@@ -718,20 +622,8 @@ def add_to_cart(request, product_id):
     else:
         cart_item.quantity += int(quantity)
     cart_item.save()
-
-    # try:
-    #     wishlist_item = Wishlist.objects.get(product=product, user=request.user)
-    #     wishlist_item.delete()
-    # except Wishlist.DoesNotExist:
-    #     pass  
-
     return redirect('core:cart')
-
-
-
-
-
-
+#==============================updatecart=============================#
 def update_cart(request, product_id):
     print(f"Updating cart for product ID: {product_id}")
     try:
@@ -747,9 +639,7 @@ def update_cart(request, product_id):
     cart_item.quantity = quantity
     cart_item.save()
     return JsonResponse({'message': 'Cart item updated.'}, status=200)
-
-
-
+#===============================remove cart=============================================#
 @login_required
 def remove_from_cart(request, cart_item_id):
         try:
@@ -760,10 +650,7 @@ def remove_from_cart(request, cart_item_id):
             print("Cart doesn't Exist!")
         
         return redirect('core:cart')
-
-
-
-#favuraite all ==================================
+#====================================favuraite all ==================================#
 
 @login_required(login_url='loginPage') 
 def wishlist(request):
@@ -812,21 +699,14 @@ def remove_from_wishlist(request, wishlist_item_id):
     wishlist_item = get_object_or_404(Wishlist, id=wishlist_item_id, user=request.user)
     wishlist_item.delete()
     return redirect('core:wishlist')
-#order manag==================================================================
-
+#=======================================checkout =========================================#
 
 @never_cache
 # @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def checkout(request):
         if request.method == 'GET':
              new(request)
-
-    # if 'email' in request.session:
-    #     print('email found in session')
-    #     email = request.session['email']
-    #     print('Email:', email)
         user = request.user
-    #     print('User:', user)
         cart_items = Cart.objects.filter(user=user)
         subtotal = 0
 
@@ -835,7 +715,6 @@ def checkout(request):
                 messages.warning(
                     request, f"{cart_item.product.product_name} is out of stock."
                 )
-                print("hhhhhh")
                 cart_item.quantity = cart_item.product.stock
                 cart_item.save()
                 return redirect('core:cart')
@@ -849,12 +728,9 @@ def checkout(request):
             else:
                 itemprice2 = (cart_item.product.get_discounted_price()) * (cart_item.quantity)
                 subtotal += itemprice2  
+        carttotal=request.session.get('cart_total', 0)
 
-        city_distance = CityDistance.objects.filter(user=request.user).first()
-
-        # Default shipping cost
-        
-        
+        city_distance = CityDistance.objects.filter(user=request.user).first()        
         if city_distance:
              distance_in_km = city_distance.distance
 
@@ -867,45 +743,27 @@ def checkout(request):
                   shipping_cost = 150
              else:
                   shipping_cost = 200
-
-            
-
-    # Calculate total including shipping cost and any discounts
+# Calculate total including shipping cost and any discounts
         couponamt = request.session.get('discount', 0)
         # print(discount,'qwertyuiol')
         total = subtotal + shipping_cost 
         discount=  + shipping_cost
         request.session['shipping'] =  shipping_cost
-        # subtotal = Decimal(request.session.get('cart_subtotal', 0))
-        # total = Decimal(request.session.get('cart_total', 0)) 
-        # total=total-discount
-        print(subtotal)
         shipping= request.session.get('shipping', 0)
-        print(shipping,'ssssssssssssssssssssssssssssssssssss')
-        print(total)
         request.session['subtotal'] = str(subtotal)
         request.session['total'] = str(total)
-        print(subtotal)
         total = total-couponamt
-
         user_addresses = Address.objects.filter(user=request.user)
-
         context = {
             'cart_items': cart_items,
-            'subtotal': subtotal,
+            'subtotal':  carttotal,
             'total': total,
             'user_addresses': user_addresses,
             'discount_amount': discount,
             'couponamt': couponamt  
         }
-        # if "applied_coupon" in request.session:
-        #     context["applied_coupon"] = request.session["applied_coupon"]
-        #     context["coupon_amount"] = request.session["discount"]
-
         return render(request, 'core/checkout.html', context)
-    # else:
-    #      return redirect('core:signupPage')
-
+ #===========================placeorder===========================#  
 @login_required
 def place_order(request):
     if request.method == 'POST':
@@ -937,15 +795,10 @@ def place_order(request):
             messages.warning(request, "Some items are out of stock. Please remove them from your cart.")
             return HttpResponseRedirect(reverse('core:cart'))
         total_price = sum(cart_item.product.price * cart_item.quantity for cart_item in cart_items)
-       
-
         # Check if total price is above Rs 1000 and payment type is COD
         if total_price > 1000 and payment_type == 'cod':
             messages.error(request, "COD is not available for orders above Rs 1000.")
             return HttpResponseRedirect(reverse('core:checkout'))
-
-
-
         total_offer_price = 0
         total_price = 0
         total_quantity = 0
@@ -976,95 +829,7 @@ def place_order(request):
                 quantity=cart_item.quantity,
                 image=cart_item.product.image,  # Use cart item's product's image
             )
-
         return redirect("core:success")
-
-
-# def proceedtopay(request):
-#     cart = Cart.objects.filter(user=request.user)
-#     product = Product.objects.all()
-#     total = 0
-#     shipping = 10
-#     subtotal = 0
-#     for cart_item in cart:
-#         product = cart_item.product
-
-#         if cart_item.quantity > product.stock:
-#             messages.error(request, f"Insufficient stock for {product.product_name}.")
-#             return redirect("checkout")
-        
-#     for cart_item in cart:
-#         if cart_item.product.category.category_offer:
-#             itemprice2 = (
-#                 cart_item.product.price - cart_item.product.category.category_offer
-#             ) * (cart_item.quantity)
-#             subtotal = subtotal + itemprice2
-
-#         else:
-#             itemprice = (cart_item.product.price) * (cart_item.quantity)
-
-#             subtotal = subtotal + itemprice
-
-#     for item in cart:
-#         discount = request.session.get("discount", 0)
-#     total = subtotal + shipping
-#     if discount:
-#         total -= discount
-    
-#     return JsonResponse({"total": total})
-
-
-
-
-# def razorpay(request, address_id):
-#     user = request.user
-#     cart_items = Cart.objects.filter(user=user)
-#     print('rjerhhhhhhhhhhhrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr')
-
-#     subtotal = 0
-    
-
-#     shipping_cost = 10
-#     total = subtotal + shipping_cost if subtotal else 0
-#     shipping= request.session.get('shipping', 0)
-#     print(shipping,'ssssssssssssssssssssssssssssssssssssssssssssssssss')
-
-#     subtotal = Decimal(request.session.get('cart_subtotal', 0))
-#     total = Decimal(request.session.get('cart_total', 0))
-
-#     discount = request.session.get("discount", 0)
-
-#     if discount:
-#         total -= discount
-    
-#     payment = "razorpay"
-#     user = request.user
-#     cart_items = Cart.objects.filter(user=user)
-#     address = Address.objects.get(id=address_id)
-
-#     order = Order.objects.create(
-#         user=user,
-#         address=address,
-#         amount=total,
-#         payment_type=payment,
-#     )
-#     print(total,"ttttttotal")
-
-#     for cart_item in cart_items:
-#         product = cart_item.product
-#         product.stock -= cart_item.quantity
-#         product.save()
-
-#         order_item = OrderItem.objects.create(
-#             order=order,
-#             product=cart_item.product,
-#             quantity=cart_item.quantity,
-#             image=cart_item.product.image,
-#         )
-
-#     cart_items.delete()
-#     return redirect("success")
-
 
 def payment_failed(request):
     # Extract any necessary information from the request if needed
@@ -1075,7 +840,6 @@ def payment_failed(request):
     
     # Redirect to the product page or any other desired page
     return redirect('core:products') 
-
 
 def success(request):
     if "discount" in request.session:
@@ -1099,7 +863,7 @@ def failed(request):
 def payment_failed(request):
     return render(request, 'core/payment_failed.html')
 
-
+#=============================orderdetails==========================================#
 @login_required
 def order_details(request, id):
     order = get_object_or_404(Order, id=id)
@@ -1108,7 +872,7 @@ def order_details(request, id):
         'products': order.order_items.all(),
     }
     return render(request, "core/order_details.html", context)
-
+#=============================user orderlist=====================================#
 @login_required
 def customer_order(request):
     if request.user.is_authenticated:
@@ -1116,6 +880,7 @@ def customer_order(request):
         return render(request, "core/customer_order.html", {'orders': user_orders})
     else:
         return redirect("core:home")
+    
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import F
 @login_required
@@ -1159,8 +924,6 @@ def cancel(request, order_id):
         # Handle GET requests appropriately, if needed
         return redirect('core:customer_order')
 
-
-
 def cancel_success(request):
     print("successsssssssssssssssssss")
     orders = Order.objects.order_by("-id")[:1]
@@ -1178,7 +941,7 @@ def restock_products(order):
         product.save()
 
 
-
+#===================================order mgt adminside===================================#
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @never_cache
 def order(request):
@@ -1188,10 +951,7 @@ def order(request):
         'orders': orders,
     }
     return render(request, 'adminside/orders.html', context)
-    # else:
-        # return redirect("adminside:dashboard")
-
-
+   
 
 
 def updateorder(request):
@@ -1215,10 +975,6 @@ def updateorder(request):
         return redirect("core:order")
     
     return redirect("adminside:dashboard")
-
-
-
-
 
 from decimal import Decimal
 from django.utils import timezone
@@ -1271,10 +1027,7 @@ def return_order(request, order_id, order_item_id):
                 order.save()
 
     return redirect("core:order_details", order_id=order_id)
-
-
-
-
+#=================================sorting==================================#
 def sort(request):
     products = Product.objects.filter(deleted=False).order_by('-id')  # Retrieve all products initially
 
@@ -1291,11 +1044,7 @@ def sort(request):
             products = products.order_by('-id')
 
     return render(request, 'core/products.html', {'products': products})
-
-
-
-
-
+#=================================product search=======================================#
 def product_search(request):
     if request.method == "POST":
         searched = request.POST.get('searched')
@@ -1318,9 +1067,8 @@ def product_search(request):
         return render(request, 'core/products.html', context)  # Correct template name here
 
     main_categories = Main_Category.objects.all()
-    print(main_categories,'ppppppppppppppppppppppppppppppppppppppppppppppppppppmain')
     return render(request, 'core/base.html', {'main_categories': main_categories})
-
+#======================================couponmanagment===========================================#
 @never_cache
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def coupon(request):
@@ -1332,8 +1080,6 @@ def coupon(request):
     else:
         
         return redirect("adminside:dashboard")
-
-
 
 def addcoupon(request):
     if request.method == "POST":
@@ -1380,7 +1126,6 @@ def addcoupon(request):
             return redirect("core:coupon")
     else:
         return redirect("adminside:dashboard")
-
 
 def delete_coupon(request, coupon_id):
     if request.method == "POST":
@@ -1431,7 +1176,6 @@ def apply_coupon(request):
 
         for cart_item in cart_items:
             cart_item.total_price = total_dict.get(cart_item.id, 0)
-            print(cart_item.total_price)
             cart_item.save()
 
         shipping_cost = 10
@@ -1448,20 +1192,13 @@ def apply_coupon(request):
             messages.success(request, "Coupon applied successfully")
             request.session["discount"] = coupon.discount_price
             total = subtotal - coupon.discount_price + shipping_cost
-            print(total,"totttal")
-            print(subtotal,"subbbbb")
-            print(coupon.discount_price,"disssss")
         else:
-            print("Elseeeeeeeeeeeeeeee")
             messages.error(request, "Coupon not available for this price")
             total = subtotal + shipping_cost
 
         for cart_item in cart_items:
             cart_item.total_price = total_dict.get(cart_item.id, 0)
             cart_item.save()
-
-        
-
         context = {
             "cart_items": cart_items,
             "subtotal": subtotal,
@@ -1473,9 +1210,8 @@ def apply_coupon(request):
         return render(request, "main/cart.html", context)
 
     return redirect("cart")
-
+#============================wallet==============================#
 from django.db.models import Sum
-
 def wallet(request):
     if request.user.is_authenticated:
         user = request.user
@@ -1496,27 +1232,14 @@ def wallet(request):
     else:
         return redirect("core:home")
 
-
-
-
 def razorpay(request, address_id):
     user = request.user
     cart_items = Cart.objects.filter(user=user)
-
     subtotal = 0
-    
-
     shipping_cost = 10
     total = subtotal + shipping_cost if subtotal else 0
-    
     subtotal = Decimal(request.session.get('cart_subtotal', 0))
     total = Decimal(request.session.get('cart_total', 0))
-    # shipping= request.session.get('shipping', 0)
-    # print(shipping,'ssssssssssssssssssssssssssssssssssssssssssssssssss')
-
-    # total=+ shipping
-    # print(total,'wertyuioftgyh')
-
     discount = request.session.get("discount", 0)
 
     if discount:
@@ -1533,7 +1256,6 @@ def razorpay(request, address_id):
         amount=total,
         payment_type=payment,
     )
-    print(total,"ttttttotal")
 
     for cart_item in cart_items:
         product = cart_item.product
@@ -1553,7 +1275,6 @@ def razorpay(request, address_id):
 @login_required
 def proceedtopay(request):
     cart = Cart.objects.filter(user=request.user)
-    # shipping = 10
     subtotal = 0
     discount = 0  # Initialize discount to 0
     
@@ -1567,38 +1288,20 @@ def proceedtopay(request):
         
         item_price = cart_item.product.get_discounted_price() * cart_item.quantity
         subtotal += item_price
-        print(subtotal)
-        
-        # Check if a discount is applied to the cart item
-        # if cart_item.coupon:
-            # discount += cart_item.coupon.discount_amount
-            # print(discount,'2222222222222')
-    # Check if there is any discount applied globally
     global_discount = request.session.get("discount", 0)
     discount += global_discount
-    print(discount,'44444444444444444444444')
     shipping= request.session.get('shipping', 0)
-    print(shipping,'ssssssssssssssssssssssssssssssssssssssssssssssssss')
-
     # Calculate total including shipping and discounts
     total = subtotal - discount + shipping
-    print(total)
-    # total =+ shipping
-    # print(total)
-    
     return JsonResponse({"total": total})
 
-
-
-
-
+#=================categoryproducts======================================#
 
 def category_products(request, category_id):
     # Retrieve selected filters from the request
     selected_category = request.GET.get('category')
     selected_price_range = request.GET.get('price_range')
     selected_color_range = request.GET.get('color_range')
-
     # Get the main category object
     main_category = Main_Category.objects.get(pk=category_id)
 
@@ -1617,7 +1320,6 @@ def category_products(request, category_id):
         'products': products,
         'main_category': main_category,
     }
-
     return render(request, 'core/products.html', context)
 @csrf_exempt
 def create_razorpay_order(request):
@@ -1636,21 +1338,15 @@ def create_razorpay_order(request):
         else:
             return JsonResponse({'error': 'User not authenticated'}, status=401)
     else:
-        print("eeeeeeeeeeeeeeeeeerrrrr")
         return JsonResponse({'error': 'Method not allowed'}, status=405)
-
-
+    
+#===============================home==================================#
 
 def home(request):
     # Retrieve first 10 products ordered by ID
     products = list(Product.objects.filter(deleted=False).order_by('-id')[:10])
-
     # Retrieve first 10 deals ordered by offer
     deals = list(Product.objects.filter(deleted=False).order_by('-offer')[:12])
-
-    # Retrieve all brands in random order
-    # brands = list(Brand.objects.all().order_by('?'))
-
     top_products = Product.objects.annotate(total_orders=Count('orderitem_product__order')).order_by('-total_orders')[:5]
     top_deals = Product.objects.filter(deleted=False).order_by('-offer')
     # top_brands = Brand.objects.annotate(total_orders=Count('product__order')).order_by('-total_orders')[:5]
@@ -1672,9 +1368,7 @@ def home(request):
         'budget_products': budget_products,
     }  
     return render(request, "core/home.html", context)
-
-
-
+#===========================genrativevoice===================================#
 def generate_invoice(request, order_id):
     order = get_object_or_404(Order, pk=order_id)
     order_items = OrderItem.objects.filter(order=order)
@@ -1686,8 +1380,11 @@ def generate_invoice(request, order_id):
     user_last_name = request.user.last_name
 
     subtotal = sum(item.product.price * item.quantity for item in order_items)
-    total = subtotal  
-
+    total = subtotal 
+     
+    shipping=request.session.get('shipping','0')
+    subtotalsss = request.session.get('subtotal', '0')
+    totalss = request.session.get('total', '0')
     context = {
         'order': order,
         'order_items': order_items,
@@ -1696,22 +1393,20 @@ def generate_invoice(request, order_id):
         'user_first_name': user_first_name,
         'user_last_name': user_last_name,
         'subtotal': subtotal,
+        'subtotalss': subtotalsss,
         'total': total,
+        'totals': totalss,
+        'shipping': shipping,
     }
-
     return render(request, 'core/invoice.html', context)
-
-
-    
 
 def download_invoice(request, order_id):
     return HttpResponse("This is the invoice content.", content_type='application/pdf')
 
-
+#=====================shipping location map====================================#
 
 from geopy.geocoders import Nominatim
 from geopy import distance
-
 def new(request):
     geocoder = Nominatim(user_agent="nahjas")
 
@@ -1721,12 +1416,8 @@ def new(request):
     user_address = Address.objects.filter(user=request.user).first()
     if user_address:
         location2 = user_address.city
-        print(location2,'qwertyuioasdfghjklzxcvbnm,')
-       
-    # else:
-        # Default to Mangalore if user address not found
-        # location2 = "kasaragod"
-        # print(location2)
+    else:
+        location2="kannur"
 
     cor1 = geocoder.geocode(location1)
     cor2 = geocoder.geocode(location2)
@@ -1735,9 +1426,7 @@ def new(request):
     lat2, long2 = cor2.latitude, cor2.longitude
     place1 = (lat1, long1)
     place2 = (lat2, long2)
-
     dist = distance.distance(place1, place2).km
-    
     # Determine shipping amount based on distance
     if dist <= 100:
         shipping_amount = 50
@@ -1746,43 +1435,14 @@ def new(request):
     else:
         shipping_amount = 200
 
-    # Assuming you have a model named CityDistance with fields user and distance
-    # Create or update the user's city distance in the database
     city_distance, created = CityDistance.objects.get_or_create(user=request.user, defaults={'distance': 0.0, 'price': 0.0})
 
     city_distance.distance = dist
     city_distance.save()
 
     return redirect('core:checkout')
-
-
-
-
-# @csrf_exempt
-# def update_city_and_shipping_cost(request):
-#     if request.method == 'POST' and request.headers.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
-#         address_id = request.POST.get('addressId')
-#         address = Address.objects.filter(id=address_id).first()
-#         if address:
-#             # Calculate shipping cost based on the new city
-#             city_distance = CityDistance.objects.filter(user=request.user, city=address.city).first()
-#             shipping_cost = 0
-#             if city_distance:
-#                 distance_in_km = city_distance.distance
-#                 if distance_in_km <= 100:
-#                     shipping_cost = 50
-#                 elif distance_in_km <= 200:
-#                     shipping_cost = 100
-#                 else:
-#                     shipping_cost = 200
-
-#             return JsonResponse({'city': address.city, 'shipping_cost': shipping_cost})
-#         else:
-#             return JsonResponse({'error': 'Address not found'}, status=400)
-#     else:
-#         return JsonResponse({'error': 'Invalid request'}, status=400)
+#============================================rewiew==============================#
 from .forms import ReviewForm 
-
 @login_required
 def add_review(request, product_id):
     product = get_object_or_404(Product, id=product_id)
@@ -1803,10 +1463,7 @@ def add_review(request, product_id):
         'form': form,
         'reviews': product.review_set.all(),
     })
-
-
-
-
+ 
 
 # @login_required
 # def send_message(request):
