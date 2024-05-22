@@ -36,7 +36,7 @@ urlpatterns = [
     path('create-razorpay-order/', create_razorpay_order, name='create_razorpay_order'),
 
     path('create-razorpay-order/<int:wallet_id>/', create_razorpay_order, name='create_razorpay_order'),
-
+    
 ]
 
 if settings.DEBUG:

@@ -242,7 +242,13 @@
                                                
                                             </li>
                                             <li><a href="{% url 'core:user_categories' %}" style="color: white;">Categories</a></li>
-                                            <li><a href="#" style="color: white;">Brands</a></li>
+                                            {% comment %} <li><a href="{% url 'core:compose_message' %}" style="color: white;">Brands</a></li> {% endcomment %}
+                                         
+                                                <!-- Other links -->
+                                                {% comment %} <li><a href="{% url 'core:compose_message' %}">Compose Message</a></li>
+                                                <li><a href="{% url 'core:sent_messages' %}">Sent Messages</a></li> {% endcomment %}
+                                                {% comment %} <li><a href="{% url 'core:inbox' %}">Inbox</a></li> {% endcomment %}
+                                            
                                         </ul>
                                     </nav>
                                 </div>

@@ -164,6 +164,9 @@
                         <li {% if request.path == '/adminside/banners/' %}class="active"{% endif %}>
                             <a href="{% url 'adminside:banners' %}"><i class="fa fa-calendar-check-o"></i> <span>Banner</span></a>
                         </li> 
+                        <li {% if request.path == '/adminside/banners/' %}class="active"{% endif %}>
+                            <a href="{% url 'core:inbox' %}"><i class="fa fa-calendar-check-o"></i> <span>Inbox</span></a>
+                        </li>   
                     </ul>
                 </div>
             </div>

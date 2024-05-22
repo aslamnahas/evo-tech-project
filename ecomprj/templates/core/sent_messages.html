@@ -1,0 +1,13 @@
+{% extends 'core/base.html' %}
+{% block content %}
+    <h2>Sent Messages</h2>
+    <ul>
+        {% for message in sent_messages %}
+            <li>
+                To: {{ message.receiver.email }}<br>
+                Message: {{ message.message }}<br>
+                Sent at: {{ message.timestamp }}
+            </li>
+        {% endfor %}
+    </ul>
+{% endblock %}

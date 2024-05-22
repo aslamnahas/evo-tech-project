@@ -88,5 +88,7 @@ urlpatterns = [
 
     # path('product/<int:product_id>/review/', views.add_review, name='add_review'),
     path('product/<int:product_id>/review/', views.add_review, name='add_review'),
-
+    # path('inbox/', views.inbox, name='inbox'),
+    # path('sent/', views.sent_messages, name='sent_messages'),
+    # path('compose/', views.send_message, name='compose_message'), 
 ]

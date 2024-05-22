@@ -1,0 +1,18 @@
+{% extends 'core/base.html' %}
+{% block content %}
+    <h2>Compose Message</h2>
+    <form method="post">
+        {% csrf_token %}
+        <label for="receiver">To:</label>
+        <select name="receiver_id" id="receiver">
+            {% for user in users %}
+                <option value="{{ user.id }}">{{ user.email }}</option>
+            {% endfor %}
+        </select>
+        <br>
+        <label for="message">Message:</label>
+        <textarea id="message" name="message" rows="4" cols="50"></textarea>
+        <br>
+        <button type="submit">Send</button>
+    </form>
+{% endblock %}

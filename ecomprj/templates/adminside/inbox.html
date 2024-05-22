@@ -1,0 +1,14 @@
+{% comment %} {% extends 'adminside/header.html' %}
+{% load static %} {% endcomment %}
+{% comment %} {% block content %} {% endcomment %}
+    <h2>Inboxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</h2>
+    <ul>
+        {% for message in received_messages %}
+            <li>
+                From: {{ message.sender.email }}<br>
+                Message: {{ message.message }}<br>
+                Received at: {{ message.timestamp }}
+            </li>
+        {% endfor %}
+    </ul>
+{% comment %} {% endblock %} {% endcomment %}

@@ -1715,7 +1715,7 @@ from geopy import distance
 def new(request):
     geocoder = Nominatim(user_agent="nahjas")
 
-    location1 = "Manjeshwaram"
+    location1 = "kannur"
 
     # Get the user's address and extract the city from it
     user_address = Address.objects.filter(user=request.user).first()
@@ -1723,10 +1723,10 @@ def new(request):
         location2 = user_address.city
         print(location2,'qwertyuioasdfghjklzxcvbnm,')
        
-    else:
+    # else:
         # Default to Mangalore if user address not found
-        location2 = "kasaragod"
-        print(location2)
+        # location2 = "kasaragod"
+        # print(location2)
 
     cor1 = geocoder.geocode(location1)
     cor2 = geocoder.geocode(location2)
@@ -1803,3 +1803,30 @@ def add_review(request, product_id):
         'form': form,
         'reviews': product.review_set.all(),
     })
+
+
+
+
+
+# @login_required
+# def send_message(request):
+#     if request.method == 'POST':
+#         message_text = request.POST.get('message')
+#         receiver_id = request.POST.get('receiver_id')
+#         receiver = User.objects.get(id=receiver_id)
+#         Message.objects.create(sender=request.user, receiver=receiver, message=message_text)
+#         return redirect('core:sent_messages')  # Redirect to the sent messages page after sending
+#     else:
+#         users = User.objects.exclude(id=request.user.id)  # Exclude the current user from the list of users
+#         return render(request, 'core/compose_message.html', {'users': users})
+
+# def inbox(request):
+#     user = request.user  # Assuming request.user is a User object
+#     received_messages = Message.objects.filter(receiver=user)
+#     print(received_messages.message)
+#     return render(request, 'adminside/inbox.html', {'received_messages': received_messages})
+
+# @login_required
+# def sent_messages(request):
+#     sent_messages = Message.objects.filter(sender=request.user)
+#     return render(request, 'core/sent_messages.html', {'sent_messages': sent_messages})
