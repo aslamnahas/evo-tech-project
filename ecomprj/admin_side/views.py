@@ -289,8 +289,7 @@ def add_product(request):
 
 def update_product(request, id):
     data = Main_Category.objects.all()
-  
-    product = Product.objects.get(id=id)
+    product = get_object_or_404(Product, id=id)
 
     if request.method == 'POST':
         model = request.POST['model']
@@ -298,60 +297,51 @@ def update_product(request, id):
         color = request.POST['color']
         display_size = request.POST['display_size']
         camera = request.POST.get('camera', '')  # Get camera with default empty string
-        network = request.POST.get('network', False)
+        network = request.POST.get('network', False) == 'True'
         price = request.POST.get('price')
         battery = request.POST.get('battery', '')  # Get battery with default empty string
         images = request.FILES.getlist('images')
-        offer  = request.POST['offer']
-        stock = request.POST.get('stock') 
-        # brand_id = request.POST.get('brand')
+        offer = request.POST['offer']
+        stock = request.POST.get('stock')
         main_cat_id = request.POST.get('phone_category')
 
-        main_cat = Main_Category.objects.get(id=main_cat_id)
+        main_cat = get_object_or_404(Main_Category, id=main_cat_id)
 
-        # Retrieve existing data
-        edit = Product.objects.get(id=id)
+        # Update product fields
+        product.main_category = main_cat
+        product.model = model
+        product.description = description
+        product.color = color
+        product.display_size = display_size
+        product.camera = camera if camera else None  # Set to None if camera is empty
+        product.network = network
+        product.price = price
+        product.offer = offer
+        product.stock = stock
+        product.battery = battery if battery else None  # Set to None if battery is empty
 
-        # Update data in the table
-
-        edit.main_category = main_cat  
-        edit.model = model
-        edit.description = description
-        edit.color = color
-        edit.display_size = display_size
-        edit.camera = camera if camera else None  # Set to None if camera is empty
-        edit.network = network
-        edit.price = price
-        edit.offer = offer
-        edit.stock = stock
-        edit.battery = battery if battery else None  # Set to None if battery is empty
-
-        # Update main image only if the user provided
+        # Update main image only if the user provided a new one
         if 'image' in request.FILES:
             image = request.FILES['image']
-            edit.image = image
+            product.image = image
 
-        edit.save()
+        product.save()
 
-        # Remove existing images associated with the product
-        existing_images = ProductImage.objects.filter(product=edit)
-        for existing_image in existing_images:
-            existing_image.delete()
-
-        # Save multiple new images associated with the product
-        for img in images:
-            ProductImage.objects.create(product=edit, image=img)
+        # Handle multiple images
+        if images:
+            # Delete existing images only if new images are provided
+            ProductImage.objects.filter(product=product).delete()
+            for img in images:
+                ProductImage.objects.create(product=product, image=img)
 
         return redirect('adminside:products')
 
     context = {
         'product': product,
         'data': data,
-        
     }
 
     return render(request, "adminside/update_product.html", context)
-
 
 # soft delete product====================================================================================
 

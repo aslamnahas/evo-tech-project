@@ -2,187 +2,149 @@
 
 {% load static %}
 {% block content %}
-        <div class="page-wrapper">
-            <div class="content">
-                <div class="row">
-                    <div class="col-lg-8 offset-lg-2">
-                        <h4 class="page-title">Edit Products</h4>
+<div class="page-wrapper">
+    <div class="content">
+        <div class="row">
+            <div class="col-lg-8 offset-lg-2">
+                <h4 class="page-title">Edit Products</h4>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-8">
+                <form action="{% url 'adminside:update_product' product.id %}" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label>Select the phone category</label>
+                        <select class="form-control" name="phone_category" required>
+                            {% for category in data %}
+                            <option value="{{ category.id }}" {% if category.id == product.main_category.id %}selected{% endif %}>
+                                {{ category.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>                             
+                    <div class="form-group">
+                        <label>Model</label>
+                        <input class="form-control" type="text" 
+                               placeholder="Enter phone model"
+                               name= "model"
+                               pattern="^\S(.*\S)?$"
+                               value="{{ product.model }}"
+                               required>
                     </div>
-                </div>
-                <div class="row">
-                    <div class="col-lg-8">
-                        <form action="{% url 'adminside:update_product' product.id %}" method="post" enctype="multipart/form-data">
-                            {% csrf_token %}
-                            <div class="form-group">
-                                <label>Select the phone category</label>
-                                <select class="form-control" name="phone_category" required>
-                                    {% for category in data %}
-                                    <option value="{{ category.id }}" {% if category.id == product.main_category.id %}selected{% endif %}>
-                                        {{ category.name }}
-                                    </option>
-                                    {% endfor %}
-                                </select>
-                            </div>                             
-                            {% comment %} <div class="form-group">
-                                <label>Select brand </label>
-                                <select class="form-control" name="brand" required>
-                                    {% for brand in brands %}
-                                    <option value="{{ brand.id }}" {% if brand.id == product.brand.id %}selected{% endif %}>
-                                        {{ brand.name }}
-                                    </option>
-                                    {% endfor %}
-                                </select>
-                            </div>   {% endcomment %}
-                            <div class="form-group">
-                                <label>Model</label>
-                                <input class="form-control" type="text" 
-                                placeholder="Enter phone model"
-                                name= "model"
-                                pattern="^\S(.*\S)?$"
-                                value="{{product.model}}"
-                                required>
-                            </div>
-                            <div class="form-group">
-                                <label>Description</label>
-                                <textarea class="form-control" 
-                                          placeholder="Add description"
-                                          name="description"
-                                          pattern="^\S(.*\S)?$"
-                                          required>{{ product.description }}</textarea>
-                            </div> 
-                            <div class="form-group">
-                                <label>Color</label>
-                                <input class="form-control" type="text" 
-                                placeholder="Enter phone color"
-                                name= "color"
-                                pattern="^\S(.*\S)?$"
-                                value="{{product.color}}"
-                                required>
-                            </div>
-                            <div class="form-group">
-                                <label>Display Size</label>
-                                <input class="form-control" type="number" 
-                                       placeholder="Enter the size of the display"
-                                       name="display_size"
-                                       value="{{product.display_size}}"
-                                       min = 1
-                                        >
-                            </div>
-                            <div class="form-group">
-                                <label>Camera Resolution</label>
-                                <input class="form-control" type="number" 
-                                       placeholder="Enter the resolution of the camera"
-                                       name="camera"
-                                       value="{{product.camera}}"
-                                       min = "0"
-                                       >
-                            </div>
-                            <div class="form-group">
-                                <label for="network">Network</label>
-                                <div class="form-check">
-                                    <input type="checkbox" 
-                                           id="network" 
-                                           name="network" 
-                                           value="True"
-                                           {% if product.network %} checked {% endif %}
-                                           class="form-check-input">
-                                    <label class="form-check-label" for="network">Include 5G</label>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label>Select is this a smartphone or not</label>
-                                <br>
-                                <div class="form-check">
-                                    <input type="checkbox" 
-                                           id="smartphoneCheckbox" 
-                                           name="smart" 
-                                           value="True"
-                                           {% if product.smart %} checked {% endif %}
-                                           class="form-check-input">
-                                    <label class="form-check-label" for="smartphoneCheckbox">Smartphone</label>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label>Battery Capacity</label>
-                                <input class="form-control" type="number" 
-                                       placeholder="Enter the battery capacity"
-                                       name="battery"
-                                       value="{{product.battery}}"
-                                       min = 0
-                                        >
-                            </div>     
-
-                            <div class="form-group">
-                                <label>Price</label>
-                                <input class="form-control" type="number" 
-                                       placeholder="Enter the price"
-                                       name="price"
-                                       value="{{ product.price }}"
-                                       min="0" step="0.01">
-                            </div>
-
-
-                            <div class="form-group">
-                                <label>Offer</label>
-                                <input class="form-control" type="number" 
-                                       placeholder="Offer"
-                                       name="offer"
-                                       value="{{product.offer}}"
-                                       min = 0
-                                       max = 80
-                                        >
-                            </div>
-
-                            <div class="form-group">
-                                <label>Stock</label>
-                                <input class="form-control" type="number" 
-                                       placeholder="Enter the stock quantity"
-                                       name="stock"
-                                       value="{{ product.stock }}"
-                                       min="0"
-                                       required>
-                            </div>
-                            <div class="form-group">
-                                <label>Current Image</label>
-                                <br>
-                                <br>
-                                {% if product.image %}
-                                    <img src="{{ product.image.url }}" alt="Current Image" style="max-width: 200px;">
-                                {% else %}
-                                    <p>No image available</p>
-                                {% endif %}
-                            </div>
-                            <div class="form-group">
-                                <label>Add image</label>
-                                <div>
-                                    <input class="form-control" type="file"
-                                           placeholder="Select image"
-                                           name="image"
-                                           accept=".jpg, .jpeg, .gif, .png, .webp"
-                                           >
-                                    <small class="form-text text-muted">Max. file size: 10 MB. Allowed images: jpg, gif, png.</small>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label>Add multiple images</label>
-                                <div>
-                                    <input class="form-control" type="file"
-                                           placeholder="Select images"
-                                           name="images"
-                                           accept=".jpg, .jpeg, .gif, .png, .webp"
-                                           multiple >
-                                    <small class="form-text text-muted">Max. file size: 10 MB. Allowed images: jpg, gif, png.</small>
-                                </div>
-                            </div>                           
-                            <div class="row">
-                            <div class="m-t-20 text-center">
-                                <button class="btn btn-primary submit-btn">Save</button>
-                            </div>
-                        </form>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea class="form-control" 
+                                  placeholder="Add description"
+                                  name="description"
+                                  pattern="^\S(.*\S)?$"
+                                  required>{{ product.description }}</textarea>
+                    </div> 
+                    <div class="form-group">
+                        <label>Color</label>
+                        <input class="form-control" type="text" 
+                               placeholder="Enter phone color"
+                               name= "color"
+                               pattern="^\S(.*\S)?$"
+                               value="{{ product.color }}"
+                               required>
                     </div>
-                </div>
+                    <div class="form-group">
+                        <label>Display Size</label>
+                        <input class="form-control" type="number" 
+                               placeholder="Enter the size of the display"
+                               name="display_size"
+                               value="{{ product.display_size }}"
+                               min="1">
+                    </div>
+                    <div class="form-group">
+                        <label>Camera Resolution</label>
+                        <input class="form-control" type="number" 
+                               placeholder="Enter the resolution of the camera"
+                               name="camera"
+                               value="{{ product.camera }}"
+                               min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="network">Network</label>
+                        <div class="form-check">
+                            <input type="checkbox" 
+                                   id="network" 
+                                   name="network" 
+                                   value="True"
+                                   {% if product.network %} checked {% endif %}
+                                   class="form-check-input">
+                            <label class="form-check-label" for="network">Include 5G</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Battery Capacity</label>
+                        <input class="form-control" type="number" 
+                               placeholder="Enter the battery capacity"
+                               name="battery"
+                               value="{{ product.battery }}"
+                               min="0">
+                    </div>     
+                    <div class="form-group">
+                        <label>Price</label>
+                        <input class="form-control" type="number" 
+                               placeholder="Enter the price"
+                               name="price"
+                               value="{{ product.price }}"
+                               min="0" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label>Offer</label>
+                        <input class="form-control" type="number" 
+                               placeholder="Offer"
+                               name="offer"
+                               value="{{ product.offer }}"
+                               min="0"
+                               max="80">
+                    </div>
+                    <div class="form-group">
+                        <label>Stock</label>
+                        <input class="form-control" type="number" 
+                               placeholder="Enter the stock quantity"
+                               name="stock"
+                               value="{{ product.stock }}"
+                               min="0"
+                               required>
+                    </div>
+                    <div class="form-group">
+                        <label>Current Image</label>
+                        <br>
+                        {% if product.image %}
+                            <img src="{{ product.image.url }}" alt="Current Image" style="max-width: 200px;">
+                        {% else %}
+                            <p>No image available</p>
+                        {% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label>Add image</label>
+                        <div>
+                            <input class="form-control" type="file"
+                                   name="image"
+                                   accept=".jpg, .jpeg, .gif, .png, .webp">
+                            <small class="form-text text-muted">Max. file size: 10 MB. Allowed images: jpg, gif, png.</small>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Add multiple images</label>
+                        <div>
+                            <input class="form-control" type="file"
+                                   name="images"
+                                   accept=".jpg, .jpeg, .gif, .png, .webp"
+                                   multiple>
+                            <small class="form-text text-muted">Max. file size: 10 MB. Allowed images: jpg, gif, png.</small>
+                        </div>
+                    </div>                           
+                    <div class="m-t-20 text-center">
+                        <button class="btn btn-primary submit-btn">Save</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
+</div>
 {% endblock content %}
- 

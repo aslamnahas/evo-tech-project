@@ -320,7 +320,7 @@ def product_detail(request, id):
     product = get_object_or_404(Product, id=id)
     discounted_price = product.get_discounted_price()
     # Fetch additional images from the related ProductImage model
-    additional_images = product.additional_images.all()
+    additional_images =  product.additional_images.all()
     # Fetch similar products based on the main category
     similar_products = Product.objects.filter(
     main_category=product.main_category  # Filter similar products by main category
@@ -331,7 +331,7 @@ def product_detail(request, id):
   
     if reviews.exists():
         avg_rating = reviews.aggregate(Avg('rating'))['rating__avg']
-        print(avg_rating)
+        
     else:
         avg_rating = 0 
 
@@ -341,6 +341,7 @@ def product_detail(request, id):
 
     full_stars_range = range(full_stars)
     empty_stars_range = range(empty_stars)
+    
     context = {
         "product": product,
         "additional_images": additional_images,
@@ -925,7 +926,7 @@ def cancel(request, order_id):
         return redirect('core:customer_order')
 
 def cancel_success(request):
-    print("successsssssssssssssssssss")
+    
     orders = Order.objects.order_by("-id")[:1]
     context = {
         "orders": orders,

@@ -71,19 +71,19 @@
             <!-- content-wraper start -->
             <div class="content-wraper product_data">
                 <div class="container">
-                    <div class="row single-product-area ">
+                    <div class="row single-product-area p-0">
                         <div class="col-lg-5 col-md-6 mt-4">
                            <!-- Product Details Left -->
                             <div class="product-details-left">
                                 <div class="product-details-images slider-navigation-1">
                                     {% for img in additional_images %}
-                                    <div class="lg-image">
+                                    <div class="lg-image mt-4 mb-0 pb-0">
                                         
                                     <img  style="width:400px;"src="{{ img.image.url }}" alt="product image">
                                     </div>
                                     {% endfor %}
                                 </div>
-                                <div class="product-details-thumbs slider-thumbs-1">
+                                <div class="product-details-thumbs slider-thumbs-1 mt-0 pt-0">
                                     {% for img in additional_images %}
                                         <div class="sm-image"><img src="{{ img.image.url }}" alt="product image thumb"></div>
                                     {% endfor %}
@@ -91,7 +91,9 @@
                             </div>
                             <!--// Product Details Left -->
                         </div>
-                        <div class="col-lg-7 col-md-6">
+
+
+                        <div class="col-lg-7 col-md-6 p-0">
                             <div class="product-details-view-content sp-normal-content pt-60">
                                 <div class="product-info">
                                     <h2> {{ product.model }}</h2> 
