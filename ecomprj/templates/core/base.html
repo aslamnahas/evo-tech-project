@@ -666,7 +666,7 @@
         <script src="{% static 'user/js/main.js' %}"></script>
         <script>
             function updateWishlistCount() {
-                fetch("{% url 'core:wishlist_count' %}")
+                {% comment %} fetch("{% url 'core:wishlist_count' %}") {% endcomment %}
                     .then(response => response.json())
                     .then(data => {
                         document.getElementById('wishlist-item-count').textContent = data.wishlist_count;
