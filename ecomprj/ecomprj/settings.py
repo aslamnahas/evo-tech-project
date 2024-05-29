@@ -59,7 +59,10 @@ AUTH_USER_MODEL = 'core.Customer'
 
 
 
-
+CSRF_TRUSTED_ORIGINS = [
+    'http://www.techxofficial.shop',
+    'https://www.techxofficial.shop',
+]
 
 
 MIDDLEWARE = [
@@ -197,3 +200,4 @@ MEDIA_ROOT = os.path.join(BASE_DIR,"media")
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+CSRF_FAILURE_VIEW = 'core.views.csrf_failure'

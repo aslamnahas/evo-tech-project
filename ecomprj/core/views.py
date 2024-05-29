@@ -1488,3 +1488,9 @@ def add_review(request, product_id):
 # def sent_messages(request):
 #     sent_messages = Message.objects.filter(sender=request.user)
 #     return render(request, 'core/sent_messages.html', {'sent_messages': sent_messages})
+
+
+
+
+def csrf_failure(request, reason="aaaaaaaaf csrffffff wdhkdshdsdidhsidwdwdwiww"):
+    return render(request, 'csrf_failure.html', {'reason': reason})
