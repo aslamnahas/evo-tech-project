@@ -668,7 +668,7 @@ def wishlist(request):
         # Redirect to login if user is not authenticated
         return redirect('loginPage')
 
-@login_required(login_url='loginPage')
+# @login_required(login_url='loginPage')
 def wishlist_count(request):
     user = request.user
     if user.is_authenticated:
