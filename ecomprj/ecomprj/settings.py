@@ -28,10 +28,13 @@ DEBUG = True
 
 ALLOWED_HOSTS =  ['www.techxofficial.shop', 'techxofficial.shop', 'localhost', '0.0.0.0', '127.0.0.1']
 
+
 CSRF_TRUSTED_ORIGINS = [
     'https://techxofficial.shop',
-    'https://www.techxofficial.shop'
+    'https://www.techxofficial.shop',
 ]
+
+# Ensure HTTPS is enforced
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
