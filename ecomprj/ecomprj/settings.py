@@ -32,6 +32,10 @@ CSRF_TRUSTED_ORIGINS = [
     'https://techxofficial.shop',
     'https://www.techxofficial.shop'
 ]
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # Application definition
 INSTALLED_APPS = [
