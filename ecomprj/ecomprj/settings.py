@@ -26,11 +26,11 @@ SECRET_KEY = 'django-insecure-%x5#q3vmz=053@p9+)gjuww&s2r3c12f-kmn+97b_8$c15^9c$
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS =  ['www.techxofficial.shop', 'techxofficial.shop', 'localhost', '0.0.0.0', '127.0.0.1']
+ALLOWED_HOSTS =  ['*']
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://techxofficial.shop',
-    'https://www.techxofficial.shop'
+    'https://techxofficial.shop/',
+    'https://www.techxofficial.shop/'
 ]
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
