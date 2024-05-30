@@ -1493,4 +1493,4 @@ def add_review(request, product_id):
 
 
 def csrf_failure(request, reason="aaaaaaaaf csrffffff wdhkdshdsdidhsidwdwdwiww"):
-    return render(request, 'csrf_failure.html', {'reason': reason})
+    return render(request, 'core/csrf_failure.html', {'reason': reason})
