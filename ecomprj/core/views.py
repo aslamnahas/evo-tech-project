@@ -41,29 +41,32 @@ from django.core.mail import send_mail
 from django.contrib.auth.tokens import default_token_generator
 
 #=============================otp=========================================================
+
 def send_otp(email):
-    digits = "0123456789"
-    OTP = ""
-    for i in range(6):
-        OTP += digits[random.randint(0, 9)]
+    try:
+        digits = "0123456789"
+        OTP = "".join(random.choices(digits, k=6))
 
-    msg = MIMEMultipart()
-    msg['From'] = 'aslamthayamkulam@gmail.com'
-    msg['To'] = email
-    msg['Subject'] = 'Your OTP'
+        msg = MIMEMultipart()
+        msg['From'] = 'aslamthayamkulam@gmail.com'
+        msg['To'] = email
+        msg['Subject'] = 'Your OTP'
 
-    body = OTP + " is your OTP"
-    msg.attach(MIMEText(body, 'plain'))
+        body = OTP + " is your OTP"
+        msg.attach(MIMEText(body, 'plain'))
 
-    s = smtplib.SMTP('smtp.gmail.com', 587)
-    s.starttls()
-    s.login("aslamthayamkulam@gmail.com", "hrsg bfcm yfot zryk")
-    s.sendmail('aslamthayamkulam@gmail.com', email, msg.as_string())
-    s.quit()
+        s = smtplib.SMTP('smtp.gmail.com', 587)
+        s.starttls()
+        s.login("aslamthayamkulam@gmail.com", "hrsg bfcm yfot zryk")
+        s.sendmail('aslamthayamkulam@gmail.com', email, msg.as_string())
+        s.quit()
 
-    return OTP
+        print(f"OTP sent to {email}: {OTP}")
+        return OTP
+    except Exception as e:
+        print(f"Failed to send OTP to {email}: {str(e)}")
+        return None
 #=====================================================signup===============================#   
-@never_cache
 def signupPage(request):
     if 'email' in request.session:
         return redirect('core:home')
@@ -75,12 +78,10 @@ def signupPage(request):
         pass1     =    request.POST.get('password1')
         pass2     =    request.POST.get('password2')
         
-
-        # Check if all fields except username contain only whitespace
         if all(not field.strip() for field in [email, ph_no, pass1, pass2]) or not username.strip():
           messages.error(request, 'Please input non-whitespace characters in all fields.')
           return redirect('core:signupPage')
-  
+
         if not email or not username or not pass1 or not pass2:
             messages.error(request, 'Please input all the details.')
             return redirect('core:signupPage')
@@ -104,21 +105,23 @@ def signupPage(request):
             messages.error(request, 'Number already exist')
             return redirect('core:signupPage')
  
-       
-        user = Customer.objects.create_user(username=username, password=pass1, email=email,ph_no=ph_no)
+        user = Customer.objects.create_user(username=username, password=pass1, email=email, ph_no=ph_no)
         user.save()
 
-      
-        email = request.POST.get('email')
-        otp=send_otp(email)
-        request.session['email'] =  email
-        request.session['otp']   =  otp
-        messages.success (request, 'OTP is sent to your email')
-        print(otp)
-        
-        return redirect('core:verify_otp')
+        otp = send_otp(email)
+        if otp:
+            request.session['email'] = email
+            request.session['otp'] = otp
+            request.session['otp_time'] = time.time()  # Track OTP generation time
+            messages.success(request, 'OTP is sent to your email')
+            print(f"Signup OTP: {otp}")
+            return redirect('core:verify_otp')
+        else:
+            messages.error(request, 'Failed to send OTP. Please try again.')
+            return redirect('core:signupPage')
 
     return render(request, 'core/registration.html')
+
 
      # ......... End Signup .............
 import time
@@ -127,14 +130,16 @@ import time
 def verify_otp(request):
     if request.method == 'POST':
         if 'resend_otp' in request.POST:
-            # Resend OTP logic
             email = request.session.get('email')
             if email:
                 otp = send_otp(email)
-                request.session['otp'] = otp
-                request.session['otp_time'] = time.time()  # Reset the OTP timer
-                messages.success(request, "OTP resent successfully!")
-                print("Resent OTP:", otp)
+                if otp:
+                    request.session['otp'] = otp
+                    request.session['otp_time'] = time.time()  # Reset the OTP timer
+                    messages.success(request, "OTP resent successfully!")
+                    print(f"Resent OTP: {otp}")
+                else:
+                    messages.error(request, "Failed to resend OTP. Please try again.")
                 return redirect('core:verify_otp')
 
         entered_otp = request.POST.get('otp')
@@ -145,7 +150,7 @@ def verify_otp(request):
             messages.error(request, "Invalid OTP.")
             return redirect('core:verify_otp')
 
-        if time.time() - otp_time > 30:
+        if time.time() - otp_time > 300:  # Expiration time set to 5 minutes (300 seconds)
             messages.error(request, "OTP has expired. Please request a new OTP.")
             return redirect('core:verify_otp')
 
@@ -157,8 +162,8 @@ def verify_otp(request):
             return redirect('core:loginPage')
         else:
             messages.error(request, "Incorrect OTP, please try again.")
-    return render(request, "core/otp_user.html")
 
+    return render(request, "core/otp_user.html")
 #===============================loginpage================================================#
 @never_cache
 def loginPage(request):
