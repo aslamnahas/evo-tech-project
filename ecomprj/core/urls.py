@@ -29,7 +29,7 @@ urlpatterns = [
      path('change_password/', views.change_password, name='change_password'),
    
   
-     path('address/',views.view_address,name='view_address'),
+     path('view_address/',views.view_address,name='view_address'),
      path('add_address/',views.view_add_address,name='view_add_address'),
      path('update_address/<int:id>',views.update_address,name='update_address'),
      path('delete_address/<int:id>/',views.delete_address,name='delete_address'),
