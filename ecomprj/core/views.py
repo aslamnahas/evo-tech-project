@@ -426,11 +426,11 @@ phone_validator = RegexValidator(
 
 #==================================addresss details,-add address ,-- update udress===========================================#
 
-def address(request):
+def view_address(request):
     data = Address.objects.filter(user=request.user)
     return render(request, 'core/address.html', {'data': data})
 
-def add_address(request):
+def view_add_address(request):
     if request.method == 'POST':
         user = request.user
         default = request.POST.get('default', False) == 'True'
@@ -445,12 +445,12 @@ def add_address(request):
         # Check for whitespace-only values
         if any(value.strip() == '' for value in [address_name, address_1, address_2, country, state, city, pin]):
             messages.error(request, 'Whitespace-only values are not allowed.')
-            return redirect('core:add_address')
+            return redirect('core:view_add_address')
 
         # Check for empty values
         if not address_name or not address_1 or not country or not state or not city or not pin:
             messages.error(request, 'Please fill in all the required fields.')
-            return redirect('core:add_address')
+            return redirect('core:view_add_address')
 
         query = Address.objects.create(
             user=user,
@@ -464,7 +464,7 @@ def add_address(request):
             pin=pin,
         )
         query.save()
-        return redirect('core:address')
+        return redirect('core:view_address')
     return render(request, 'core/add_address.html')
 
 
@@ -498,7 +498,7 @@ def update_address(request, id):
         edit.pin = pin
         edit.save()
         
-        return redirect('core:address')
+        return redirect('core:view_address')
     context = {
            "address": address,
             "data" : data
@@ -510,7 +510,7 @@ def update_address(request, id):
 def delete_address(request,id):
     data = Address.objects.get(id=id) 
     data.delete()  
-    return redirect('core:address')
+    return redirect('core:view_address')
 
 #===============================change password==============================================#
 @login_required
