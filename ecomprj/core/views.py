@@ -428,7 +428,7 @@ phone_validator = RegexValidator(
 
 def address(request):
     data = Address.objects.filter(user=request.user)
-    return render(request, 'core/Address.html', {'data': data})
+    return render(request, 'core/address.html', {'data': data})
 
 def add_address(request):
     if request.method == 'POST':
@@ -465,7 +465,7 @@ def add_address(request):
         )
         query.save()
         return redirect('core:address')
-    return render(request, 'core/Add_address.html')
+    return render(request, 'core/add_address.html')
 
 
 
