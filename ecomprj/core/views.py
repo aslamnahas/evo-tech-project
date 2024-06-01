@@ -673,16 +673,16 @@ def wishlist(request):
         # Redirect to login if user is not authenticated
         return redirect('loginPage')
 
-# @login_required(login_url='loginPage')
-# def wishlist_count(request):
-#     user = request.user
-#     if user.is_authenticated:
-#         wishlist_items = Wishlist.objects.filter(user=user)
-#         wishlist_count = wishlist_items.count()
-#         return JsonResponse({'wishlist_count': wishlist_count})
-#     else:
-#         # Redirect to login if user is not authenticated
-#         return redirect('loginPage')
+@login_required(login_url='loginPage')
+def wishlist_count(request):
+    user = request.user
+    if user.is_authenticated:
+        wishlist_items = Wishlist.objects.filter(user=user)
+        wishlist_count = wishlist_items.count()
+        return JsonResponse({'wishlist_count': wishlist_count})
+    else:
+        # Redirect to login if user is not authenticated
+        return redirect('loginPage')
 
 @login_required(login_url='loginPage')
 def add_to_wishlist(request, product_id):
@@ -711,7 +711,9 @@ def remove_from_wishlist(request, wishlist_item_id):
 # @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def checkout(request):
         if request.method == 'GET':
-             new(request)
+            response = new(request)
+            if isinstance(response, HttpResponse):
+                return response 
         user = request.user
         cart_items = Cart.objects.filter(user=user)
         subtotal = 0
