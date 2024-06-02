@@ -61,32 +61,11 @@
             <button class="btn btn-primary account-btn" type="submit">Login</button>
           </div>
           <div class="text-center login-link">
-            <a href="#" data-toggle="modal" data-target="#forgotPasswordModal">Forgot password?</a> | 
+            <p><a href="{% url 'core:forgot_password' %}">Forgot Password?</a></p> 
             <a href="{% url 'core:signupPage' %}">Don't have an account?</a>
           </div>
         </form>
         
-</div>
-
-<!-- Modal for forgot password -->
-<div class="modal" id="forgotPasswordModal" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Forgot Password</h5>
-            </div>
-            <div class="modal-body">
-                <form method="post" action="#">
-                    {% csrf_token %}
-                    <div class="form-group">
-                        <label for="email">Enter your email:</label>
-                        <input name="email" type="email" class="form-control" id="email" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Submit</button>
-                </form>
-            </div>
-        </div>
-    </div>
 </div>
 {% if messages %}
 <div class="messages">
@@ -97,4 +76,4 @@
     {% endfor %}
 </div>
 {% endif %}
-      {% endblock content %}
+{% endblock content %}

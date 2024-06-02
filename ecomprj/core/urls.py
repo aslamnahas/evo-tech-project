@@ -40,7 +40,9 @@ urlpatterns = [
      path('update-cart/<int:product_id>/', views.update_cart, name='update_cart'),
      path('add_to_cart/<int:product_id>/', views.add_to_cart, name='add_to_cart'),
      path('remove_from_cart/<int:cart_item_id>/', views.remove_from_cart, name='remove_from_cart'),
-
+     path('change_password/', views.change_password, name='change_password'),
+     path('forgot-password/', views.forgot_password, name='forgot_password'),
+     path('reset_password/<str:uidb64>/<str:token>/', views.reset_password, name='reset_password'),
 
 
     path('wishlist/',views.wishlist, name='wishlist'),

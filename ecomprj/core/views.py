@@ -170,8 +170,8 @@ def loginPage(request):
     context = {
         'messages': messages.get_messages(request)
     }
-    if 'email' in request.session:
-        return redirect('core:home')
+    # if 'email' in request.session:
+    #     return redirect('core:home')
 
     if request.method == 'POST':
         email = request.POST.get('email')
@@ -208,59 +208,108 @@ def custom_logout(request):
     return redirect('core:home')
 
 #=======================forgotpassword================================#
+import smtplib
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from .models import Customer
+import secrets
+from django.contrib.auth.tokens import default_token_generator
+# from d# core/views.py
+# core/views.py
+# core/views.py
 
-from django.template.loader import render_to_string
+import smtplib
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_str, force_bytes
+from django.contrib.auth.tokens import default_token_generator
+from django.contrib.auth import authenticate, login
+from .models import Customer
+import secrets
+
 def forgot_password(request):
     if request.method == 'POST':
         email = request.POST.get('email')
-        user = Customer.objects.filter(email=email).first()
-        if user:
-            # Generate a token for password reset
-            uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
-            token = default_token_generator.make_token(user)
-            reset_password_link = reverse('core:reset_password', kwargs={'uidb64': uidb64, 'token': token})
 
-            # Send reset password link to user's email
-            subject = 'Reset Your Password'
-            message = render_to_string('core/reset_password_email.html', {
-                'user': user,
-                'reset_password_link': request.build_absolute_uri(reset_password_link),
-            })
-            send_mail(subject, message, 'nahasnazz06@gmail.com', [email])
-            messages.success(request, "An email has been sent with instructions to reset your password.")
+        try:
+            customer = Customer.objects.get(email=email)
+            if customer.email == email:
+                message = generate_otp()
+                sender_email = "aslamthayamkulam@gmail.com"
+                receiver_mail = email
+                password = "hrsg bfcm yfot zryk"
+
+                try:
+                    with smtplib.SMTP("smtp.gmail.com", 587) as server:
+                        server.starttls()
+                        server.login(sender_email, password)
+                        server.sendmail(sender_email, receiver_mail, message.encode('utf-8'))
+
+                    request.session['email'] = email
+                    request.session['otp'] = message
+                    print(message)
+                    messages.success(request, 'OTP is sent to your email')
+                    uidb64 = urlsafe_base64_encode(force_bytes(customer.pk))
+                    token = default_token_generator.make_token(customer)
+
+                    return redirect('core:reset_password', uidb64=uidb64, token=token)
+
+                except smtplib.SMTPAuthenticationError:
+                    messages.error(request, 'Failed to send OTP email. Please check your email configuration.')
+                    return redirect('core:signupPage')
+
+        except Customer.DoesNotExist:
+            messages.info(request, "Email is not valid")
             return redirect('core:loginPage')
-        else:
-            messages.error(request, "No user found with that email address.")
-            return render(request, 'core/forgot_password.html')
-
-    return render(request, 'core/forgot_password.html')
-#===================================resetpassword====================================#
-from django.utils.http import urlsafe_base64_decode
-def reset_password(request, uidb64, token):
-    # Decode uidb64 to get the user
-    try:
-        uid = urlsafe_base64_decode(uidb64).decode()
-        user = Customer.objects.get(pk=uid)
-    except (TypeError, ValueError, OverflowError, Customer.DoesNotExist):
-        user = None
-
-    if user and default_token_generator.check_token(user, token):
-        # Token is valid, allow user to reset password
-        if request.method == 'POST':
-            password1 = request.POST.get('password1')
-            password2 = request.POST.get('password2')
-            if password1 == password2:
-                user.set_password(password1)
-                user.save()
-                messages.success(request, "Your password has been reset successfully. You can now log in with your new password.")
-                return redirect('core:loginPage')
-            else:
-                messages.error(request, "Passwords do not match.")
-                return render(request, 'core/reset_password.html')
-        else:
-            return render(request, 'core/reset_password.html')
     else:
-        messages.error(request, "Invalid reset password link.")
+        return render(request, 'core/forgot_password.html')
+
+def generate_otp(length=6):
+    return ''.join(secrets.choice("0123456789") for i in range(length))
+
+def reset_password(request, uidb64, token):
+    print(f"uidb64: {uidb64}, token: {token}")
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        customer = Customer.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, Customer.DoesNotExist):
+        customer = None
+
+    if customer is not None and default_token_generator.check_token(customer, token):
+        if request.method == 'POST':
+            entered_otp = request.POST.get('otp')
+            new_password = request.POST.get('new_password')
+            print(new_password,'newwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww')
+            confirm_password = request.POST.get('confirm_password')
+            stored_otp = request.session.get('otp')
+
+            if entered_otp == stored_otp:
+                if new_password == confirm_password:
+                    customer.set_password(new_password)
+                    customer.save()
+                    del request.session['otp']
+                    messages.success(request, 'Password reset successful. Please login with your new password.')
+                    print(f"New password set for user {customer.email}.")
+                    return redirect('core:loginPage')
+                else:
+                    messages.error(request, 'New password and confirm password do not match.')
+            else:
+                messages.error(request, 'Invalid OTP. Please enter the correct OTP.')
+
+            context = {
+                'uidb64': uidb64,
+                'token': token,
+            }
+            return render(request, 'core/passwordreset.html', context)
+        else:
+            context = {
+                'uidb64': uidb64,
+                'token': token,
+            }
+            return render(request, 'core/passwordreset.html', context)
+    else:
+        messages.error(request, 'Invalid password reset link.')
         return redirect('core:loginPage')
 
 #=================================google===================================#
