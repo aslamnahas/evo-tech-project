@@ -756,70 +756,82 @@ def remove_from_wishlist(request, wishlist_item_id):
     return redirect('core:wishlist')
 #=======================================checkout =========================================#
 
-@never_cache
+
+
 # @cache_control(no_cache=True, must_revalidate=True, no_store=True)
+
+@never_cache
+@login_required(login_url='loginPage')
 def checkout(request):
-        if request.method == 'GET':
-            response = new(request)
-            if isinstance(response, HttpResponse):
-                return response 
-        user = request.user
-        cart_items = Cart.objects.filter(user=user)
-        subtotal = 0
+    if request.method == 'POST':
+        address_id = request.POST.get('addressId')
+        payment_type = request.POST.get('payment')
 
-        for cart_item in cart_items:
-            if cart_item.quantity > cart_item.product.stock:
-                messages.warning(
-                    request, f"{cart_item.product.product_name} is out of stock."
-                )
-                cart_item.quantity = cart_item.product.stock
-                cart_item.save()
-                return redirect('core:cart')
+        if not address_id:
+            messages.error(request, "Please select an address.")
+            return redirect('core:checkout')
 
-        
+        if not payment_type:
+            messages.error(request, "Please select a payment method.")
+            return redirect('core:checkout')
 
-        for cart_item in cart_items:
-            if cart_item.product:
-                itemprice2 = (cart_item.product.get_discounted_price() ) * (cart_item.quantity)
-                subtotal += itemprice2  
-            else:
-                itemprice2 = (cart_item.product.get_discounted_price()) * (cart_item.quantity)
-                subtotal += itemprice2  
-        carttotal=request.session.get('cart_total', 0)
+        # Add the rest of your order processing logic here...
 
-        city_distance = CityDistance.objects.filter(user=request.user).first()        
-        if city_distance:
-             distance_in_km = city_distance.distance
+    user = request.user
+    cart_items = Cart.objects.filter(user=user)
+    subtotal = 0
 
-        # Determine shipping amount based on distance
-             if distance_in_km <= 100:
-                  shipping_cost = 50
-             elif distance_in_km <= 500:
-                  shipping_cost = 100
-             elif distance_in_km <= 1000:
-                  shipping_cost = 150
-             else:
-                  shipping_cost = 200
-# Calculate total including shipping cost and any discounts
-        couponamt = request.session.get('discount', 0)
-        # print(discount,'qwertyuiol')
-        total = subtotal + shipping_cost 
-        discount=  + shipping_cost
-        request.session['shipping'] =  shipping_cost
-        shipping= request.session.get('shipping', 0)
-        request.session['subtotal'] = str(subtotal)
-        request.session['total'] = str(total)
-        total = total-couponamt
-        user_addresses = Address.objects.filter(user=request.user)
-        context = {
-            'cart_items': cart_items,
-            'subtotal':  carttotal,
-            'total': total,
-            'user_addresses': user_addresses,
-            'discount_amount': discount,
-            'couponamt': couponamt  
-        }
-        return render(request, 'core/checkout.html', context)
+    for cart_item in cart_items:
+        if cart_item.quantity > cart_item.product.stock:
+            messages.warning(
+                request, f"{cart_item.product.product_name} is out of stock."
+            )
+            cart_item.quantity = cart_item.product.stock
+            cart_item.save()
+            return redirect('core:cart')
+
+    for cart_item in cart_items:
+        if cart_item.product:
+            itemprice2 = cart_item.product.get_discounted_price() * cart_item.quantity
+            subtotal += itemprice2  
+        else:
+            itemprice2 = cart_item.product.get_discounted_price() * cart_item.quantity
+            subtotal += itemprice2  
+
+    carttotal = request.session.get('cart_total', 0)
+
+    city_distance = CityDistance.objects.filter(user=request.user).first()        
+    if city_distance:
+        distance_in_km = city_distance.distance
+
+        if distance_in_km <= 100:
+            shipping_cost = 50
+        elif distance_in_km <= 500:
+            shipping_cost = 100
+        elif distance_in_km <= 1000:
+            shipping_cost = 150
+        else:
+            shipping_cost = 200
+    else:
+        shipping_cost = 0
+
+    couponamt = request.session.get('discount', 0)
+    total = subtotal + shipping_cost - couponamt
+
+    request.session['shipping'] = shipping_cost
+    request.session['subtotal'] = str(subtotal)
+    request.session['total'] = str(total)
+
+    user_addresses = Address.objects.filter(user=request.user)
+    context = {
+        'cart_items': cart_items,
+        'subtotal': carttotal,
+        'total': total,
+        'user_addresses': user_addresses,
+        'discount_amount': shipping_cost,
+        'couponamt': couponamt  
+    }
+    return render(request, 'core/checkout.html', context)
  #===========================placeorder===========================#  
 @login_required
 def place_order(request):
@@ -856,6 +868,18 @@ def place_order(request):
         if total_price > 1000 and payment_type == 'cod':
             messages.error(request, "COD is not available for orders above Rs 1000.")
             return HttpResponseRedirect(reverse('core:checkout'))
+        
+        if payment_type == "wallet":
+            # Retrieve wallet balance for the user
+            wallet = Wallet.objects.filter(user=user).first()
+            if wallet and wallet.amount >= total_price:
+                wallet.amount -= total_price
+                wallet.save()
+            else:
+                messages.warning(request, "Not enough balance in your wallet")
+                return HttpResponseRedirect(reverse('core:cart'))
+
+
         total_offer_price = 0
         total_price = 0
         total_quantity = 0
@@ -886,7 +910,23 @@ def place_order(request):
                 quantity=cart_item.quantity,
                 image=cart_item.product.image,  # Use cart item's product's image
             )
+            cart_item.product.stock -= cart_item.quantity
+            cart_item.product.save()
+            cart_item.save()
+            cart_item.delete()
+        payment_type = request.POST.get("payment_type")
+        if payment_type == "wallet":
+            try:
+                user_wallet = user.wallet
+                user_wallet.balance -= total_offer_price
+                user_wallet.save()
+            except AttributeError:
+                # Handle case when user's wallet is not found
+                pass
+
         return redirect("core:success")
+
+    return HttpResponseRedirect(reverse('core:checkout'))
 
 def payment_failed(request):
     # Extract any necessary information from the request if needed
@@ -1331,6 +1371,24 @@ def razorpay(request, address_id):
 
 @login_required
 def proceedtopay(request):
+    # if request.method == 'POST':
+        # user = request.user
+        # address_id = request.POST.get('addressId')
+        # payment_type = request.POST.get('payment')
+        # print(address_id,'qaaaaaaaaaaaaaaaaaaaaa')
+        # print(payment_type,'111111111111111111111111111')
+
+
+        
+        # if not address_id:
+        #     messages.error(request, "Please select an address.")
+        #     return HttpResponseRedirect(reverse('core:checkout')) 
+            
+        # if not payment_type:
+        #     messages.error(request, "Please select payment method.")
+        #     return HttpResponseRedirect(reverse('core:checkout'))
+            
+    user = request.user 
     cart = Cart.objects.filter(user=request.user)
     subtotal = 0
     discount = 0  # Initialize discount to 0
