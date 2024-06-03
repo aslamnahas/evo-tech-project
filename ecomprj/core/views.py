@@ -835,6 +835,10 @@ def checkout(request):
  #===========================placeorder===========================#  
 @login_required
 def place_order(request):
+    user = request.user
+    customer = get_object_or_404(Customer, email=user.email)
+    cart_items = Cart.objects.filter(user=customer)
+    
     if request.method == 'POST':
         user = request.user
         address_id = request.POST.get('addressId')
@@ -869,17 +873,17 @@ def place_order(request):
             messages.error(request, "COD is not available for orders above Rs 1000.")
             return HttpResponseRedirect(reverse('core:checkout'))
         
-        if payment_type == "wallet":
-            # Retrieve wallet balance for the user
-            wallet = Wallet.objects.filter(user=user).first()
-            if wallet and wallet.amount >= total_price:
-                wallet.amount -= total_price
-                wallet.save()
-            else:
-                messages.warning(request, "Not enough balance in your wallet")
-                return HttpResponseRedirect(reverse('core:cart'))
+        # if payment_type == "wallet":
+        #     # Retrieve wallet balance for the user
+        #     wallet = Wallet.objects.filter(user=user).first()
+        #     if wallet and wallet.amount >= total_price:
+        #         wallet.amount -= total_price
+        #         wallet.save()
+        #     else:
+        #         messages.warning(request, "Not enough balance in your wallet")
+        #         return HttpResponseRedirect(reverse('core:cart'))
 
-
+        order = Order.objects.create(user=customer, address_id=address_id, payment_type=payment_type, amount=total_price)
         total_offer_price = 0
         total_price = 0
         total_quantity = 0
@@ -914,15 +918,33 @@ def place_order(request):
             cart_item.product.save()
             cart_item.save()
             cart_item.delete()
-        payment_type = request.POST.get("payment_type")
         if payment_type == "wallet":
-            try:
-                user_wallet = user.wallet
-                user_wallet.balance -= total_offer_price
-                user_wallet.save()
-            except AttributeError:
-                # Handle case when user's wallet is not found
-                pass
+            user_wallets = Wallet.objects.filter(user=customer).order_by('created_at')
+            remaining_amount = total_price
+
+            for wallet in user_wallets:
+                if wallet.amount >= remaining_amount:
+                    wallet.amount -= remaining_amount
+                    wallet.save()
+                    Wallet.objects.create(
+                        user=customer,
+                        order=order,
+                        amount=-remaining_amount,  # Debit amount
+                        is_credit=False,
+                        status="Debited",
+                    )
+                    break
+                else:
+                    Wallet.objects.create(
+                        user=customer,
+                        order=order,
+                        amount=-wallet.amount,  # Debit amount
+                        is_credit=False,
+                        status="Debited",
+                    )
+                    remaining_amount -= wallet.amount
+                    wallet.amount = 0
+                    wallet.save()
 
         return redirect("core:success")
 
@@ -1309,6 +1331,7 @@ def apply_coupon(request):
     return redirect("cart")
 #============================wallet==============================#
 from django.db.models import Sum
+
 def wallet(request):
     if request.user.is_authenticated:
         user = request.user
@@ -1317,18 +1340,32 @@ def wallet(request):
         # Calculate total wallet balance
         total_wallet_balance = Wallet.objects.filter(user=customer).aggregate(total=Sum('amount'))['total']
         total_wallet_balance = total_wallet_balance or 0  # Handle None value
+
+        # Calculate total credited and debited amounts
+        total_credited_amount = Wallet.objects.filter(user=customer, is_credit=True).aggregate(total=Sum('amount'))['total']
+        print(total_credited_amount)
+        total_credited_amount = total_credited_amount or 0  # Handle None value
         
+        total_debited_amount = Wallet.objects.filter(user=customer, is_credit=False).aggregate(total=Sum('amount'))['total'] or 0
+        print(total_debited_amount,'111111111111222')
+        # difference  =total_debited_amount or 0  # Handle None value
+        total_debited_amount = abs(total_debited_amount)
+        print(total_debited_amount)
+        # total_wallet_balance = total_credited_amount + total_added_amount - total_debited_amount
+        print("Total Debited Amount (Absolute Value):", total_debited_amount)
         wallets = Wallet.objects.filter(user=customer).order_by("-created_at")
 
         context = {
             "customer": customer,
             "wallets": wallets,
             "total_wallet_balance": total_wallet_balance,
+            "total_credited_amount": total_credited_amount,
+            "total_debited_amount": total_debited_amount,
         }
         return render(request, "core/wallet.html", context)
     else:
         return redirect("core:home")
-
+    
 def razorpay(request, address_id):
     user = request.user
     cart_items = Cart.objects.filter(user=user)
