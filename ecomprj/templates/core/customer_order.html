@@ -11,185 +11,146 @@
     }
 </style>
 
-            <!-- Begin Li's Breadcrumb Area -->
-            <div class="breadcrumb-area">
-                <div class="container">
-                    <div class="breadcrumb-content">
-                        <ul>
-                            <li><a href="{% url 'core:home' %}">Home</a></li>
-                            <li class="active">Shopping Cart</li>
-                        </ul>
+<!-- Begin Li's Breadcrumb Area -->
+<div class="breadcrumb-area">
+    <div class="container">
+        <div class="breadcrumb-content">
+            <ul>
+                <li><a href="{% url 'core:home' %}">Home</a></li>
+                <li class="active">Shopping Cart</li>
+            </ul>
+        </div>
+    </div>
+</div>
+<!-- Li's Breadcrumb Area End Here -->
+
+<!--Shopping Cart Area Start-->
+<div class="Shopping-cart-area pt-20 pb-20">
+    <div class="container">
+        <center>
+            <h3>My Orders</h3>
+        </center>
+        <div class="row">
+            <div class="col-12">
+                {% if orders %}
+                    <div class="table-content table-responsive">
+                        <table class="table cart_data">
+                            <thead>
+                                <tr>
+                                    <th class="li-product-remove">Date</th>
+                                    <th class="li-product-thumbnail">Images</th>
+                                    <th class="cart-product-name">Product</th>
+                                    <th class="li-product-quantity">Quantity</th>
+                                    <th class="li-product-quantity">Payment</th>
+                                    <th class="li-product-subtotal">Total</th>
+                                    <th class="li-product-subtotal">Status</th>
+                                    <th class="li-product-subtotal">Cancel</th>
+                                    <th class="li-product-subtotal">Return</th>
+                                    <th class="li-product-subtotal">Order Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in orders %}
+                                    {% for item in order.order_items.all %}
+                                        <tr>
+                                            <td class="li-product-name"><a href="#">{{ order.date }}</a></td>
+                                            <td class="li-product-thumbnail">
+                                                {% if item.image %}
+                                                    <a href="{% url 'core:order_details' order.id %}">
+                                                        <img class="product-image" src="{{ item.image.url }}" alt="Product Image">
+                                                    </a>
+                                                {% else %}
+                                                    <span>No Image Available</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="li-product-name"><a href="{% url 'core:order_details' order.id %}">{{ item.product.model }}</a></td>
+                                            <td class="li-product-name"><a href="{% url 'core:order_details' order.id %}">{{ item.quantity }}</a></td>
+                                            <td class="li-product-name"><a href="{% url 'core:order_details' order.id %}">{{ order.payment_type }}</a></td>
+                                            <td class="li-product-name"><a href="{% url 'core:order_details' order.id %}">{{ order.amount }}</a></td>
+                                            <td class="li-product-name"><a href="{% url 'core:order_details' order.id %}">{{ order.status }}</a></td>
+                                            <td class="product-subtotal">
+                                                {% if order.status == 'pending' or order.status == 'processing' or order.status == 'shipped' %}
+                                                    <form method="post" action="{% url 'core:cancel' order_id=order.id %}">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="btn btn-danger">Cancel</button>
+                                                    </form>
+                                                {% endif %}
+                                            </td>
+                                            <td class="product-subtotal">
+                                                {% if order.status == 'completed' or order.status == 'delivered' %}
+                                                    <form method="post" action="{% url 'core:return_order' order_id=order.id order_item_id=item.id %}">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="btn btn-success">Return</button>
+                                                    </form>
+                                                {% endif %}
+                                            </td>
+                                            <td class="product-action">
+                                                <a href="{% url 'core:order_details' order.id %}" class="btn btn-primary">Order Details</a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
-                </div>
-            </div>
-            <!-- Li's Breadcrumb Area End Here -->
-            <!--Shopping Cart Area Strat-->
-            <div class="Shopping-cart-area pt-20 pb-20">
-                <div class="container">
-                    <center>
-                        <h3>My Orders</h3>
-                    </center>    
-                    <div class="row">
-                        <div class="col-12">
-                            {% if orders %}
-                                <div class="table-content table-responsive">
-                                    <table class="table  cart_data">
-                                        <thead>
-                                            <tr>
-                                                <th class="li-product-remove">Date</th>
-                                                <th class="li-product-thumbnail">images</th>
-                                                <th class="cart-product-name">Product</th>
-                                                {% comment %} <th class="cart-product-name">Variant</th> {% endcomment %}
-                                                <th class="li-product-quantity">Quantity</th>
-                                                <th class="li-product-quantity">Payment</th>
-                                                <th class="li-product-subtotal">Total</th>
-                                                <th class="li-product-subtotal">Status</th>
-                                                <th class="li-product-subtotal">Action</th>
-                                                <th class="li-product-subtotal">Order Details</th>
-
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for order in orders %}
-    {% for item in order.order_items.all %}
-        <tr>
-            <td class="li-product-name"><a href="#">{{ order.date }}</a></td>
-            <td class="li-product-thumbnail">
-                {% if item.image %}
-                    <a href="{% url 'core:order_details' order.id %}">
-                        <img class="product-image" src="{{ item.image.url }}" alt="Product Image">
-                    </a>
                 {% else %}
-                    <span>No Image Available</span>
+                    <br><br>
+                    <h4>Your order list is empty</h4>
+                    <br><br>
                 {% endif %}
-            </td>
-            <td class="li-product-name"><a href="{% url 'core:order_details' order.id %}">{{ item.product.model }}</a></td>
-            <td class="li-product-name"><a href="{% url 'core:order_details' order.id %}">{{ item.quantity }}</a></td>
-            <td class="li-product-name"><a href="{% url 'core:order_details' order.id %}">{{ order.payment_type }}</a></td>
-            <td class="li-product-name"><a href="{% url 'core:order_details' order.id %}">{{ order.amount }}</a></td>
-            <td class="li-product-name"><a href="{% url 'core:order_details' order.id %}">{{ order.status }}</a></td>
-           
-            <td class="product-subtotal">
-                {% if order.status == 'pending' or order.status == 'processing' or order.status == 'shipped' %}
-                    <form method="post" action="{% url 'core:cancel' order_id=order.id %}">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-danger">Cancel</button>
-                    </form>
-                {% elif order.status == 'completed' or order.status == 'delivered' %}
-                    <form method="post" action="{% url 'core:cancel' order_id=order.id %}">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-success">Return</button>
-                    </form>
-                {% else %}
-                    <p> - </p>
-                   
-        
-                {% endif %}
-                <td class="product-action">
-                    <a href="{% url 'core:order_details' order.id %}" class="btn btn-primary">Order Details</a>
-                </td>
-            </td>
-        </tr>
-    {% endfor %}
-{% endfor %}
-                                        </tbody>  
-                                    </table>
-                                </div>
-                        </div>
-                        {% else %}
-                        <br>
-                        <br>
-                        <h4> Your order list is empty</h4>
-                        <br>
-                        <br>
-                        {% endif %}
-                    </div>
-                </div>
             </div>
-            <!--Shopping Cart Area End-->
-{% comment %}            
-            <script>
-                // Wait for the document to be ready
-                document.addEventListener("DOMContentLoaded", function() {
-                    // Select all cancel and return buttons
-                    const actionButtons = document.querySelectorAll('.btn-danger, .btn-success');
-            
-                    // Attach event listener to each action button
-                    actionButtons.forEach(button => {
-                        button.addEventListener('click', function(e) {
-                            e.preventDefault(); // Prevent the default action of the button
-            
-                            // Display the confirmation dialog
-                            Swal.fire({
-                                title: "Are you sure?",
-                                text: "You won't be able to revert this!",
-                                icon: "warning",
-                                showCancelButton: true,
-                                confirmButtonColor: "#3085d6",
-                                cancelButtonColor: "#d33",
-                                confirmButtonText: "Yes, proceed!"
-                            }).then((result) => {
-                                // If the user confirms the action
-                                if (result.isConfirmed) {
-                                    // Submit the form for cancellation or return
-                                    const form = button.closest('form');
-                                    form.submit();
-                                }
-                            });
-                        });
-                    });
+        </div>
+    </div>
+</div>
+<!--Shopping Cart Area End-->
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const cancelButtons = document.querySelectorAll('.btn-danger');
+        const returnButtons = document.querySelectorAll('.btn-success');
+
+        cancelButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                Swal.fire({
+                    title: "Are you sure?",
+                    text: "You won't be able to revert this!",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    confirmButtonText: "Yes, cancel it!"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const form = button.closest('form');
+                        form.submit();
+                    }
                 });
-            </script>
+            });
+        });
 
-            <script>
-                // Check if the URL contains a success parameter indicating successful order placement
-                const urlParams = new URLSearchParams(window.location.search);
-                const successParam = urlParams.get('success');
-            
-                // If the success parameter is present, show the success message using SweetAlert 2
-                if (successParam === 'true') {
-                    Swal.fire({
-                        title: "Success...",
-                        text: "Your order has been placed successfully!",
-                        icon: "success"
-                    });
-                }
-            </script>
-             {% endcomment %}
-             <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-             <script>
-                // Wait for the document to be ready
-                document.addEventListener("DOMContentLoaded", function() {
-                    // Select all cancel buttons
-                    const cancelButtons = document.querySelectorAll('.btn-danger');
-            
-                    // Attach event listener to each cancel button
-                    cancelButtons.forEach(button => {
-                        button.addEventListener('click', function(e) {
-                            e.preventDefault(); // Prevent the default action of the button
-            
-                            // Display the confirmation dialog
-                            Swal.fire({
-                                title: "Are you sure?",
-                                text: "You won't be able to revert this!",
-                                icon: "warning",
-                                showCancelButton: true,
-                                confirmButtonColor: "#3085d6",
-                                cancelButtonColor: "#d33",
-                                confirmButtonText: "Yes, cancel it!"
-                            }).then((result) => {
-                                // If the user confirms the cancellation
-                                if (result.isConfirmed) {
-                                    // Submit the cancellation form
-                                    const form = button.closest('form');
-                                    form.submit();
-                                }
-                            });
-                        });
-                    });
+        returnButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                Swal.fire({
+                    title: "Are you sure?",
+                    text: "You won't be able to revert this!",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    confirmButtonText: "Yes, return it!"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const form = button.closest('form');
+                        form.submit();
+                    }
                 });
-            </script>
-            
+            });
+        });
+    });
+</script>
 
-        {% endblock content %}
+{% endblock content %}

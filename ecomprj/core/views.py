@@ -832,19 +832,17 @@ def checkout(request):
         'couponamt': couponamt  
     }
     return render(request, 'core/checkout.html', context)
- #===========================placeorder===========================#  
-@login_required
+ #========================@login_required
 def place_order(request):
     user = request.user
     customer = get_object_or_404(Customer, email=user.email)
-    cart_items = Cart.objects.filter(user=customer)
+    cart_items = Cart.objects.filter(user=customer, quantity__gt=0)
     
     if request.method == 'POST':
-        user = request.user
         address_id = request.POST.get('addressId')
         payment_type = request.POST.get('payment')  
        
-        # Check if address is selected
+        # Check if address and payment type are selected
         if not address_id:  
             messages.error(request, "Please select an address.")
             return HttpResponseRedirect(reverse('core:checkout')) 
@@ -853,7 +851,6 @@ def place_order(request):
             messages.error(request, "Please select payment method.")
             return HttpResponseRedirect(reverse('core:checkout'))
       
-        cart_items = Cart.objects.filter(user=user, quantity__gt=0)
         in_stock_items = []
         out_of_stock_items = []
 
@@ -862,121 +859,66 @@ def place_order(request):
                 in_stock_items.append(cart_item)
             else:
                 out_of_stock_items.append(cart_item)
-        subtotal = 0
-        total_price = 0
-        # If any item is out of stock, return to checkout page
+
+        # If any item is out of stock, return to cart page
         if out_of_stock_items:
             messages.warning(request, "Some items are out of stock. Please remove them from your cart.")
             return HttpResponseRedirect(reverse('core:cart'))
-        # for cart_item in cart_items:    
-        #         cart_item.total_price = round(cart_item.quantity * cart_item.product.get_discounted_price())
-        #         cart_item.save()
-        #         subtotal += cart_item.total_price 
-            # total_offer_price += cart_item.product.price
+
         subtotal = Decimal(request.session.get('cart_subtotal', 0))
-        total_price += subtotal
-        print(total_price)
+        total_price = subtotal
+        
         # Check if total price is above Rs 1000 and payment type is COD
         if total_price > 1000 and payment_type == 'cod':
             messages.error(request, "COD is not available for orders above Rs 1000.")
             return HttpResponseRedirect(reverse('core:checkout'))
         
-        # if payment_type == "wallet":
-        #     # Retrieve wallet balance for the user
-        #     wallet = Wallet.objects.filter(user=user).first()
-        #     if wallet and wallet.amount >= total_price:
-        #         wallet.amount -= total_price
-        #         wallet.save()
-        #     else:
-        #         messages.warning(request, "Not enough balance in your wallet")
-        #         return HttpResponseRedirect(reverse('core:cart'))
+        # Handle wallet payment
+        if payment_type == "wallet":
+            total_wallet_balance = Wallet.objects.filter(user=customer).aggregate(total=Sum('amount'))['total']
 
-        order = Order.objects.create(user=customer, address_id=address_id, payment_type=payment_type, amount=total_price)
-        print(order.amount,'amountttttttttttttttttttttttttttttttttttttttttttttttt')
-        total_offer_price = 0
-        # subtotal = 0
-        # total_price = 0
+            wallet = Wallet.objects.filter(user=customer).first()
+            if not wallet or total_wallet_balance < total_price:
+                messages.warning(request, "Not enough balance in your wallet")
+                return HttpResponseRedirect(reverse('core:cart'))
+            wallet.amount -= total_price
+            wallet.save()
+        
+        # Create the order
+        order = Order.objects.create(
+            user=customer,
+            address_id=address_id,
+            payment_type=payment_type,
+            amount=total_price
+        )
+
         total_quantity = 0
         for cart_item in in_stock_items:
-            # Create order objects within the loop
-            order = Order.objects.create(
-                user=user,
-                address_id=address_id,
-                product=cart_item.product,
-                amount=total_price,
-                payment_type=payment_type, 
-                status='pending',
-                quantity=cart_item.quantity,
-            )
-            subtotal = 0
-            total_price = 0
-            for cart_item in cart_items:    
-                cart_item.total_price = round(cart_item.quantity * cart_item.product.get_discounted_price())
-                cart_item.save()
-                subtotal += cart_item.total_price 
-            # total_offer_price += cart_item.product.price
-            total_price += subtotal
-            
-            
-            print(total_price,'1111111111111111111')
-            total_quantity += cart_item.quantity
-
-            cart_item.product.stock -= cart_item.quantity
-            cart_item.product.save()
-            cart_item.delete()
-
-            # You can move this code block here if you want to create order items for each cart item
             OrderItem.objects.create(
                 order=order,
                 product=cart_item.product,
                 quantity=cart_item.quantity,
-                image=cart_item.product.image,  # Use cart item's product's image
+                image=cart_item.product.image,
             )
+
             cart_item.product.stock -= cart_item.quantity
             cart_item.product.save()
-            cart_item.save()
+            total_quantity += cart_item.quantity
             cart_item.delete()
-        for cart_item in cart_items:    
-            cart_item.total_price = round(cart_item.quantity * cart_item.product.get_discounted_price())
-            cart_item.save()
-            subtotal += cart_item.total_price  
-            print(subtotal,'33333333333333333333333333333') 
-            if payment_type == "wallet":
-                total_wallet_balance = Wallet.objects.filter(user=customer).aggregate(total=Sum('amount'))['total']
-                if total_wallet_balance < total_offer_price:
-                    messages.error(request, "Insufficient balance in your wallet.")
-                    return redirect("core:checkout")
-                
-                user_wallets = Wallet.objects.filter(user=customer).order_by('created_at')
-                remaining_amount = subtotal
 
-                for wallet in user_wallets:
-                    if wallet.amount >= remaining_amount:
-                        wallet.amount -= remaining_amount
-                        wallet.save()
-                        Wallet.objects.create(
-                            user=customer,
-                            order=order,
-                            amount=-remaining_amount,  # Debit amount
-                            is_credit=False,
-                            status="Debited",
-                        )
-                        break
-                    else:
-                        Wallet.objects.create(
-                            user=customer,
-                            order=order,
-                            amount=-wallet.amount,  # Debit amount
-                            is_credit=False,
-                            status="Debited",
-                        )
-                        remaining_amount -= wallet.amount
-                        wallet.amount = 0
-                        wallet.save()
+        if payment_type == "wallet":
+            Wallet.objects.create(
+                user=customer,
+                order=order,
+                amount=-total_price,
+                is_credit=False,
+                status="Debited",
+            )
 
         return redirect("core:success")
 
     return HttpResponseRedirect(reverse('core:checkout'))
+
 
 def payment_failed(request):
     # Extract any necessary information from the request if needed
@@ -1070,17 +1012,23 @@ def cancel(request, order_id):
             wallets = Wallet.objects.filter(user=request.user)
             wallet = wallets.first()
 
-        if order.payment_type == 'COD' and order.status == 'completed':
-            # Refund the amount to the user's wallet
-            wallet.amount += order.amount
-            wallet.save()
+        # if order.payment_type == 'COD' and order.status == 'returned':
+        #     # Refund the amount to the user's wallet
+        #     wallet.amount += order.amount
+        #     wallet.save()
 
-        order.save()  # Save the updated status
+        # order.save()  # Save the updated status
         # Add the amount of cancelled order to the wallet balance if order via razorpay
+        subtotal=0
         if order.payment_type == 'razorpay' or order.payment_type == 'wallet':
-            wallet.amount += Decimal(order.amount)
-            wallet.save()
-
+        #    subtotal = Decimal(request.session.get('cart_subtotal', 0))
+           wallet = Wallet.objects.create(
+                user=user,
+                order=order,
+                amount=order.amount,
+                is_credit=True,
+                status="credited"
+           )
         order.save()
 
              # Save the updated status
@@ -1168,13 +1116,14 @@ def handle_cancellation(order):
 
             order.user.wallet_bal += order_item.product.price * order_item.quantity
             order.user.save()
+@login_required
 
 def return_order(request, order_id, order_item_id):
     try:
         order = Order.objects.get(id=order_id)
         order_item = OrderItem.objects.get(id=order_item_id, order=order)
-    except Order.DoesNotExist or OrderItem.DoesNotExist:
-        return render(request, 'order_not_found.html')
+    except ObjectDoesNotExist:
+        return render(request, 'core/customer_order.html')
 
     if order_item:
         product = order_item.product
@@ -1183,18 +1132,34 @@ def return_order(request, order_id, order_item_id):
             product.save()
 
             user = request.user
-            user_customer = get_object_or_404(Customer, email=user)
-            returned_amount = order_item.product.price * order_item.quantity
-            user_customer.wallet_bal += returned_amount
+            user_customer = get_object_or_404(Customer, email=user.email)
+            # returned_amount = order_item.product.price * order_item.quantity
+            subtotal=0
+            total_price=0
+            subtotal = Decimal(request.session.get('cart_subtotal', 0))
+            total_price = subtotal
+            print(f"Crediting amount: {total_price} to user: {user_customer.email}")  # Debugging statement
+            user_customer.wallet_bal += total_price
             user_customer.save()
+            print(f"New wallet balance: {user_customer.wallet_bal}")  # Debugging statement
+
+            # Create a new Wallet entry for the refund
+            wallet_entry = Wallet.objects.create(
+                user=user_customer,
+                order=order,
+                amount=total_price,
+                is_credit=True,
+                status="Refund"
+            )
+            print(f"Wallet entry created: {wallet_entry}")  # Debugging statement
 
             order_item.delete()
 
-            if order.order_items.count() == 0:
+            if not OrderItem.objects.filter(order=order).exists():
                 order.status = "Return successful"
                 order.save()
 
-    return redirect("core:order_details", order_id=order_id)
+    return redirect("core:customer_order")
 #=================================sorting==================================#
 def sort(request):
     products = Product.objects.filter(deleted=False).order_by('-id')  # Retrieve all products initially
