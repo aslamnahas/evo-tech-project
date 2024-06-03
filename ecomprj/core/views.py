@@ -800,20 +800,20 @@ def checkout(request):
 
     carttotal = request.session.get('cart_total', 0)
 
-    city_distance = CityDistance.objects.filter(user=request.user).first()        
-    if city_distance:
-        distance_in_km = city_distance.distance
+    # city_distance = CityDistance.objects.filter(user=request.user).first()        
+    # if city_distance:
+    #     distance_in_km = city_distance.distance
 
-        if distance_in_km <= 100:
-            shipping_cost = 50
-        elif distance_in_km <= 500:
-            shipping_cost = 100
-        elif distance_in_km <= 1000:
-            shipping_cost = 150
-        else:
-            shipping_cost = 200
-    else:
-        shipping_cost = 0
+    #     if distance_in_km <= 100:
+    #         shipping_cost = 50
+    #     elif distance_in_km <= 500:
+    #         shipping_cost = 100
+    #     elif distance_in_km <= 1000:
+    #         shipping_cost = 150
+    #     else:
+    #         shipping_cost = 200
+    # else:
+    shipping_cost = 50
 
     couponamt = request.session.get('discount', 0)
     total = subtotal + shipping_cost - couponamt
