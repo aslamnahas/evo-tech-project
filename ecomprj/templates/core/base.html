@@ -82,14 +82,14 @@
                                     <ul class="ht-menu">
                                         <!-- Begin Setting Area -->
                                         <li>
-                                            <div class="ht-setting-trigger"><span>Setting</span></div>
+                                            {% comment %} <div class="ht-setting-trigger"><span>Setting</span></div>
                                             <div class="setting ht-setting">
                                                 <ul class="ht-setting-list">
                                                     <li><a href="login-register.html">My Account</a></li>
                                                     <li><a href="checkout.html">Checkout</a></li>
                                                     <li><a href="login-register.html">Sign In</a></li>
                                                 </ul>
-                                            </div>
+                                            </div> {% endcomment %}
                                             
                                         </li>
                                         <!-- Setting Area End Here -->
@@ -137,7 +137,7 @@
                             <!-- Begin Header Logo Area -->
                             <div class="col-lg-3">
                                 <div class="logo pb-sm-30 pb-xs-30">
-                                    <a href="index.html">
+                                    <a href="{% url 'core:home' %}">
                                         <img src="{% static  'user\images\NAHAS KAaaaaa LOGOpng.jpg' %}"alt="" style="max-width: 150px; max-height: 150px;">
                                     </a>
                                     </a>

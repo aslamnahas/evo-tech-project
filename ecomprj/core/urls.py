@@ -83,5 +83,5 @@ urlpatterns = [
     path('new/', views.new, name='new'),
   
     path('product/<int:product_id>/review/', views.add_review, name='add_review'),
-  
+    
 ]

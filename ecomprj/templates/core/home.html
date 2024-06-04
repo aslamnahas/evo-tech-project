@@ -165,10 +165,23 @@
                                                         <ul class="add-actions-link">
                                                             <input type="hidden" value="{{ i.product.id }}" class="prod_id">
                                                             <input type="hidden" value="{{ i.id }}" class="variant_id">   
-                                                            <li class="add-cart addToCartBtn active"><a href="#">Add to cart</a></li>
-                                                            <li><a class="links-details wishBtn" href="#"><i class="fa fa-heart-o"></i></a></li>
-                                                            <li><a href="#" title="quick view" class="quick-view-btn" data-toggle="modal" data-target="#exampleModalCenter"><i class="fa fa-eye"></i></a></li>
-                                                        </ul>
+                                                            <ul class="add-actions-link">
+                                                                {% if i.stock > 0 %}
+                                                                <li class="add-cart addToCartBtn pl-3"><a href="{% url 'core:add_to_cart' i.id %}">Add to Cart</a></li>
+
+                                                                <li class="wishlist"><a href="{% url 'core:add_to_wishlist' i.id %}"><i class="fa fa-heart-o"></i></a></li>
+                                                                
+                                                                {% else %}
+                                                                
+                                                                <li class="wishlist"><a href="{% url 'core:add_to_wishlist' i.id %}"><i class="fa fa-heart-o"></i>Add to wishlist</a></li>
+                                                                <li><a class="quick-view" data-toggle="modal" data-target="#exampleModalCenter" href="#"><i class="fa fa-eye"></i>Quick view</a></li>
+                                                                {% endif %}
+                                                           
+                                                                <li>
+                                                                    <a href="{% url 'core:product_detail' i.id %}" title="quick view" class="quick-view-btn" data-toggle="modal" data-target="#exampleModalCenter">
+                                                                        <i class="fa fa-eye"></i>
+                                                                    </a>
+                                                                </li>                                                       </ul>
                                                     </div>
                                                 </div>
                                             </div>
@@ -357,7 +370,7 @@
                                                     </div>
                                                     <h4><a class="featured-product-name" href="{% url 'core:product_detail'  i.id %}"> {{ i.model }}</a></h4>
                                                     <div class="featured-price-box">
-                                                        <span class="new-price">₹{{ i.offer }}</span>
+                                                        <span class="new-price">₹{{ i.price }}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -402,7 +415,7 @@
                                                             <li class="no-star"><i class="fa fa-star-o"></i></li>
                                                         </ul>
                                                     </div>
-                                                    <h4><a class="featured-product-name" href="{% url 'core:product_detail'  i.id %}">{{  i.product.brand }} {{ i.product.model }}</a></h4>
+                                                    <h4><a class="featured-product-name" href="{% url 'core:product_detail'  i.id %}">{{ i.model }}</a></h4>
                                                     <div class="featured-price-box">
                                                         <span class="new-price">₹{{ i.price }}</span>
                                                     </div>

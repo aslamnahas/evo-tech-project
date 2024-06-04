@@ -81,6 +81,7 @@ def admin_login(request):
         email = request.POST.get('email')
         password = request.POST.get('password')
         user = authenticate(request, email=email, password=password)
+        request.session['admin'] = email
         if user is not None:
             login(request, user)
             # Redirect to dashboard upon successful login
@@ -93,6 +94,7 @@ def admin_login(request):
 
 def dashboard_logout(request):
     logout(request)
+    request.session.flush()
     return render(request,'adminside/adminlogin.html')
 
 
@@ -113,7 +115,7 @@ def user_block(request, user_id):
     if user.is_blocked:
         logout(request)
     return redirect('adminside:users')
-
+@login_required
 def main_category(request):
     data = Main_Category.objects.all().order_by('id')
     return render(request, "adminside/categories.html", {"data": data})
@@ -157,7 +159,7 @@ def add_main_category(request):
 
 
 #update_categories
-
+@login_required
 def update_main_category(request, id):
     data = Main_Category.objects.get(id=id)
 
@@ -222,7 +224,7 @@ def delete_main_category(request,id):
 
 # product============================================================================================================
                                 # add --- update ---- delete ---soft delete--
-
+@login_required
 def products(request):
     items_list = Product.objects.all().order_by('-id')
     paginator = Paginator(items_list, 10)  # Show 10 items per page
@@ -231,7 +233,7 @@ def products(request):
     items = paginator.get_page(page_number)
 
     return render(request, 'adminside/products.html', {"items": items})
-
+@login_required
 def add_product(request):
     data = Main_Category.objects.all()
 
@@ -286,7 +288,7 @@ def add_product(request):
 
 
 #update product==================================================================================
-
+@login_required
 def update_product(request, id):
     data = Main_Category.objects.all()
     product = get_object_or_404(Product, id=id)
@@ -359,158 +361,165 @@ def soft_delete_product(request, id):
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @never_cache
+@login_required(login_url='adminside:admin_login')
 def dashboard(request):
-    orders = Order.objects.order_by("-id")
-    labels = []
-    data = []
-    top_products = Product.objects.annotate(
-        total_ordered=Count('orderitem_product')
-    ).order_by('-total_ordered')[:10]
-
-    top_categories = Main_Category.objects.annotate(
-        total_orders=Count('product__order_product')
-    ).order_by('-total_orders')[:5]
-
-    for order in orders:
-        labels.append(str(order.id))
-        data.append(float(order.amount))  # Convert Decimal to float
-
-    total_customers = Customer.objects.count()
-
-    # Calculate the count of new users in the last one week
-    one_week_ago = timezone.now() - timezone.timedelta(weeks=1)
-    new_users_last_week = Customer.objects.filter(date_joined__gte=one_week_ago).count()
-
-    # Get the total number of orders
-    total_orders = Order.objects.count()
-
-    # Calculate the count of orders in the last one week
-    orders_last_week = Order.objects.filter(date__gte=one_week_ago).count()
-
-    # Calculate the total amount received
-    total_amount_received = Order.objects.aggregate(
-        total_amount_received=Cast(Sum(F('amount')), FloatField())
-    )['total_amount_received'] or 0
-
-    # Calculate the total amount received in the last week
-    total_amount_received_last_week = Order.objects.filter(date__gte=one_week_ago).aggregate(
-        total_amount_received=Cast(Sum(F('amount')), FloatField())
-    )['total_amount_received'] or 0
-
-    categories = Main_Category.objects.annotate(num_products=Count('product'))
-    category_labels = [category.name for category in categories]
-    category_data = [category.num_products for category in categories]
-
-    total_products = Product.objects.count()
-
-    time_interval = request.GET.get('time_interval', 'all')  # Default to 'all' if not provided
-    if time_interval == 'yearly':
-        orders = Order.objects.annotate(date_truncated=TruncYear('date', output_field=DateField()))
-    elif time_interval == 'monthly':
-        orders = Order.objects.annotate(date_truncated=TruncMonth('date', output_field=DateField()))
-    else:
-        # Default to 'all' or handle other time intervals as needed
-        orders = Order.objects.annotate(date_truncated=F('date'))
-
-    orders = orders.values('date_truncated').annotate(total_amount=Sum('amount'))
-
-    # Calculate monthly sales
-    monthly_sales = Order.objects.annotate(
-        month=TruncMonth('date')
-    ).values('month').annotate(total_amount=Sum('amount')).order_by('month')
-
-    # Extract data for the monthly sales chart
-    monthly_labels = [entry['month'].strftime('%B %Y') for entry in monthly_sales]
-    monthly_data = [float(entry['total_amount']) for entry in monthly_sales]
-
-    # Add this block to handle AJAX request for filtered data
-    headers = HttpHeaders(request.headers)
-    is_ajax_request = headers.get('X-Requested-With') == 'XMLHttpRequest'
-
-    if is_ajax_request and request.method == 'GET':
-        time_interval = request.GET.get('time_interval', 'all')
-        filtered_labels = []
-        filtered_data = []
-
-        if time_interval == 'yearly':
-            filtered_orders = Order.objects.annotate(
-                date_truncated=TruncYear('date', output_field=DateField())
-            )
-        elif time_interval == 'monthly':
-            filtered_orders = Order.objects.annotate(
-                date_truncated=TruncMonth('date', output_field=DateField())
-            )
-        else:
-            # Default to 'all' or handle other time intervals as needed
-            filtered_orders = Order.objects.annotate(date_truncated=F('date'))
-
-        filtered_orders = filtered_orders.values('date_truncated').annotate(total_amount=Sum('amount')).order_by('date_truncated')
-        filtered_labels = [entry['date_truncated'].strftime('%B %Y') for entry in filtered_orders]
-        filtered_data = [float(entry['total_amount']) for entry in filtered_orders]
-
-        return JsonResponse({"labels": filtered_labels, "data": filtered_data})
-
-    context = {
-        "top_products": top_products,
-        "top_categories": top_categories,
-        "labels": json.dumps(labels),
-        "data": json.dumps(data),
-        "total_customers": total_customers,
-        "new_users_last_week": new_users_last_week,
-        "total_orders": total_orders,
-        "orders_last_week": orders_last_week,
-        "total_amount_received": total_amount_received,
-        "total_amount_received_last": total_amount_received_last_week,
-        "total_products": total_products,
-        "category_labels": json.dumps(category_labels),
-        "category_data": json.dumps(category_data),
-    }
-
-    if request.method == 'GET':
-        from_date_str = request.GET.get('from_date')
-        to_date_str = request.GET.get('to_date')
-
-        if from_date_str and to_date_str:
-            from_date = datetime.strptime(from_date_str, '%Y-%m-%d')
-            to_date = datetime.strptime(to_date_str, '%Y-%m-%d')
-
-            if from_date and to_date:
-                filtered_orders = OrderItem.objects.filter(order__date__range=[from_date, to_date])
-            else:
-                filtered_orders = OrderItem.objects.all()
-
-            order_count = filtered_orders.count()
-
-            filtered_customers_details = Customer.objects.filter(date_joined__range=[from_date, to_date])
-            filtered_customers = filtered_customers_details.count()
-
-            total_quantity_ordered = filtered_orders.aggregate(total_quantity_ordered=Sum('quantity'))
-            total_amount_received = filtered_orders.aggregate(total_offer_price=Sum('order__amount'))['total_offer_price'] or 0
-            total_amount_received /= 1000
-
-            data = []
+    user = request.user
+    # email = user.objects.filter(id=user.id).first()
+    email2=request.session.get('email')
+    print(email2)
+    print(user)
+    if "admin" in request.session:
+            orders = Order.objects.order_by("-id")
             labels = []
-            for order in filtered_orders:
-                data.append(float(order.order.amount))
+            data = []
+            top_products = Product.objects.annotate(
+                total_ordered=Count('orderitem_product')
+            ).order_by('-total_ordered')[:10]
+
+            top_categories = Main_Category.objects.annotate(
+                total_orders=Count('product__order_product')
+            ).order_by('-total_orders')[:5]
+
+            for order in orders:
                 labels.append(str(order.id))
+                data.append(float(order.amount))  # Convert Decimal to float
+
+            total_customers = Customer.objects.count()
+
+            # Calculate the count of new users in the last one week
+            one_week_ago = timezone.now() - timezone.timedelta(weeks=1)
+            new_users_last_week = Customer.objects.filter(date_joined__gte=one_week_ago).count()
+
+            # Get the total number of orders
+            total_orders = Order.objects.count()
+
+            # Calculate the count of orders in the last one week
+            orders_last_week = Order.objects.filter(date__gte=one_week_ago).count()
+
+            # Calculate the total amount received
+            total_amount_received = Order.objects.aggregate(
+                total_amount_received=Cast(Sum(F('amount')), FloatField())
+            )['total_amount_received'] or 0
+
+            # Calculate the total amount received in the last week
+            total_amount_received_last_week = Order.objects.filter(date__gte=one_week_ago).aggregate(
+                total_amount_received=Cast(Sum(F('amount')), FloatField())
+            )['total_amount_received'] or 0
+
+            categories = Main_Category.objects.annotate(num_products=Count('product'))
+            category_labels = [category.name for category in categories]
+            category_data = [category.num_products for category in categories]
+
+            total_products = Product.objects.count()
+
+            time_interval = request.GET.get('time_interval', 'all')  # Default to 'all' if not provided
+            if time_interval == 'yearly':
+                orders = Order.objects.annotate(date_truncated=TruncYear('date', output_field=DateField()))
+            elif time_interval == 'monthly':
+                orders = Order.objects.annotate(date_truncated=TruncMonth('date', output_field=DateField()))
+            else:
+                # Default to 'all' or handle other time intervals as needed
+                orders = Order.objects.annotate(date_truncated=F('date'))
+
+            orders = orders.values('date_truncated').annotate(total_amount=Sum('amount'))
+
+            # Calculate monthly sales
+            monthly_sales = Order.objects.annotate(
+                month=TruncMonth('date')
+            ).values('month').annotate(total_amount=Sum('amount')).order_by('month')
+
+            # Extract data for the monthly sales chart
+            monthly_labels = [entry['month'].strftime('%B %Y') for entry in monthly_sales]
+            monthly_data = [float(entry['total_amount']) for entry in monthly_sales]
+
+            # Add this block to handle AJAX request for filtered data
+            headers = HttpHeaders(request.headers)
+            is_ajax_request = headers.get('X-Requested-With') == 'XMLHttpRequest'
+
+            if is_ajax_request and request.method == 'GET':
+                time_interval = request.GET.get('time_interval', 'all')
+                filtered_labels = []
+                filtered_data = []
+
+                if time_interval == 'yearly':
+                    filtered_orders = Order.objects.annotate(
+                        date_truncated=TruncYear('date', output_field=DateField())
+                    )
+                elif time_interval == 'monthly':
+                    filtered_orders = Order.objects.annotate(
+                        date_truncated=TruncMonth('date', output_field=DateField())
+                    )
+                else:
+                    # Default to 'all' or handle other time intervals as needed
+                    filtered_orders = Order.objects.annotate(date_truncated=F('date'))
+
+                filtered_orders = filtered_orders.values('date_truncated').annotate(total_amount=Sum('amount')).order_by('date_truncated')
+                filtered_labels = [entry['date_truncated'].strftime('%B %Y') for entry in filtered_orders]
+                filtered_data = [float(entry['total_amount']) for entry in filtered_orders]
+
+                return JsonResponse({"labels": filtered_labels, "data": filtered_data})
+
+            context = {
+                "top_products": top_products,
+                "top_categories": top_categories,
+                "labels": json.dumps(labels),
+                "data": json.dumps(data),
+                "total_customers": total_customers,
+                "new_users_last_week": new_users_last_week,
+                "total_orders": total_orders,
+                "orders_last_week": orders_last_week,
+                "total_amount_received": total_amount_received,
+                "total_amount_received_last": total_amount_received_last_week,
+                "total_products": total_products,
+                "category_labels": json.dumps(category_labels),
+                "category_data": json.dumps(category_data),
+            }
+
+            if request.method == 'GET':
+                from_date_str = request.GET.get('from_date')
+                to_date_str = request.GET.get('to_date')
+
+                if from_date_str and to_date_str:
+                    from_date = datetime.strptime(from_date_str, '%Y-%m-%d')
+                    to_date = datetime.strptime(to_date_str, '%Y-%m-%d')
+
+                    if from_date and to_date:
+                        filtered_orders = OrderItem.objects.filter(order__date__range=[from_date, to_date])
+                    else:
+                        filtered_orders = OrderItem.objects.all()
+
+                    order_count = filtered_orders.count()
+
+                    filtered_customers_details = Customer.objects.filter(date_joined__range=[from_date, to_date])
+                    filtered_customers = filtered_customers_details.count()
+
+                    total_quantity_ordered = filtered_orders.aggregate(total_quantity_ordered=Sum('quantity'))
+                    total_amount_received = filtered_orders.aggregate(total_offer_price=Sum('order__amount'))['total_offer_price'] or 0
+                    total_amount_received /= 1000
+
+                    data = []
+                    labels = []
+                    for order in filtered_orders:
+                        data.append(float(order.order.amount))
+                        labels.append(str(order.id))
+
+                    context.update({
+                        'total_orders': order_count,
+                        'total_amount_received': total_amount_received,
+                        'total_customers': filtered_customers,
+                        "labels": json.dumps(labels),
+                        'data': json.dumps(data),
+                    })
 
             context.update({
-                'total_orders': order_count,
-                'total_amount_received': total_amount_received,
-                'total_customers': filtered_customers,
-                "labels": json.dumps(labels),
-                'data': json.dumps(data),
+                "monthly_labels": json.dumps(monthly_labels),
+                "monthly_data": json.dumps(monthly_data),
             })
 
-    context.update({
-        "monthly_labels": json.dumps(monthly_labels),
-        "monthly_data": json.dumps(monthly_data),
-    })
+            return render(request, "adminside/home.html", context)
 
-    return render(request, "adminside/home.html", context)
-
-    # else:
-    #     return redirect("adminside:home")
+    else:
+             return redirect("adminside:admin_login")
     
 
 
@@ -605,40 +614,42 @@ def report_pdf_order(request):
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @never_cache
+@login_required
 def home(request):
-    user_id = None  # Default value when the user is not authenticated
+   if "email" in request.session:
+        user_id = None  # Default value when the user is not authenticated
 
-    if request.user.is_authenticated:
-        user_id = request.user.id
+        if request.user.is_authenticated:
+            user_id = request.user.id
 
-    categories = Main_Category.objects.all()
-    # banners = Banner.objects.all()
-    wishlist = Wishlist.objects.all()
+        categories = Main_Category.objects.all()
+        # banners = Banner.objects.all()
+        wishlist = Wishlist.objects.all()
 
-    for category in categories:
-        category.product_count = category.product_set.count()
-
-
-    # Get the first 10 products (you may need to adjust the sorting logic as needed)
-    products = Product.objects.filter(is_listed=True).order_by('-id')[:10]
-
-    mobile_category = Main_Category.objects.get(name='phone')
-    products_mobile = Product.objects.filter(main_category=mobile_category, is_listed=True).order_by('-id')[:10]
-
-    context = {
-        'categories': categories,
-        # 'banners': banners,
-        'wishlist': wishlist,
-        'user_id': user_id,
-        'products': products,
-        'products_mobile': products_mobile,
-    }
-
-    return render(request, 'adminside/home.html', context)
+        for category in categories:
+            category.product_count = category.product_set.count()
 
 
+        # Get the first 10 products (you may need to adjust the sorting logic as needed)
+        products = Product.objects.filter(is_listed=True).order_by('-id')[:10]
 
+        mobile_category = Main_Category.objects.get(name='phone')
+        products_mobile = Product.objects.filter(main_category=mobile_category, is_listed=True).order_by('-id')[:10]
 
+        context = {
+            'categories': categories,
+            # 'banners': banners,
+            'wishlist': wishlist,
+            'user_id': user_id,
+            'products': products,
+            'products_mobile': products_mobile,
+        }
+
+        return render(request, 'adminside/home.html', context)
+   else:
+       return redirect("adminside:admin_login")
+
+@login_required
 def banners(request):
     banners = Banner.objects.all().order_by('-id')
     
@@ -649,7 +660,7 @@ def banners(request):
 
 
 
-
+@login_required
 def add_banners(request):
     if request.method == "POST":
         form = BannerForm(request.POST, request.FILES)
@@ -661,7 +672,7 @@ def add_banners(request):
     return render(request, 'adminside/add_banners.html', {'form':form})
 
 
-
+@login_required
 def update_banners(request, id):
     # Fetch the existing banner object from the database
     banner = get_object_or_404(Banner, pk=id)
