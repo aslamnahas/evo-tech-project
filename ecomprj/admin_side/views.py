@@ -94,7 +94,7 @@ def admin_login(request):
 
 def dashboard_logout(request):
     logout(request)
-    request.session.flush()
+    # request.session.flush()
     return render(request,'adminside/adminlogin.html')
 
 
@@ -366,8 +366,8 @@ def dashboard(request):
     user = request.user
     # email = user.objects.filter(id=user.id).first()
     email2=request.session.get('email')
-    print(email2)
-    print(user)
+    # print(email2)
+    # print(user)
     if "admin" in request.session:
             orders = Order.objects.order_by("-id")
             labels = []

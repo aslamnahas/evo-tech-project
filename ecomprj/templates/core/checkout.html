@@ -4,7 +4,6 @@
 
 {% block content %}
 <style>
-    /* Add your CSS styles here */
     .address-radio-group {
         display: flex;
         flex-direction: column;
@@ -61,7 +60,7 @@
                             </div>
                             <label for="addressDropdown"></label>
                             <div class="address-radio-group">
-                                <label style="background-color: rgb(129, 129, 164); color: white;">Select an address</label>
+                                <label class="bg-primary p-2" style="color: white;">Select an address</label>
                                 {% for address in user_addresses %}
                                     <div>
                                         <input type="radio" id="address{{ address.id }}" name="addressId" value="{{ address.id }}">
@@ -75,6 +74,7 @@
                         <br>
                         <a href="{% url 'core:address' %}" class="btn btn-secondary btn-sm active" role="button" aria-pressed="true">Manage Address</a>
                         <br><br>
+                        
                         <div class="different-address">
                             <div class="ship-different-title">
                                 <h3>
@@ -108,7 +108,6 @@
                                     <label class="custom-control-label" for="walletId">WALLET PAYMENT (Balance : ₹{{ request.user.wallet.balance }})</label>
                                 </div>
                             </div>
-                        </div>
                             <div class="form-group">
                                 <div class="custom-control custom-radio">
                                     <input type="radio" class="custom-control-input" name="payment" id="banktransfer" value="razorpay" onchange="handlePaymentSelection()">
@@ -116,22 +115,16 @@
                                 </div>
                             </div>
                         </div>
-                        
-                        <div class="card-footer border-secondary bg-transparent">
-                            <button id="place-order-button" class="btn btn-lg btn-block btn-secondary font-weight-bold my-3 py-3" type="submit">Place Order</button>
-                            {% comment %} <button id="wallet" class="btn btn-lg btn-block btn-secondary font-weight-bold my-3 py-3 paywithrazorpay" type="submit">Pay with wallet</button> {% endcomment %}
-                            {% comment %} <button id="wallet-payment-button" class="btn btn-lg btn-block btn-secondary font-weight-bold my-3 py-3 paywithrazorpay" type="submit">Pay with wallet</button> {% endcomment %}
-                            {% comment %} <button id="wallet-payment-button" class="btn btn-lg btn-block btn-secondary font-weight-bold my-3 py-3 paywithrazorpay" type="submit">Pay with wallet</button> {% endcomment %}
-                            {% comment %} <button id="walletPaymentButton" class="btn btn-lg btn-block btn-secondary font-weight-bold my-3 py-3 paywithrazorpay" type="submit">Pay with wallet</button> {% endcomment %}
-                            {% comment %} <button id="wallet" class="btn btn-lg btn-block btn-secondary font-weight-bold my-3 py-3 paywithrazorpay" type="submit">Pay with wallet</button> {% endcomment %}
-                            
-                            <button id="wallet-button" class="btn btn-lg btn-block btn-secondary font-weight-bold my-3 py-3 walletpayment" type="submit" style="display: none;">Pay with WALLET</button>
-
-                            <button id="rzp-button1" class="btn btn-lg btn-block btn-secondary font-weight-bold my-3 py-3 paywithrazorpay" type="submit">Pay with RAZORPAY</button>
-                        </div>
+                       
+                    </div>
+                    <div class="card-footer border-secondary bg-transparent">
+                        <button id="place-order-button" class="btn btn-lg btn-block btn-secondary font-weight-bold my-3 py-3" type="submit">Place Order</button>
+                        <button id="wallet-button" class="btn btn-lg btn-block btn-secondary font-weight-bold my-3 py-3 walletpayment" type="submit" style="display: none;">Pay with WALLET</button>
+                        <button id="rzp-button1" class="btn btn-lg btn-block btn-secondary font-weight-bold my-3 py-3 paywithrazorpay" type="submit">Pay with RAZORPAY</button>
                     </div>
                 </form>
             </div>
+            
             <div class="col-lg-6 col-12">
                 <div class="your-order">
                     <h3>Your order</h3>
@@ -243,6 +236,7 @@
     </div>
 </div>
 <!-- Checkout Area End -->
+
 <script>
     document.getElementById('place-order-button').addEventListener('click', function() {
         document.getElementById('order-form').submit();
@@ -344,7 +338,6 @@
         });
     });
 </script>
-
 
 <!-- razorpay -->
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
