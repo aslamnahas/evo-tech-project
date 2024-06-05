@@ -926,7 +926,7 @@ def place_order(request):
             wallet = Wallet.objects.filter(user=customer).first()
             if not wallet or total_wallet_balance < total_price:
                 messages.warning(request, "Not enough balance in your wallet")
-                return HttpResponseRedirect(reverse('core:cart'))
+                return HttpResponseRedirect(reverse('core:checkout'))
             wallet.amount -= total_price
             wallet.save()
         
