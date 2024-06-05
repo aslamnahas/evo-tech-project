@@ -1,0 +1,73 @@
+{% extends 'core/base.html' %}
+
+{% load static %}
+
+
+{% block content %}
+<div class="breadcrumb-area">
+  <div class="container">
+      <div class="breadcrumb-content">
+          <ul>
+              <li><a href="{% url 'core:address' %}"> Address</a></li>
+              <li class="active">Add Address</li>
+          </ul>
+      </div>
+  </div>
+</div>
+<div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <h2 class="text-center mb-4" style="color: grey;">Add Address</h2>
+        <form action="{% url 'core:mainadd_address' %}" method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="form-row">
+            <div class="form-group col-md-8">
+              <label for="inputEmail4">Address Name</label>
+              <input type="text" class="form-control" name="address_name" placeholder="First Name" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="inputAddress">Address line 1</label>
+            <input type="text" class="form-control" name="address_1" placeholder="First Line" required>
+          </div>
+          <div class="form-group">
+            <label for="inputAddress2">Address line 2</label>
+            <input type="text" class="form-control" name="address_2" placeholder="Apartment, studio, or floor" required>
+          </div>
+          <div class="form-row">
+            <div class="form-group col-md-4">
+              <label for="inputCity">Country</label>
+              <input type="text" class="form-control" name="country" placeholder="Your country" required>
+            </div>
+            <div class="form-group col-md-5">
+              <label for="inputEmail4">State</label>
+              <input type="text" class="form-control" name="state" placeholder="Your State" required>
+            </div>
+            <div class="form-group col-md-3">
+              <label for="inputZip">City</label>
+              <input type="text" class="form-control" name="city" placeholder="City" required>
+            </div>
+            <div class="form-group col-md-2"> 
+              <label for="inputZip">PINCODE</label>
+              <input type="text" class="form-control" name="pin" placeholder=" 6 Digits" required>
+            </div>
+          </div>
+          <div class="text-center">
+            <button type="submit" class="btn btn-warning">Save</button>
+            <!-- Add this block where you want to display messages -->
+{% if messages %}
+<ul class="messages">
+  {% for message in messages %}
+    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+  {% endfor %}
+</ul>
+{% endif %}
+
+            <br>
+            <br>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+{% endblock content %}

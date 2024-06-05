@@ -49,7 +49,6 @@
                 <form id="order-form" action="{% url 'core:place_order' %}" method="post">
                     {% csrf_token %}
                     <div class="checkbox-form">
-                        <h3>Billing Details</h3>
                         <div class="row">
                             <div class="error-message">
                                 {% if messages %}
@@ -58,6 +57,8 @@
                                     {% endfor %}
                                 {% endif %}
                             </div>
+                        <h3>Billing Details</h3>
+                        
                             <label for="addressDropdown"></label>
                             <div class="address-radio-group">
                                 <label class="bg-primary p-2" style="color: white;">Select an address</label>
@@ -72,7 +73,7 @@
                             </div>
                         </div>
                         <br>
-                        <a href="{% url 'core:address' %}" class="btn btn-secondary btn-sm active" role="button" aria-pressed="true">Manage Address</a>
+                        <a href="{% url 'core:addressmain' %}" class="btn btn-secondary btn-sm active" role="button" aria-pressed="true">Manage Address</a>
                         <br><br>
                         
                         <div class="different-address">
@@ -224,7 +225,7 @@
             </div>
         </div>
 
-        {% if messages %}
+        {% comment %} {% if messages %}
         <div class="messages">
             {% for message in messages %}
                 <div class="{{ message.tags }}">
@@ -233,7 +234,7 @@
             {% endfor %}
         </div>
         {% endif %}
-    </div>
+    </div> {% endcomment %}
 </div>
 <!-- Checkout Area End -->
 

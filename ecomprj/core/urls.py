@@ -30,7 +30,9 @@ urlpatterns = [
    
   
      path('address/',views.address,name='address'),
+     path('addressmain/',views.addressmain,name='addressmain'),
      path('add_address/',views.add_address,name='add_address'),
+     path('mainadd_address/',views.mainadd_address,name='mainadd_address'),
      path('update_address/<int:id>',views.update_address,name='update_address'),
      path('delete_address/<int:id>/',views.delete_address,name='delete_address'),
         

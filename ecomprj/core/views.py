@@ -513,7 +513,7 @@ def add_address(request):
             pin=pin,
         )
         query.save()
-        return redirect('core:address')
+        return redirect('core:checkout')
     return render(request, 'core/add_address.html')
 
 
@@ -560,6 +560,52 @@ def delete_address(request,id):
     data = Address.objects.get(id=id) 
     data.delete()  
     return redirect('core:address')
+
+
+def addressmain(request):
+    data = Address.objects.filter(user=request.user)
+    return render(request,'core/addressmain.html', {'data': data})
+
+
+
+def mainadd_address(request):
+    if request.method == 'POST':
+        user = request.user
+        default = request.POST.get('default', False) == 'True'
+        address_name = request.POST['address_name']
+        address_1 = request.POST['address_1']
+        address_2 = request.POST['address_2']
+        country = request.POST['country']
+        state = request.POST['state']
+        city = request.POST['city']
+        pin = request.POST['pin']
+
+        # Check for whitespace-only values
+        if any(value.strip() == '' for value in [address_name, address_1, address_2, country, state, city, pin]):
+            messages.error(request, 'Whitespace-only values are not allowed.')
+            return redirect('core:mainadd_address')
+
+        # Check for empty values
+        if not address_name or not address_1 or not country or not state or not city or not pin:
+            messages.error(request, 'Please fill in all the required fields.')
+            return redirect('core:mainadd_address')
+
+        query = Address.objects.create(
+            user=user,
+            default=default,
+            address_name=address_name,
+            address_1=address_1,
+            address_2=address_2,
+            country=country,
+            state=state,
+            city=city,
+            pin=pin,
+        )
+        query.save()
+        return redirect('core:address')
+    return render(request, 'core/mainadd_address.html')
+
+
 
 #===============================change password==============================================#
 @login_required
