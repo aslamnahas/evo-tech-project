@@ -558,7 +558,8 @@ def update_address(request, id):
 
 def delete_address(request,id):
     data = Address.objects.get(id=id) 
-    data.delete()  
+    data.delete = data.deleted
+    data.save
     return redirect('core:address')
 
 
