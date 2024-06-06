@@ -476,7 +476,7 @@ phone_validator = RegexValidator(
 #==================================addresss details,-add address ,-- update udress===========================================#
 
 def address(request):
-    data = Address.objects.filter(user=request.user)
+    data = Address.objects.filter(user=request.user, is_deleted=False)
     return render(request, 'core/address.html', {'data': data})
 
 def add_address(request):
@@ -557,9 +557,10 @@ def update_address(request, id):
 
 
 def delete_address(request,id):
-    data = Address.objects.get(id=id) 
-    data.delete = data.deleted
-    data.save
+    address = get_object_or_404(Address, id=id, user=request.user)
+    address.is_deleted = True
+    address.save()
+    messages.success(request, 'Address has been deleted successfully.')
     return redirect('core:address')
 
 
@@ -869,7 +870,7 @@ def checkout(request):
     request.session['subtotal'] = str(subtotal)
     request.session['total'] = str(total)
 
-    user_addresses = Address.objects.filter(user=request.user)
+    user_addresses = Address.objects.filter(user=request.user, is_deleted=False)
     context = {
         'cart_items': cart_items,
         'subtotal': carttotal,

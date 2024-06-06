@@ -37,9 +37,13 @@
                             <a type="button" href="{% url 'core:update_address' id=i.id %}"
                                 class="btn btn-success">Edit</a>
                         </td>
-                        <td>
-                            <a type="button" href="{% url 'core:delete_address' id=i.id %}"
-                                class="btn btn-danger">Delete</a>
+                        <td class="text-center">
+                            <a href="{% url 'core:delete_address' id=i.id %}"class="btn btn-danger">
+                                
+                                    Activate
+                                
+                               
+                            </a>
                         </td>
                     </tr>
                     {% endfor %}

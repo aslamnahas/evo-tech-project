@@ -1,8 +1,6 @@
-
 {% extends 'core/base.html' %}
 
 {% load static %}
-
 
 {% block content %}
 <div class="breadcrumb-area">
@@ -37,9 +35,10 @@
                             <a type="button" href="{% url 'core:update_address' id=i.id %}"
                                 class="btn btn-success">Edit</a>
                         </td>
-                        <td>
-                            <a type="button" href="{% url 'core:delete_address' id=i.id %}"
-                                class="btn btn-danger">Delete</a>
+                        <td class="text-center">
+                            <a href="{% url 'core:delete_address' id=i.id %}" class="btn btn-danger">
+                                Delete
+                            </a>
                         </td>
                     </tr>
                     {% endfor %}
@@ -51,18 +50,9 @@
         <div class="col-md-8">
             <a href="{% url 'core:mainadd_address' %}" class="btn btn-secondary btn-lg active" role="button"
                 aria-pressed="true">Add Address</a>
-           
             <br>
             <br>
         </div>
-        <div class="row justify-content-end">
-            <div class="col-md-8">
-                <a href="{% url 'core:checkout' %}" class="btn btn-secondary btn-lg active" role="button"
-                    aria-pressed="true">checkout</a>
-               
-                <br>
-                <br>
-            </div>
     </div>
 </div>
 
